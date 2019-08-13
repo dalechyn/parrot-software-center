@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="95d16c67-b7f4-4671-b372-72a8deef5809" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/browser.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -32,22 +31,6 @@
   <component name="FavoritesManager">
     <favorites_list name="parrot-software-center" />
   </component>
-  <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/main.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="51" column="80" selection-start-line="51" selection-start-column="80" selection-end-line="51" selection-end-column="80" />
-              <folding>
-                <element signature="e#925#939#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
-  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -59,46 +42,10 @@
     <option name="ROOT_SYNC" value="DONT_SYNC" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="IdeDocumentHistory">
-    <option name="CHANGED_PATHS">
-      <list>
-        <option value="$PROJECT_DIR$/src/browser.py" />
-        <option value="$PROJECT_DIR$/src/main.py" />
-      </list>
-    </option>
-  </component>
-  <component name="ProjectFrameBounds" extendedState="7">
-    <option name="x" value="260" />
-    <option name="y" value="47" />
-    <option name="width" value="1400" />
-    <option name="height" value="987" />
-  </component>
+  <component name="ProjectId" id="1PIwEa9dWomuGv3Y2nWBfEC1QCa" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
-  <component name="ProjectView">
-    <navigator proportions="" version="1">
-      <foldersAlwaysOnTop value="true" />
-    </navigator>
-    <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="parrot-software-center" type="b2602c69:ProjectViewProjectNode" />
-              <item name="parrot-software-center" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="parrot-software-center" type="b2602c69:ProjectViewProjectNode" />
-              <item name="parrot-software-center" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-      <pane id="Scope" />
-    </panes>
-  </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/src/main.py" />
   </component>
@@ -179,69 +126,11 @@
       <workItem from="1550078827486" duration="4889000" />
       <workItem from="1550092924233" duration="730000" />
       <workItem from="1550443075547" duration="1169000" />
+      <workItem from="1565574817660" duration="25000" />
     </task>
     <servers />
   </component>
-  <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="10659000" />
-  </component>
-  <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1920" height="1031" extended-state="6" />
-    <editor active="true" />
-    <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49503312" visible="true" weight="0.18676628" />
-      <window_info id="Structure" order="1" sideWeight="0.5049669" side_tool="true" visible="true" weight="0.18676628" />
-      <window_info id="Favorites" order="2" sideWeight="0.50165015" side_tool="true" weight="0.18036287" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.32890365" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.3288889" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="8" />
-      <window_info anchor="bottom" id="Database Changes" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Terminal" order="11" />
-      <window_info anchor="bottom" id="Python Console" order="12" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="right" id="SciView" order="3" weight="0.32977587" />
-      <window_info anchor="right" id="Database" order="4" weight="0.32977587" />
-    </layout>
-  </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
-  </component>
-  <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/.PyCharm2018.3/system/python_stubs/-1247971762/PyQt5/QtWebKitWidgets.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2037">
-          <caret line="1189" column="8" selection-start-line="1189" selection-start-column="8" selection-end-line="1189" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/browser.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="18" column="24" lean-forward="true" selection-end-line="42" selection-end-column="11" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="51" column="80" selection-start-line="51" selection-start-column="80" selection-end-line="51" selection-end-column="80" />
-          <folding>
-            <element signature="e#925#939#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
   </component>
 </project>

@@ -3,5 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/data/vucciria-game-pwa" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/webview" vcs="Git" />
   </component>
 </project>

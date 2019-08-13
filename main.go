@@ -29,8 +29,8 @@ import (
 	"strconv"
 	"strings"
 
-	"store/buttons"
-	"store/webview"
+	"./buttons"
+	"./webview"
 )
 
 
