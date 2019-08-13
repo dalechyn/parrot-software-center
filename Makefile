@@ -1,9 +1,9 @@
 build:
 	go build
-	strip keyboard-selector
+	strip parrot-software-center
 
 run:
-	./keyboard-selector
+	./parrot-software-center
 
 clean:
-	rm keyboard-selector
+	rm parrot-software-center
