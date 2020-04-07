@@ -20,34 +20,51 @@
 package main
 
 import (
-	"github.com/zserge/webview"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/sirupsen/logrus"
+	"github.com/zserge/webview"
 )
 
 const (
 	windowWidth  = 920
 	windowHeight = 600
+
+	reactServePort = 5452
 )
+
+func init() {
+	if _, err := os.Stat("frontend/build/index.html"); os.IsNotExist(err) {
+		logrus.Fatal(`Nothing to serve! Probably you didn't build react frontend.
+cd frontend &&
+npm i &&
+npm run build
+
+Then try again`)
+	}
+
+	// Serving React build
+	http.Handle("/", http.FileServer(http.Dir("frontend/build")))
+	logrus.Debug("Starting server on ", reactServePort)
+	go func() {
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", reactServePort), nil); err != nil {
+			logrus.Fatal(err)
+		}
+	}()
+}
 
 func main() {
 	w := webview.New(true)
 	defer w.Destroy()
 
 	w.SetTitle("Parrot Software Center")
-	w.Bind("noop", func() string {
-		log.Println("hello")
-		return "hello"
-	})
-	w.Bind("add", func(a, b int) int {
-		return a + b
-	})
-	w.Bind("quit", func() {
-		w.Terminate()
-	})
-	//w.Navigate(`https://en.m.wikipedia.org/wiki/Main_Page`)
+	w.Navigate(fmt.Sprintf("http://localhost:%d", reactServePort))
+	w.SetSize(windowWidth, windowHeight, webview.HintMin)
 
 	signalChannel := make(chan os.Signal, 2)
 	signal.Notify(signalChannel, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
