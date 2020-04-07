@@ -1,6 +1,5 @@
 build:
 	npm run --prefix frontend build
-	serve -l 5245 -s frontend/build
 	go build
 	strip parrot-software-center
 
