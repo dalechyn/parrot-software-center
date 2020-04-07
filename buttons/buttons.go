@@ -20,7 +20,7 @@
 package buttons
 
 import (
-	"../webview"
+	"github.com/zserge/webview"
 )
 
 func Exit(w webview.WebView) {
