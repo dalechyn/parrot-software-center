@@ -1,4 +1,5 @@
 build:
+	npm i --prefix frontend
 	npm run --prefix frontend build
 	go build
 	strip parrot-software-center
@@ -8,3 +9,4 @@ run:
 
 clean:
 	rm parrot-software-center
+	rm -r frontend/build

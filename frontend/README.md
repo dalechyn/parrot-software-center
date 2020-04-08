@@ -1,4 +1,5 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The project is mean to run alongside with golang parrot-software-center.
+Non scale-responsive, running this from mobile browser will cause UI tearing.
 
 ## Available Scripts
 
