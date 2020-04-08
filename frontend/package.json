@@ -15,6 +15,7 @@
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.1"
   },
+  "homepage": "./frontend/build",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

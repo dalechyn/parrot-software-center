@@ -21,8 +21,8 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -34,8 +34,6 @@ import (
 const (
 	windowWidth  = 920
 	windowHeight = 600
-
-	reactServePort = 5452
 )
 
 func init() {
@@ -47,15 +45,6 @@ npm run build
 
 Then try again`)
 	}
-
-	// Serving React build
-	http.Handle("/", http.FileServer(http.Dir("frontend/build")))
-	logrus.Debug("Starting server on ", reactServePort)
-	go func() {
-		if err := http.ListenAndServe(fmt.Sprintf(":%d", reactServePort), nil); err != nil {
-			logrus.Fatal(err)
-		}
-	}()
 }
 
 func main() {
@@ -63,7 +52,13 @@ func main() {
 	defer w.Destroy()
 
 	w.SetTitle("Parrot Software Center")
-	w.Navigate(fmt.Sprintf("http://localhost:%d", reactServePort))
+	indexPage, err := ioutil.ReadFile("frontend/build/index.html")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	res := fmt.Sprintf(`data:text/html,
+%s`, string(indexPage))
+	w.Navigate(res)
 	w.SetSize(windowWidth, windowHeight, webview.HintMin)
 
 	signalChannel := make(chan os.Signal, 2)
