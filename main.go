@@ -65,6 +65,9 @@ func main() {
 	w.SetTitle("Parrot Software Center")
 	w.Navigate(fmt.Sprintf("http://localhost:%d", reactServePort))
 	w.SetSize(windowWidth, windowHeight, webview.HintMin)
+	if err := aptInject(w); err != nil {
+		logrus.Fatal(err)
+	}
 
 	signalChannel := make(chan os.Signal, 2)
 	signal.Notify(signalChannel, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)

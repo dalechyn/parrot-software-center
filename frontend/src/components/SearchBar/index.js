@@ -54,6 +54,7 @@ const SearchBar = ({ classes }) => {
   }
 
   const handleRequestSearch = () => {
+    document.aptShow(value.split(' ')).then((res) => console.log(res))
     // handle request
   }
 
