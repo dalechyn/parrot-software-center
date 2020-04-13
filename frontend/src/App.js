@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
+import { HashRouter as Router, Switch, Route } from 'react-router-dom'
 import {
 	ThemeProvider,
 	CssBaseline,
