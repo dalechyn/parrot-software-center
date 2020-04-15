@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
+import { useHistory } from 'react-router-dom'
 import { Paper, Input, IconButton, withStyles } from '@material-ui/core'
 import { Clear, Search } from '@material-ui/icons'
 import classNames from 'classnames'
+import PropTypes from 'prop-types'
 
 const styles = {
   root: {
@@ -41,6 +43,7 @@ const styles = {
 
 const SearchBar = ({ classes, setError }) => {
   const [value, setValue] = useState('')
+  const history = useHistory()
   const handleBlur = () => {
     if (value.trim().length === 0) {
       setValue('')
@@ -50,19 +53,21 @@ const SearchBar = ({ classes, setError }) => {
   const handleInput = e => setValue(e.target.value)
 
   const handleCancel = () => {
-    handleRequestSearch()
+    setValue('')
   }
 
   const handleRequestSearch = () => {
     window.aptShow(value.split(' ')).then(
       res => {
-        console.log(res)
+        history.push({
+          pathname: '/search',
+          state: { searchQuery: value, searchResult: res }
+        })
       },
       () => {
         setError(value)
       }
     )
-    // handle request
   }
 
   const handleKeyUp = e => {
@@ -114,6 +119,13 @@ const SearchBar = ({ classes, setError }) => {
       </IconButton>
     </Paper>
   )
+}
+
+if (process.env.node_env === 'development') {
+  SearchBar.propTypes = {
+    classes: PropTypes.object,
+    setError: PropTypes.func
+  }
 }
 
 export default withStyles(styles)(SearchBar)

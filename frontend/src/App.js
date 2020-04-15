@@ -6,8 +6,10 @@ import {
   createMuiTheme,
   useMediaQuery
 } from '@material-ui/core'
+
 import Header from './components/Header'
 import Home from './pages/Home'
+import SearchResults from './pages/SearchResults'
 
 const App = () => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
@@ -36,6 +38,9 @@ const App = () => {
           </Route>
           <Route exact path='/about'>
             About
+          </Route>
+          <Route exact path='/search'>
+            <SearchResults />
           </Route>
         </Switch>
       </Router>
