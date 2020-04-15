@@ -39,7 +39,7 @@ const styles = {
   }
 }
 
-const SearchBar = ({ classes }) => {
+const SearchBar = ({ classes, setError }) => {
   const [value, setValue] = useState('')
   const handleBlur = () => {
     if (value.trim().length === 0) {
@@ -47,18 +47,25 @@ const SearchBar = ({ classes }) => {
     }
   }
 
-  const handleInput = (e) => setValue(e.target.value)
+  const handleInput = e => setValue(e.target.value)
 
   const handleCancel = () => {
-    setValue('')
+    handleRequestSearch()
   }
 
   const handleRequestSearch = () => {
-    document.aptShow(value.split(' ')).then((res) => console.log(res))
+    window.aptShow(value.split(' ')).then(
+      res => {
+        console.log(res)
+      },
+      () => {
+        setError(value)
+      }
+    )
     // handle request
   }
 
-  const handleKeyUp = (e) => {
+  const handleKeyUp = e => {
     if (e.charCode === 13 || e.key === 'Enter') {
       handleRequestSearch()
     } else if (e.charCode === 27 || e.key === 'Escape') {
