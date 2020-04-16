@@ -149,7 +149,7 @@ const SearchResults = ({ classes }) => {
       query: searchQuery,
       components: parseResults(searchResult)
     })
-  }, [])
+  }, [searchResult])
 
   return (
     <div className={classes.root}>
@@ -167,7 +167,7 @@ const SearchResults = ({ classes }) => {
           {result.components.slice(page - 1, page - 1 + componentsInPage)}
           <Pagination
             className={classes.pagination}
-            count={1 + result.components.length / componentsInPage}
+            count={result.components.length / componentsInPage}
             onChange={(e, n) => {
               setPage(n)
             }}
