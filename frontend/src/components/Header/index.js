@@ -26,7 +26,13 @@ const Header = ({ classes }) => {
         </Toolbar>
         <Divider />
       </AppBar>
-      {searchError && <Alert severity='error'>{searchError.message}</Alert>}
+      /* if the error came from GoLang, it is not a JavaScript error object and doesn`t
+      have message prop. I will open an issue on WebView about that */
+      {searchError && (
+        <Alert severity='error'>
+          {searchError.message ? searchError.message : searchError}
+        </Alert>
+      )}
     </>
   )
 }
