@@ -170,7 +170,7 @@ const SearchResults = ({ classes }) => {
           {result.components.slice(page - 1, page - 1 + componentsInPage)}
           <Pagination
             className={classes.pagination}
-            count={result.components.length / componentsInPage}
+            count={Math.ceil(result.components.length / componentsInPage)}
             onChange={(e, n) => {
               setPage(n)
             }}

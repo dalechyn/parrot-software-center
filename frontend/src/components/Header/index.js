@@ -26,7 +26,7 @@ const Header = ({ classes }) => {
         </Toolbar>
         <Divider />
       </AppBar>
-      {searchError && <Alert severity='error'>{searchError}</Alert>}
+      {searchError && <Alert severity='error'>{searchError.message}</Alert>}
     </>
   )
 }
