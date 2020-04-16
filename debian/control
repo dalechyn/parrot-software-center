@@ -1,5 +1,5 @@
 Source: parrot-software-center
-Section: unknown
+Section: x11
 Priority: optional
 Maintainer: Lorenzo "Palinuro" Faletra <palinuro@parrotsec.org>
 Uploaders: Vangelis Mouhtsis <vangelis@gnugr.org>,
