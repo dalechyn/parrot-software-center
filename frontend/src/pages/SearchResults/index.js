@@ -7,6 +7,7 @@ import {
   CardActionArea,
   CardActions,
   CardContent,
+  CircularProgress,
   Grid,
   Typography,
   withStyles
@@ -137,14 +138,14 @@ const styles = {
 }
 
 const SearchResults = ({ classes }) => {
-  const [result, setResults] = useState({ query: '', components: [] })
+  const [result, setResult] = useState({ query: '', components: [] })
   const [page, setPage] = useState(1)
   const {
     state: { searchQuery, searchResult }
   } = useLocation()
 
   useEffect(() => {
-    setResults({
+    setResult({
       query: searchQuery,
       components: parseResults(searchResult)
     })
@@ -153,24 +154,28 @@ const SearchResults = ({ classes }) => {
   return (
     <div className={classes.root}>
       <h1>Showing results for {result.query}</h1>
-      <Grid
-        container
-        direction='column'
-        justify='space-evenly'
-        alignItems='center'
-        className={classes.grid}
-      >
-        {result.components.slice(page - 1, page - 1 + componentsInPage)}
-        <Pagination
-          className={classes.pagination}
-          count={1 + result.components.length / componentsInPage}
-          onChange={(e, n) => {
-            setPage(n)
-          }}
-          variant='outlined'
-          shape='rounded'
-        />
-      </Grid>
+      {result.components.length === 0 ? (
+        <CircularProgress />
+      ) : (
+        <Grid
+          container
+          direction='column'
+          justify='space-evenly'
+          alignItems='center'
+          className={classes.grid}
+        >
+          {result.components.slice(page - 1, page - 1 + componentsInPage)}
+          <Pagination
+            className={classes.pagination}
+            count={1 + result.components.length / componentsInPage}
+            onChange={(e, n) => {
+              setPage(n)
+            }}
+            variant='outlined'
+            shape='rounded'
+          />
+        </Grid>
+      )}
     </div>
   )
 }
