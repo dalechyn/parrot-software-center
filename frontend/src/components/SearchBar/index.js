@@ -61,17 +61,16 @@ const SearchBar = ({ classes, setError }) => {
   const handleRequestSearch = () => {
     timeout(
       5000,
-      window.aptShow(
-        value.split(' ').then(
-          res => {
-            setError()
-            history.push({
-              pathname: '/search',
-              state: { searchQuery: value, searchResult: res }
-            })
-          },
-          () => setError(`Can't find package ${value}`)
-        )
+      window.aptShow(value.split(' ')).then(
+        res => {
+          history.push({
+            pathname: '/search',
+            state: { searchQuery: value, searchResult: res }
+          })
+        },
+        () => {
+          setError(`Can't find package ${value}`)
+        }
       ),
       'Request timed out'
     ).catch(err => setError(err))
