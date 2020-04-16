@@ -5,6 +5,8 @@ import { Clear, Search } from '@material-ui/icons'
 import classNames from 'classnames'
 import PropTypes from 'prop-types'
 
+import { timeout } from '../../utils'
+
 const styles = {
   root: {
     height: 48,
@@ -57,17 +59,22 @@ const SearchBar = ({ classes, setError }) => {
   }
 
   const handleRequestSearch = () => {
-    window.aptShow(value.split(' ')).then(
-      res => {
-        history.push({
-          pathname: '/search',
-          state: { searchQuery: value, searchResult: res }
-        })
-      },
-      () => {
-        setError(value)
-      }
-    )
+    timeout(
+      5000,
+      window.aptShow(
+        value.split(' ').then(
+          res => {
+            setError()
+            history.push({
+              pathname: '/search',
+              state: { searchQuery: value, searchResult: res }
+            })
+          },
+          () => setError(`Can't find package ${value}`)
+        )
+      ),
+      'Request timed out'
+    ).catch(err => setError(err))
   }
 
   const handleKeyUp = e => {
