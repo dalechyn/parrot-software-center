@@ -2,6 +2,7 @@ Source: parrot-software-center
 Section: unknown
 Priority: optional
 Maintainer: Lorenzo "Palinuro" Faletra <palinuro@parrotsec.org>
+Uploaders: Vangelis Mouhtsis <vangelis@gnugr.org>,
 Build-Depends: debhelper (>= 11)
 Standards-Version: 4.1.3
 Homepage: https://nest.parrotsec.org/parrot-packages/parrot-software-center
