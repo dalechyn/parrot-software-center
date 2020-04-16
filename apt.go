@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/zserge/webview"
 	"os/exec"
+	"strings"
 )
 
 func aptInject(w webview.WebView) error {
@@ -49,7 +50,7 @@ func aptInject(w webview.WebView) error {
 			return "", errors.New("aptShow: no packages passed")
 		}
 
-		args := []string{"show"}
+		args := []string{"show", "2>/dev/null"}
 		for _, pkg := range packageNames {
 			if pkg == "" {
 				return "", fmt.Errorf("aptShow: invalid package with empty name")
@@ -60,7 +61,8 @@ func aptInject(w webview.WebView) error {
 		cmd := exec.Command("apt-get", args...)
 		res, err := cmd.CombinedOutput()
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("Can't find package %s",
+				strings.Join(packageNames[:], " "))
 		}
 
 		return string(res), nil
