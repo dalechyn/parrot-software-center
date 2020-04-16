@@ -3,7 +3,7 @@ Section: unknown
 Priority: optional
 Maintainer: Lorenzo "Palinuro" Faletra <palinuro@parrotsec.org>
 Uploaders: Vangelis Mouhtsis <vangelis@gnugr.org>,
-Build-Depends: debhelper (>= 11)
+Build-Depends: debhelper-compat (= 12)
 Standards-Version: 4.5.0
 Homepage: https://nest.parrotsec.org/parrot-packages/parrot-software-center
 Vcs-Browser: https://nest.parrotsec.org/parrot-packages/parrot-software-center
