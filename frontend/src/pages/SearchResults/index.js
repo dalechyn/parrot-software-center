@@ -134,6 +134,9 @@ const styles = {
   },
   pagination: {
     justifySelf: 'center'
+  },
+  progress: {
+    justifySelf: 'center'
   }
 }
 
@@ -155,7 +158,7 @@ const SearchResults = ({ classes }) => {
     <div className={classes.root}>
       <h1>Showing results for {result.query}</h1>
       {result.components.length === 0 ? (
-        <CircularProgress />
+        <CircularProgress className={classes.progress} />
       ) : (
         <Grid
           container

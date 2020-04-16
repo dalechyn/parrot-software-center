@@ -13,7 +13,7 @@ const styles = {
 }
 
 const Header = ({ classes }) => {
-  const [errorPackage, setSearchError] = useState('')
+  const [searchError, setSearchError] = useState('')
   return (
     <>
       <AppBar position='static'>
@@ -26,7 +26,7 @@ const Header = ({ classes }) => {
         </Toolbar>
         <Divider />
       </AppBar>
-      {errorPackage && <Alert severity='error'>Can`t find package {errorPackage}</Alert>}
+      {searchError && <Alert severity='error'>{searchError}</Alert>}
     </>
   )
 }
