@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Img from 'react-image'
 import dummyPackageImg from './../../assets/package.png'
+import { resolve } from 'url'
 
 import {
   Button,
@@ -12,36 +13,60 @@ import {
   CircularProgress,
   Grid,
   Typography,
-  withStyles
+  makeStyles
 } from '@material-ui/core'
 import { Pagination } from '@material-ui/lab'
 import { useLocation } from 'react-router-dom'
 
-const resultStyle = {
+const useStyles = makeStyles(theme => ({
   root: {
     maxWidth: '80vw'
   },
   media: {
-    height: 140
+    height: 40,
+    width: 40,
+    verticalAlign: 'middle'
+  },
+  nameHolder: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: theme.spacing(2)
+  },
+  name: {
+    paddingLeft: theme.spacing(1)
   }
-}
+}))
 
 const componentsInPage = 5
 
-const SearchQueryResult = withStyles(resultStyle)(
-  ({ imageUrl, name, description, classes }) => (
+const SearchQueryResult = ({ imageUrl, name, description }) => {
+  const classes = useStyles()
+  return (
     <Card className={classes.root}>
       <CardActionArea>
-        <Img
-          className={classes.media}
-          src={imageUrl}
-          unloader={<img src={dummyPackageImg} alt={'No Package Found'} />}
-        />
         <CardContent>
-          <Typography gutterBottom variant='h5' component='h2'>
-            {name}
-          </Typography>
-          <Typography variant='body2' color='textSecondary' component='p'>
+          <div className={classes.nameHolder}>
+            <Img
+              className={classes.media}
+              src={imageUrl}
+              unloader={
+                <img
+                  className={classes.media}
+                  src={dummyPackageImg}
+                  alt={'No Package Found'}
+                />
+              }
+            />
+            <Typography className={classes.name} variant='h5'>
+              {name}
+            </Typography>
+          </div>
+          <Typography
+            variant='body1'
+            color='textSecondary'
+            style={{ whitespace: 'pre-wrap' }}
+            component={'span'}
+          >
             {description}
           </Typography>
         </CardContent>
@@ -53,7 +78,7 @@ const SearchQueryResult = withStyles(resultStyle)(
       </CardActions>
     </Card>
   )
-)
+}
 
 const pkgRegex = {
   required: {
@@ -123,19 +148,19 @@ const parseAndCacheResults = async str => {
       name={pkg.package}
       description={pkg.description.replace(/^ \./gm, '\n')}
       key={i}
-      imageUrl={url + pkg.package}
+      imageUrl={resolve(url, 'assets/packages/' + pkg.package + '.png')}
     />
   ))
 }
 
-const styles = {
+const useStylesSearchResults = makeStyles(theme => ({
   root: {
-    padding: '1rem'
+    padding: theme.spacing(3)
   },
   grid: {
     display: 'inline-grid',
     gridAutoRows: 'min-content',
-    gridGap: '1rem',
+    gridGap: theme.spacing(2),
     alignItems: 'center',
     alignSelf: 'center'
   },
@@ -145,9 +170,9 @@ const styles = {
   progress: {
     justifySelf: 'center'
   }
-}
+}))
 
-const SearchResults = ({ classes }) => {
+const SearchResults = () => {
   const [result, setResult] = useState({ query: '', components: [] })
   const [page, setPage] = useState(1)
   const {
@@ -160,6 +185,8 @@ const SearchResults = ({ classes }) => {
       components: await parseAndCacheResults(searchResult)
     })
   }, [searchResult])
+
+  const classes = useStylesSearchResults()
 
   return (
     <div className={classes.root}>
@@ -196,4 +223,4 @@ if (process.env.node_env === 'development') {
   }
 }
 
-export default withStyles(styles)(SearchResults)
+export default SearchResults
