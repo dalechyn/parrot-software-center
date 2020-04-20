@@ -23,7 +23,7 @@ func aptInject(w webview.WebView) error {
 		return err
 	}
 
-	err = w.Bind("aptInstall", func(packageNames []string) error {
+	err = w.Bind("aptInstall", func (packageNames []string) error {
 		if len(packageNames) == 0 {
 			return errors.New("aptInstall: no packages passed")
 		}
@@ -45,7 +45,7 @@ func aptInject(w webview.WebView) error {
 		return nil
 	})
 
-	err = w.Bind("aptShow", func(packageNames []string) (string, error) {
+	err = w.Bind("aptShow", func (packageNames []string) (string, error) {
 		if len(packageNames) == 0 {
 			return "", errors.New("aptShow: no packages passed")
 		}
@@ -66,6 +66,10 @@ func aptInject(w webview.WebView) error {
 		}
 
 		return string(res), nil
+	})
+
+	err = w.Bind("getUrl", func () string {
+		return fmt.Sprintf("%s:%d/", backendUrl, backendPort)
 	})
 
 	return nil

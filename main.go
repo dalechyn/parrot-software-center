@@ -35,6 +35,8 @@ const (
 	windowWidth  = 920
 	windowHeight = 600
 
+	backendUrl = "http://127.0.0.1"
+	backendPort = 8000
 	reactServePort = 5132
 )
 

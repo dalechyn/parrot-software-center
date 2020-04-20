@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
+import Img from 'react-image'
+import dummyPackageImg from './../../assets/package.png'
 
 import {
   Button,
@@ -17,8 +19,7 @@ import { useLocation } from 'react-router-dom'
 
 const resultStyle = {
   root: {
-    maxWidth: '80vw',
-    background: '#e6ffff'
+    maxWidth: '80vw'
   },
   media: {
     height: 140
@@ -27,30 +28,32 @@ const resultStyle = {
 
 const componentsInPage = 5
 
-const SearchQueryResult = withStyles(resultStyle)(({ name, description, classes }) => (
-  <Card className={classes.root}>
-    <CardActionArea>
-      {/* <CardMedia
-            className={classes.media}
-            image='/static/images/cards/contemplative-reptile.jpg'
-            title='Contemplative Reptile'
-          /> */}
-      <CardContent>
-        <Typography gutterBottom variant='h5' component='h2'>
-          {name}
-        </Typography>
-        <Typography variant='body2' color='textSecondary' component='p'>
-          {description}
-        </Typography>
-      </CardContent>
-    </CardActionArea>
-    <CardActions>
-      <Button size='small' color='primary'>
-        Learn More
-      </Button>
-    </CardActions>
-  </Card>
-))
+const SearchQueryResult = withStyles(resultStyle)(
+  ({ imageUrl, name, description, classes }) => (
+    <Card className={classes.root}>
+      <CardActionArea>
+        <Img
+          className={classes.media}
+          src={imageUrl}
+          unloader={<img src={dummyPackageImg} alt={'No Package Found'} />}
+        />
+        <CardContent>
+          <Typography gutterBottom variant='h5' component='h2'>
+            {name}
+          </Typography>
+          <Typography variant='body2' color='textSecondary' component='p'>
+            {description}
+          </Typography>
+        </CardContent>
+      </CardActionArea>
+      <CardActions>
+        <Button size='small' color='primary'>
+          Learn More
+        </Button>
+      </CardActions>
+    </Card>
+  )
+)
 
 const pkgRegex = {
   required: {
@@ -85,7 +88,7 @@ const pkgRegex = {
   }
 }
 
-const parseResults = str => {
+const parseAndCacheResults = async str => {
   const searchQueryResults = str.split('\n\n')
 
   const parsedPackages = []
@@ -102,6 +105,7 @@ const parseResults = str => {
       console.warn(`required fields are invalid, skipping invalid package`)
       continue
     }
+
     // Filling optional fields
     Object.keys(pkgRegex.required).forEach(key => {
       const match = pkgRegex.required[key].exec(searchQueryResults[i])
@@ -112,11 +116,14 @@ const parseResults = str => {
     parsedPackages.push(el)
   }
 
+  const url = await window.getUrl()
+
   return parsedPackages.map((pkg, i) => (
     <SearchQueryResult
       name={pkg.package}
       description={pkg.description.replace(/^ \./gm, '\n')}
       key={i}
+      imageUrl={url + pkg.package}
     />
   ))
 }
@@ -147,10 +154,10 @@ const SearchResults = ({ classes }) => {
     state: { searchQuery, searchResult }
   } = useLocation()
 
-  useEffect(() => {
+  useEffect(async () => {
     setResult({
       query: searchQuery,
-      components: parseResults(searchResult)
+      components: await parseAndCacheResults(searchResult)
     })
   }, [searchResult])
 
