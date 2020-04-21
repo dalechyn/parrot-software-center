@@ -64,12 +64,14 @@ export const parseAndCacheResults = async str => {
 
   const imageUrl = new URL('assets/packages/', await window.getUrl()).toString()
 
-  return parsedPackages.map((pkg, i) => (
-    <PackageInfo
-      name={pkg.package}
-      description={pkg.description.replace(/^ \./gm, '\n')}
-      key={i}
-      imageUrl={`${imageUrl}${pkg.package}.png`}
-    />
-  ))
+  return parsedPackages.map((pkg, i) => {
+    return (
+      <PackageInfo
+        name={pkg.package}
+        description={pkg.description}
+        key={i}
+        imageUrl={`${imageUrl}${pkg.package}.png`}
+      />
+    )
+  })
 }

@@ -34,11 +34,14 @@ const SearchResults = () => {
     state: { searchQuery, searchResult }
   } = useLocation()
 
-  useEffect(async () => {
-    setResult({
-      query: searchQuery,
-      components: await parseAndCacheResults(searchResult)
-    })
+  useEffect(() => {
+    const f = async () => {
+      setResult({
+        query: searchQuery,
+        components: await parseAndCacheResults(searchResult)
+      })
+    }
+    f()
   }, [searchResult])
 
   const classes = useStyles()
