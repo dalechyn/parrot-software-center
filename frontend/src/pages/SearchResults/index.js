@@ -1,159 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import Img from 'react-image'
-import dummyPackageImg from './../../assets/package.png'
-import { resolve } from 'url'
-
-import {
-  Button,
-  Card,
-  CardActionArea,
-  CardActions,
-  CardContent,
-  CircularProgress,
-  Grid,
-  Typography,
-  makeStyles
-} from '@material-ui/core'
-import { Pagination } from '@material-ui/lab'
 import { useLocation } from 'react-router-dom'
+import { CircularProgress, Grid, makeStyles } from '@material-ui/core'
+import { Pagination } from '@material-ui/lab'
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    maxWidth: '80vw'
-  },
-  media: {
-    height: 40,
-    width: 40,
-    verticalAlign: 'middle'
-  },
-  nameHolder: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: theme.spacing(2)
-  },
-  name: {
-    paddingLeft: theme.spacing(1)
-  }
-}))
+import { parseAndCacheResults } from './fetch'
 
 const componentsInPage = 5
 
-const SearchQueryResult = ({ imageUrl, name, description }) => {
-  const classes = useStyles()
-  return (
-    <Card className={classes.root}>
-      <CardActionArea>
-        <CardContent>
-          <div className={classes.nameHolder}>
-            <Img
-              className={classes.media}
-              src={imageUrl}
-              unloader={
-                <img
-                  className={classes.media}
-                  src={dummyPackageImg}
-                  alt={'No Package Found'}
-                />
-              }
-            />
-            <Typography className={classes.name} variant='h5'>
-              {name}
-            </Typography>
-          </div>
-          <Typography
-            variant='body1'
-            color='textSecondary'
-            style={{ whitespace: 'pre-wrap' }}
-            component={'span'}
-          >
-            {description}
-          </Typography>
-        </CardContent>
-      </CardActionArea>
-      <CardActions>
-        <Button size='small' color='primary'>
-          Learn More
-        </Button>
-      </CardActions>
-    </Card>
-  )
-}
-
-const pkgRegex = {
-  required: {
-    package: /^Package: ([a-z0-9.+-]+)/gm,
-    version: /^Version: ((?<epoch>[0-9]{1,4}:)?(?<upstream>[A-Za-z0-9~.]+)(?:-(?<debian>[A-Za-z0-9~.]+))?)/gm,
-    // eslint-disable-next-line no-control-regex
-    maintainer: /^Maintainer: ((?<name>(?:[\S ]+\S+)) <(?<email>(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)]))>)/gm,
-    description: /^Description: (.*(?:\n \S.*)*)/gm
-  },
-  optional: {
-    section: /^Section: ([a-z]+)/gm,
-    priority: /^Priority: (\S+)/gm,
-    essential: /^Essential: (yes|no)/gm,
-    architecture: /^Architecture: (.*)/gm,
-    origin: /^Origin: ([a-z0-9.+-]+)/gm,
-    bugs: /^Bugs: (?:([a-z]+):\/\/)[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)/gm,
-    homepage: /^Homepage: (?:([a-z]+):\/\/)[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)/gm,
-    tag: /^Tag: ((?: ?[A-Za-z-+:]*(?:,(?:[ \n])?)?)+)/gm,
-    source: /^Source: ([a-zA-Z0-9-+.]+)/gm,
-    depends: /^Depends: ((?:(?:(?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)(?: \| )?)+)/gm,
-    preDepends: /^Pre-Depends: ((?:(?:(?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)(?: \| )?)+)/gm,
-    recommends: /^Recommends: ((?:(?:(?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)(?: \| )?)+)/gm,
-    suggests: /^Suggests: ((?:(?:(?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)(?: \| )?)+)/gm,
-    breaks: /^Breaks: ((?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)/gm,
-    conflicts: /^Conflicts: ((?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)/gm,
-    replaces: /^Replaces: ((?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)/gm,
-    provides: /^Provides: ((?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)/gm,
-    installedSize: /^Installed-Size: (.*)/gm,
-    downloadSize: /^Download-Size: (.*)/gm,
-    aptManualInstalled: /^APT-Manual-Installed: (.*)/gm,
-    aptSources: /^APT-Sources: (https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&\/=]*)(?: (?:\S+ ?)+))/gm
-  }
-}
-
-const parseAndCacheResults = async str => {
-  const searchQueryResults = str.split('\n\n')
-
-  const parsedPackages = []
-  for (let i = 0; i < searchQueryResults.length; i++) {
-    const el = {}
-    // Filling required fields
-    if (
-      !Object.keys(pkgRegex.required).every(key => {
-        const match = pkgRegex.required[key].exec(searchQueryResults[i])
-        if (match) el[key] = match[1]
-        return match
-      })
-    ) {
-      console.warn(`required fields are invalid, skipping invalid package`)
-      continue
-    }
-
-    // Filling optional fields
-    Object.keys(pkgRegex.required).forEach(key => {
-      const match = pkgRegex.required[key].exec(searchQueryResults[i])
-      if (match) el[key] = match[1]
-      return match
-    })
-
-    parsedPackages.push(el)
-  }
-
-  const url = await window.getUrl()
-
-  return parsedPackages.map((pkg, i) => (
-    <SearchQueryResult
-      name={pkg.package}
-      description={pkg.description.replace(/^ \./gm, '\n')}
-      key={i}
-      imageUrl={resolve(url, 'assets/packages/' + pkg.package + '.png')}
-    />
-  ))
-}
-
-const useStylesSearchResults = makeStyles(theme => ({
+const useStyles = makeStyles(theme => ({
   root: {
     padding: theme.spacing(3)
   },
@@ -186,7 +41,7 @@ const SearchResults = () => {
     })
   }, [searchResult])
 
-  const classes = useStylesSearchResults()
+  const classes = useStyles()
 
   return (
     <div className={classes.root}>
