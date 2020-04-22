@@ -10,20 +10,19 @@ const componentsInPage = 5
 
 const useStyles = makeStyles(theme => ({
   root: {
+    display: 'flex',
+    flexFlow: 'column',
     padding: theme.spacing(3)
   },
   grid: {
     display: 'inline-grid',
-    gridAutoRows: 'min-content',
-    gridGap: theme.spacing(2),
-    alignItems: 'center',
-    alignSelf: 'center'
+    gridGap: theme.spacing(2)
   },
   pagination: {
     justifySelf: 'center'
   },
   progress: {
-    justifySelf: 'center'
+    alignSelf: 'center'
   }
 }))
 
