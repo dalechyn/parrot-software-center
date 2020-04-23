@@ -16,7 +16,7 @@ const Header = ({ classes }) => {
   const [searchError, setSearchError] = useState('')
   return (
     <>
-      <AppBar position='static'>
+      <AppBar color='primary' position='static'>
         <Toolbar>
           {/* This should be replaced by logo */}
           <Box className={classes.leftContent}>

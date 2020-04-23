@@ -6,10 +6,11 @@ import {
   createMuiTheme,
   useMediaQuery
 } from '@material-ui/core'
+import { blue } from '@material-ui/core/colors'
 
-import Header from './components/Header'
-import Home from './pages/Home'
-import SearchResults from './pages/SearchResults'
+import { Home, SearchResults, PackageInfo } from './pages'
+
+import { Header } from './components'
 
 const App = () => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
@@ -18,7 +19,11 @@ const App = () => {
     () =>
       createMuiTheme({
         palette: {
+          primary: blue,
           type: prefersDarkMode ? 'dark' : 'light'
+        },
+        typography: {
+          fontFamily: 'Hack'
         }
       }),
     [prefersDarkMode]
@@ -41,6 +46,9 @@ const App = () => {
           </Route>
           <Route exact path='/search'>
             <SearchResults />
+          </Route>
+          <Route exact path='/package'>
+            <PackageInfo />
           </Route>
         </Switch>
       </Router>

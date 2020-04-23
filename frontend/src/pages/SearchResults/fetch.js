@@ -1,4 +1,4 @@
-import PackageInfo from '../../components/PackageInfo'
+import PackagePreview from '../../components/PackagePreview'
 import React from 'react'
 
 const pkgRegex = {
@@ -34,6 +34,15 @@ const pkgRegex = {
   }
 }
 
+const processDescription = str => {
+  const cleared = str.replace(/^ \./gm, '\n').replace(/^ /gm, '')
+  const upperCased = cleared.charAt(0).toUpperCase() + cleared.slice(1)
+  const firstSentenceDotted = upperCased.replace(/\n/, '.\n')
+  const lines = firstSentenceDotted.split('\n')
+  lines[0] = lines[0] + '\n'
+  return lines.join('')
+}
+
 export const parseAndCacheResults = async str => {
   const searchQueryResults = str.split('\n\n')
 
@@ -66,9 +75,11 @@ export const parseAndCacheResults = async str => {
 
   return parsedPackages.map((pkg, i) => {
     return (
-      <PackageInfo
+      <PackagePreview
         name={pkg.package}
-        description={pkg.description}
+        description={processDescription(pkg.description)}
+        version={pkg.version}
+        maintainer={pkg.maintainer}
         key={i}
         imageUrl={`${imageUrl}${pkg.package}.png`}
       />

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useLocation } from 'react-router-dom'
-import { CircularProgress, Grid, makeStyles } from '@material-ui/core'
-import { Pagination } from '@material-ui/lab'
+import { Grid, makeStyles } from '@material-ui/core'
+import { Pagination, Skeleton } from '@material-ui/lab'
 
 import { parseAndCacheResults } from './fetch'
 
@@ -23,6 +23,10 @@ const useStyles = makeStyles(theme => ({
   },
   progress: {
     alignSelf: 'center'
+  },
+  skeleton: {
+    width: '80vw',
+    height: '250px'
   }
 }))
 
@@ -48,28 +52,34 @@ const SearchResults = () => {
   return (
     <div className={classes.root}>
       <h1>Showing results for {result.query}</h1>
-      {result.components.length === 0 ? (
-        <CircularProgress className={classes.progress} />
-      ) : (
-        <Grid
-          container
-          direction='column'
-          justify='space-evenly'
-          alignItems='center'
-          className={classes.grid}
-        >
-          {result.components.slice(page - 1, page - 1 + componentsInPage)}
-          <Pagination
-            className={classes.pagination}
-            count={Math.ceil(result.components.length / componentsInPage)}
-            onChange={(e, n) => {
-              setPage(n)
-            }}
-            variant='outlined'
-            shape='rounded'
-          />
-        </Grid>
-      )}
+      <Grid
+        container
+        direction='column'
+        justify='space-evenly'
+        alignItems='center'
+        className={classes.grid}
+      >
+        {result.components.length === 0 ? (
+          <>
+            <Skeleton className={classes.skeleton} variant='rect' />
+            <Skeleton className={classes.skeleton} variant='rect' />
+            <Skeleton className={classes.skeleton} variant='rect' />
+            <Skeleton className={classes.skeleton} variant='rect' />
+            <Skeleton className={classes.skeleton} variant='rect' />
+          </>
+        ) : (
+          result.components.slice(page - 1, page - 1 + componentsInPage)
+        )}
+        <Pagination
+          className={classes.pagination}
+          count={Math.ceil(result.components.length / componentsInPage)}
+          onChange={(e, n) => {
+            setPage(n)
+          }}
+          variant='outlined'
+          shape='rounded'
+        />
+      </Grid>
     </div>
   )
 }

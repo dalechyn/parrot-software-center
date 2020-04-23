@@ -6,22 +6,23 @@ import {
   CardContent,
   Chip,
   Paper,
-  Typography
+  Typography,
+  makeStyles
 } from '@material-ui/core'
 import { grey, red, orange } from '@material-ui/core/colors'
 import Img from 'react-image'
 import dummyPackageImg from '../../assets/package.png'
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import { useHistory } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import classnames from 'classnames'
-
-const maxDescriptionLength = 200
 
 const cveAPIInfo = {
   api: 'http://cve.circl.lu/api/search/',
   handleResult: json => json
 }
+
+const maxDescriptionLength = 500
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -63,13 +64,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const processDescription = str => {
-  const cleared = str.replace(/^ \./gm, '\n').replace(/^ /gm, '')
-  const upperCased = cleared.charAt(0).toUpperCase() + cleared.slice(1)
-  return upperCased.slice(0, maxDescriptionLength) + '...'
-}
-
-const PackageInfo = ({ imageUrl, name, description }) => {
+const PackagePreview = ({ imageUrl, name, description, ...rest }) => {
   const [cveInfo, setCVEInfo] = useState({})
   const [cveLoaded, setCVELoaded] = useState(false)
 
@@ -102,8 +97,17 @@ const PackageInfo = ({ imageUrl, name, description }) => {
   }, [])
 
   const classes = useStyles()
+  const history = useHistory()
   return (
-    <Card className={classes.root}>
+    <Card
+      onClick={() =>
+        history.push({
+          pathname: '/package',
+          state: { name, description, ...rest }
+        })
+      }
+      className={classes.root}
+    >
       <CardActionArea>
         <CardContent>
           <Paper className={classes.nameHolder} elevation={10}>
@@ -142,7 +146,7 @@ const PackageInfo = ({ imageUrl, name, description }) => {
             component={'p'}
             noWrap
           >
-            {processDescription(description)}
+            {description.slice(0, maxDescriptionLength) + '...'}
           </Typography>
         </CardContent>
       </CardActionArea>
@@ -159,11 +163,11 @@ const PackageInfo = ({ imageUrl, name, description }) => {
 }
 
 if (process.env.node_env === 'development') {
-  PackageInfo.propTypes = {
+  PackagePreview.propTypes = {
     imageUrl: PropTypes.string,
     name: PropTypes.string,
     description: PropTypes.string
   }
 }
 
-export default PackageInfo
+export default PackagePreview
