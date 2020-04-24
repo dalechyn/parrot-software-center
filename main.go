@@ -22,7 +22,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -37,7 +36,7 @@ const (
 
 	backendUrl = "http://127.0.0.1"
 	backendPort = 8000
-	reactServePort = 5132
+	reactServePort = 3000
 )
 
 func init() {
@@ -51,11 +50,11 @@ Then try again`)
 	}
 
 	// Serving React build
-	http.Handle("/", http.FileServer(http.Dir("frontend/build")))
+	//http.Handle("/", http.FileServer(http.Dir("frontend/build")))
 	logrus.Debug("Starting server on ", reactServePort)
 
 	go func() {
-		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", reactServePort), nil))
+		//log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", reactServePort), nil))
 	}()
 }
 
