@@ -1,21 +1,8 @@
 import React from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import {
-  Button,
-  Card,
-  CardActionArea,
-  CardActions,
-  CardContent,
-  Container,
-  Chip,
-  Divider,
-  Grid,
-  Paper,
-  Typography,
-  makeStyles
-} from '@material-ui/core'
+import { Button, Paper, Typography, makeStyles } from '@material-ui/core'
 import { ArrowBack } from '@material-ui/icons'
-import { green, blue } from '@material-ui/core/colors'
+import { blue } from '@material-ui/core/colors'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -24,8 +11,8 @@ const useStyles = makeStyles(theme => ({
   },
   nameContainer: {
     marginTop: theme.spacing(2),
-    backgroundColor: blue[300],
-    width: 'min-content',
+    backgroundColor: blue[500],
+    width: 'max-content',
     padding: theme.spacing(2),
     borderRadius: '25px'
   },
@@ -59,7 +46,7 @@ const PackageInfo = () => {
         Go Back
       </Button>
       <Paper variant='outlined' className={classes.nameContainer}>
-        <Typography className={classes.hack} variant='h3'>
+        <Typography className={classes.hack} variant='h5'>
           {name}
         </Typography>
       </Paper>

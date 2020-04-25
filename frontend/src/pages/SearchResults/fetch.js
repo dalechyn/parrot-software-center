@@ -73,14 +73,14 @@ export const parseAndCacheResults = async str => {
 
   const imageUrl = new URL('assets/packages/', await window.getUrl()).toString()
 
-  return parsedPackages.map((pkg, i) => {
+  return parsedPackages.map(pkg => {
     return (
       <PackagePreview
         name={pkg.package}
         description={processDescription(pkg.description)}
         version={pkg.version}
         maintainer={pkg.maintainer}
-        key={i}
+        key={pkg.package}
         imageUrl={`${imageUrl}${pkg.package}.png`}
       />
     )

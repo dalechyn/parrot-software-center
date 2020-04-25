@@ -43,7 +43,8 @@ const useStyles = makeStyles(theme => ({
   },
   cve: {
     display: 'inline-grid',
-    gridTemplateColumns: 'auto auto auto',
+    gridTemplateColumns: 'auto auto auto auto',
+    alignItems: 'center',
     gridGap: theme.spacing(1),
     marginLeft: 'auto'
   },
@@ -65,6 +66,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const PackagePreview = ({ imageUrl, name, description, ...rest }) => {
+  const [installed, setInstalled] = useState(false)
   const [cveInfo, setCVEInfo] = useState({})
   const [cveLoaded, setCVELoaded] = useState(false)
 
@@ -92,6 +94,13 @@ const PackagePreview = ({ imageUrl, name, description, ...rest }) => {
       setCVEInfo(json)
       setCVELoaded(true)
     }) */
+
+    const f = async () => {
+      setInstalled(await window.dpkgQuery(name))
+    }
+
+    f()
+
     setCVEInfo(cveAPIInfo.handleResult({ critical: 3, important: 41, low: 412 }))
     setCVELoaded(true)
   }, [])
@@ -127,6 +136,7 @@ const PackagePreview = ({ imageUrl, name, description, ...rest }) => {
             </Typography>
             {cveLoaded && (
               <div className={classes.cve}>
+                <Chip label={'This month CVEs:'} />
                 <Chip
                   className={classnames(classes.cveCritical, classes.chipText)}
                   label={`Critical: ${cveInfo.critical}`}
@@ -151,12 +161,15 @@ const PackagePreview = ({ imageUrl, name, description, ...rest }) => {
         </CardContent>
       </CardActionArea>
       <CardActions className={classes.buttons}>
-        <Button variant='outlined' size='medium' color='primary'>
-          Install
-        </Button>
-        <Button variant='outlined' size='medium' color='secondary'>
-          Uninstall
-        </Button>
+        {installed ? (
+          <Button variant='outlined' size='medium' color='secondary'>
+            Uninstall
+          </Button>
+        ) : (
+          <Button variant='outlined' size='medium' color='primary'>
+            Install
+          </Button>
+        )}
       </CardActions>
     </Card>
   )

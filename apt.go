@@ -59,6 +59,17 @@ func aptInject(w webview.WebView) error {
 		return string(res), nil
 	})
 
+	err = w.Bind("dpkgQuery", func (packageName string) bool {
+		args := []string{"-W", packageName}
+		cmd := exec.Command("dpkg-query", args...)
+
+		res, err := cmd.Output()
+		if len(res) == 0|| err != nil {
+			return false
+		}
+		return true
+	})
+
 	err = w.Bind("aptAutoComplete", func (prefix string) string {
 		args := fmt.Sprintf("apt-cache pkgnames %s | sort -n | head -5", prefix)
 		cmd := exec.Command("bash", "-c", args)
