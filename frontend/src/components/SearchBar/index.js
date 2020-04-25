@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { Paper, Input, IconButton, withStyles } from '@material-ui/core'
-import { Clear, Search } from '@material-ui/icons'
-import classNames from 'classnames'
+import { debounce, CircularProgress, TextField } from '@material-ui/core'
+
+import { Autocomplete } from '@material-ui/lab'
+import { grey } from '@material-ui/core/colors'
 import PropTypes from 'prop-types'
 
 import { withTimeout } from '../../utils'
@@ -11,68 +12,68 @@ const requestTimeout = 5000
 
 const styles = {
   root: {
-    height: 48,
-    display: 'flex',
-    justifyContent: 'space-between'
-  },
-  iconButton: {
-    opacity: 0.54,
-    transform: 'scale(1, 1)',
-    transition: 'transform 200ms cubic-bezier(0.4, 0.0, 0.2, 1)'
-  },
-  iconButtonHidden: {
-    transform: 'scale(0, 0)',
-    '& > $icon': {
-      opacity: 0
-    }
-  },
-  iconButtonDisabled: {
-    opacity: 0.38
-  },
-  searchIconButton: {
-    marginRight: -48
-  },
-  icon: {
-    opacity: 0.85,
-    transition: 'opacity 200ms cubic-bezier(0.4, 0.0, 0.2, 1)'
-  },
-  input: {
-    width: '100%'
-  },
-  searchContainer: {
-    margin: 'auto 16px',
-    width: 'calc(100% - 48px - 32px)' // 48px button + 32px margin
+    width: 300
   }
 }
 
-const SearchBar = ({ classes, setError }) => {
+const SearchBar = ({ setError }) => {
+  const [open, setOpen] = React.useState(false)
+  const [loading, setLoading] = useState(false)
+  const [options, setOptions] = React.useState([])
   const [value, setValue] = useState('')
   const history = useHistory()
+
+  useEffect(() => {
+    let active = true
+
+    const fetchCompletion = async name => {
+      const response = await window.aptAutoComplete(name)
+      setLoading(false)
+
+      if (active) {
+        const fetchedOptions = response.split('\n')
+        fetchedOptions.pop()
+        setOptions(fetchedOptions)
+      }
+    }
+    if (value.length > 2) {
+      setLoading(true)
+      fetchCompletion(value)
+    } else setOptions([])
+
+    return () => {
+      active = false
+    }
+  }, [value])
+
   const handleBlur = () => {
     if (value.trim().length === 0) {
       setValue('')
     }
   }
-
-  const handleInput = e => setValue(e.target.value)
-
+  const debouncedSetValue = debounce(setValue, 300)
+  const handleInput = (e, newValue) => debouncedSetValue(newValue)
+  const handleChange = (e, value, reason) => {
+    if (reason === 'select-option') setValue(value)
+  }
   const handleCancel = () => {
     setValue('')
   }
-
   const handleRequestSearch = () => {
-    withTimeout(requestTimeout, window.aptShow(value.split(' '))).then(
-      res => {
-        history.push({
-          pathname: '/search',
-          state: { searchQuery: value, searchResult: res }
-        })
-        setError()
-      },
-      err => setError(err)
-    )
+    withTimeout(
+      requestTimeout,
+      window.aptSearch(value).then(
+        res => {
+          history.push({
+            pathname: '/search',
+            state: { searchQuery: value, searchResult: res }
+          })
+          setError()
+        },
+        err => setError(err)
+      )
+    ).catch(err => setError(err))
   }
-
   const handleKeyUp = e => {
     if (e.charCode === 13 || e.key === 'Enter') {
       handleRequestSearch()
@@ -82,53 +83,47 @@ const SearchBar = ({ classes, setError }) => {
   }
 
   return (
-    <Paper className={classes.root}>
-      <div className={classes.searchContainer}>
-        <Input
-          onBlur={handleBlur}
-          value={value}
-          onChange={handleInput}
+    <Autocomplete
+      id='search-bar'
+      style={styles.root}
+      freeSolo
+      open={open}
+      onOpen={() => setOpen(true)}
+      onClose={() => setOpen(false)}
+      options={options}
+      loading={loading}
+      onChange={handleChange}
+      onInputChange={handleInput}
+      renderInput={params => (
+        <TextField
+          {...params}
           onKeyUp={handleKeyUp}
-          fullWidth
-          className={classes.input}
-          disableUnderline
+          onBlur={handleBlur}
+          element={TextField}
+          label='Search a package'
+          variant='outlined'
+          size='small'
+          color='secondary'
+          inputProps={{ ...params.inputProps, autoComplete: 'new-password' }}
+          InputProps={{
+            ...params.InputProps,
+            endAdornment: (
+              <>
+                {loading && <CircularProgress color='inherit' size={20} />}
+                {params.InputProps.endAdornment}
+              </>
+            )
+          }}
         />
-      </div>
-      <IconButton
-        onClick={handleRequestSearch}
-        classes={{
-          root: classNames(classes.iconButton, classes.searchIconButton, {
-            [classes.iconButtonHidden]: value !== ''
-          }),
-          disabled: classes.iconButtonDisabled
-        }}
-      >
-        {React.cloneElement(<Search />, {
-          classes: { root: classes.icon }
-        })}
-      </IconButton>
-      <IconButton
-        onClick={handleCancel}
-        classes={{
-          root: classNames(classes.iconButton, {
-            [classes.iconButtonHidden]: value === ''
-          }),
-          disabled: classes.iconButtonDisabled
-        }}
-      >
-        {React.cloneElement(<Clear />, {
-          classes: { root: classes.icon }
-        })}
-      </IconButton>
-    </Paper>
+      )}
+    />
   )
 }
 
 if (process.env.node_env === 'development') {
   SearchBar.propTypes = {
-    classes: PropTypes.object,
     setError: PropTypes.func
   }
 }
 
-export default withStyles(styles)(SearchBar)
+export default SearchBar

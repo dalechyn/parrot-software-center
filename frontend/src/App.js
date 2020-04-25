@@ -20,6 +20,9 @@ const App = () => {
       createMuiTheme({
         palette: {
           primary: blue,
+          secondary: {
+            main: blue[50]
+          },
           type: prefersDarkMode ? 'dark' : 'light'
         },
         typography: {
