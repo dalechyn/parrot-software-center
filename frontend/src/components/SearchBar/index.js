@@ -16,30 +16,34 @@ const styles = {
   }
 }
 
+const debouncedAutoComplete = debounce(window.aptAutoComplete, 300)
+
 const SearchBar = ({ setError }) => {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [options, setOptions] = React.useState([])
+  const [options, setOptions] = useState([])
   const [value, setValue] = useState('')
   const history = useHistory()
 
   useEffect(() => {
     let active = true
 
-    const fetchCompletion = async name => {
-      const response = await window.aptAutoComplete(name)
-      setLoading(false)
-
-      if (active) {
-        const fetchedOptions = response.split('\n')
-        fetchedOptions.pop()
-        setOptions(fetchedOptions)
+    debounce(() => {
+      const fetchCompletion = async name => {
+        if (active) {
+          const response = await window.aptAutoComplete(name)
+          setLoading(false)
+          const fetchedOptions = response.split('\n')
+          fetchedOptions.pop()
+          setOptions(fetchedOptions)
+        }
       }
-    }
-    if (value.length > 2) {
-      setLoading(true)
-      fetchCompletion(value)
-    } else setOptions([])
+
+      if (value.length > 2) {
+        setLoading(true)
+        fetchCompletion(value)
+      } else setOptions([])
+    }, 300)()
 
     return () => {
       active = false
@@ -51,8 +55,9 @@ const SearchBar = ({ setError }) => {
       setValue('')
     }
   }
-  const debouncedSetValue = debounce(setValue, 300)
-  const handleInput = (e, newValue) => debouncedSetValue(newValue)
+  const handleInput = (e, newValue) => {
+    setValue(newValue)
+  }
   const handleChange = (e, value, reason) => {
     if (reason === 'select-option') setValue(value)
   }
@@ -60,6 +65,7 @@ const SearchBar = ({ setError }) => {
     setValue('')
   }
   const handleRequestSearch = () => {
+    if (value === '') return
     withTimeout(
       requestTimeout,
       window.aptSearch(value).then(
