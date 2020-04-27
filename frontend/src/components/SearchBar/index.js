@@ -3,11 +3,10 @@ import { useHistory } from 'react-router-dom'
 import { debounce, CircularProgress, TextField } from '@material-ui/core'
 
 import { Autocomplete } from '@material-ui/lab'
-import { grey } from '@material-ui/core/colors'
 import { Search } from '@material-ui/icons'
 import PropTypes from 'prop-types'
 
-import { withTimeout } from '../../utils'
+import { delayPromise } from './utils'
 
 const requestTimeout = 5000
 
@@ -16,8 +15,6 @@ const styles = {
     width: 300
   }
 }
-
-const debouncedAutoComplete = debounce(window.aptAutoComplete, 300)
 
 const SearchBar = ({ setError }) => {
   const [open, setOpen] = useState(false)
@@ -34,9 +31,7 @@ const SearchBar = ({ setError }) => {
         if (active) {
           const response = await window.aptAutoComplete(name)
           setLoading(false)
-          const fetchedOptions = response.split('\n')
-          fetchedOptions.pop()
-          setOptions(fetchedOptions)
+          setOptions(response)
         }
       }
 
@@ -65,21 +60,26 @@ const SearchBar = ({ setError }) => {
   const handleCancel = () => {
     setValue('')
   }
-  const handleRequestSearch = () => {
+  const handleRequestSearch = async () => {
     if (value === '') return
-    withTimeout(
-      requestTimeout,
-      window.aptSearch(value).then(
-        res => {
-          history.push({
-            pathname: '/search',
-            state: { searchQuery: value, searchResult: res }
-          })
-          setError()
-        },
-        err => setError(err)
-      )
-    ).catch(err => setError(err))
+    try {
+      await Promise.race([
+        delayPromise(requestTimeout),
+        (async () => {
+          try {
+            history.push({
+              pathname: '/search',
+              state: { searchQuery: value }
+            })
+            setError()
+          } catch (e) {
+            setError(e)
+          }
+        })()
+      ])
+    } catch (e) {
+      setError(e)
+    }
   }
   const handleKeyUp = e => {
     if (e.charCode === 13 || e.key === 'Enter') {

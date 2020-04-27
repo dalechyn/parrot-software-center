@@ -103,7 +103,7 @@ const PackagePreview = ({ imageUrl, name, description, ...rest }) => {
 
     setCVEInfo(cveAPIInfo.handleResult({ critical: 3, important: 41, low: 412 }))
     setCVELoaded(true)
-  }, [])
+  }, [name])
 
   const classes = useStyles()
   const history = useHistory()

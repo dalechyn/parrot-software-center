@@ -30,7 +30,7 @@ const pkgRegex = {
     installedSize: /^Installed-Size: (.*)/gm,
     downloadSize: /^Download-Size: (.*)/gm,
     aptManualInstalled: /^APT-Manual-Installed: (.*)/gm,
-    aptSources: /^APT-Sources: (https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&\/=]*)(?: (?:\S+ ?)+))/gm
+    aptSources: /^APT-Sources: (https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)(?: (?:\S+ ?)+))/gm
   }
 }
 
@@ -43,9 +43,7 @@ const processDescription = str => {
   return lines.join('')
 }
 
-export const parseAndCacheResults = async str => {
-  const searchQueryResults = str.split('\n\n')
-
+export const formPackagePreviews = async searchQueryResults => {
   const parsedPackages = []
   for (let i = 0; i < searchQueryResults.length; i++) {
     const el = {}

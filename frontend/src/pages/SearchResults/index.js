@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom'
 import { Grid, makeStyles } from '@material-ui/core'
 import { Pagination, Skeleton } from '@material-ui/lab'
 
-import { parseAndCacheResults } from './fetch'
+import { formPackagePreviews } from './fetch'
 
 const componentsInPage = 5
 
@@ -31,27 +31,69 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const SearchResults = () => {
-  const [result, setResult] = useState({ query: '', components: [] })
+  const [resultsNames, setResultsNames] = useState([])
+  const [packagePreviews, setPackagePreviews] = useState([])
   const [page, setPage] = useState(1)
   const {
-    state: { searchQuery, searchResult }
+    state: { searchQuery }
   } = useLocation()
 
+  // Initial package names fetching effect
   useEffect(() => {
+    let active = true
+
     const f = async () => {
-      setResult({
-        query: searchQuery,
-        components: await parseAndCacheResults(searchResult)
-      })
+      try {
+        const res = await window.aptSearch(searchQuery)
+        if (active) setResultsNames(res)
+      } catch (e) {
+        // I will replace it with redux action later
+        console.log(e)
+      }
+    }
+
+    f()
+    return () => {
+      active = false
+    }
+  }, [searchQuery])
+
+  // Effect that sets package previews depending on selected page
+  useEffect(() => {
+    let active = true
+    const f = async () => {
+      try {
+        const rawPackageData = await window.aptShow(
+          resultsNames.slice((page - 1) * componentsInPage, page * componentsInPage)
+        )
+        if (!active) return
+        const components = await formPackagePreviews(rawPackageData)
+
+        if (!active) return
+        setPackagePreviews(components)
+      } catch (e) {
+        // I will replace it with redux action later
+        console.log(e)
+      }
     }
     f()
-  }, [searchResult])
+    return () => {
+      active = false
+    }
+  }, [resultsNames, page])
+
+  const pageChange = (e, n) => {
+    if (n === page) return
+
+    setPage(n)
+    setPackagePreviews([])
+  }
 
   const classes = useStyles()
 
   return (
     <div className={classes.root}>
-      <h1>Showing results for {result.query}</h1>
+      <h1>Showing results for {searchQuery}</h1>
       <Grid
         container
         direction='column'
@@ -59,7 +101,15 @@ const SearchResults = () => {
         alignItems='center'
         className={classes.grid}
       >
-        {result.components.length === 0 ? (
+        <Pagination
+          className={classes.pagination}
+          count={Math.ceil(resultsNames.length / componentsInPage)}
+          onChange={pageChange}
+          page={page}
+          variant='outlined'
+          shape='rounded'
+        />
+        {packagePreviews.length === 0 ? (
           <>
             <Skeleton className={classes.skeleton} variant='rect' />
             <Skeleton className={classes.skeleton} variant='rect' />
@@ -68,14 +118,13 @@ const SearchResults = () => {
             <Skeleton className={classes.skeleton} variant='rect' />
           </>
         ) : (
-          result.components.slice(page - 1, page - 1 + componentsInPage)
+          packagePreviews
         )}
         <Pagination
           className={classes.pagination}
-          count={Math.ceil(result.components.length / componentsInPage)}
-          onChange={(e, n) => {
-            setPage(n)
-          }}
+          count={Math.ceil(resultsNames.length / componentsInPage)}
+          onChange={pageChange}
+          page={page}
           variant='outlined'
           shape='rounded'
         />

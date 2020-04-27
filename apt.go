@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/zserge/webview"
 	"os/exec"
+	"strings"
 )
 
 func aptInject(w webview.WebView) error {
@@ -44,19 +45,27 @@ func aptInject(w webview.WebView) error {
 		return nil
 	})
 
-	err = w.Bind("aptSearch", func (packageName string) (string, error) {
-		if packageName == "" {
-			return "", errors.New("aptShow: no packages passed")
+	err = w.Bind("aptShow", func (packageNames []string) ([]string, error) {
+
+		if len(packageNames) == 0 {
+			return []string{}, errors.New("aptShow: no packages passed")
 		}
 
-		args := []string{"show", "2>/dev/null", packageName}
+		args := []string{"show"}
+		for _, pkg := range packageNames {
+			if pkg == "" {
+				return []string{}, fmt.Errorf("aptShow: invalid package with empty name")
+			}
+			args = append(args, pkg)
+		}
+
 		cmd := exec.Command("apt-cache", args...)
 		res, err := cmd.CombinedOutput()
 		if err != nil {
-			return "", fmt.Errorf("Can't find package %s", packageName)
+			return []string{}, err
 		}
 
-		return string(res), nil
+		return strings.Split(string(res), "\n\n"), nil
 	})
 
 	err = w.Bind("dpkgQuery", func (packageName string) bool {
@@ -70,12 +79,22 @@ func aptInject(w webview.WebView) error {
 		return true
 	})
 
-	err = w.Bind("aptAutoComplete", func (prefix string) string {
+	err = w.Bind("aptAutoComplete", func (prefix string) []string {
 		args := fmt.Sprintf("apt-cache pkgnames %s | sort -n | head -5", prefix)
 		cmd := exec.Command("bash", "-c", args)
 
 		res, _ := cmd.CombinedOutput()
-		return string(res)
+		splitted := strings.Split(string(res), "\n")
+		return splitted[:len(splitted) - 1]
+	})
+
+	err = w.Bind("aptSearch", func (prefix string) []string {
+		args := fmt.Sprintf("apt-cache pkgnames %s | sort -n", prefix)
+		cmd := exec.Command("bash", "-c", args)
+
+		res, _ := cmd.CombinedOutput()
+		splitted := strings.Split(string(res), "\n")
+		return splitted[:len(splitted) - 1]
 	})
 
 	err = w.Bind("getUrl", func () string {
