@@ -51,17 +51,17 @@ const PackageInfo = () => {
         </Typography>
       </Paper>
       <Paper className={classes.grid}>
-        <Typography variant='h5'>Version:</Typography>
+        <Typography variant='h6'>Version:</Typography>
         <Paper variant='outlined' className={classes.contentColumn}>
-          <Typography variant='h5'>{version}</Typography>
+          <Typography variant='body1'>{version}</Typography>
         </Paper>
-        <Typography variant='h5'>Description:</Typography>
+        <Typography variant='h6'>Maintainer:</Typography>
         <Paper variant='outlined' className={classes.contentColumn}>
-          <Typography variant='h5'>{description}</Typography>
+          <Typography variant='body1'>{maintainer}</Typography>
         </Paper>
-        <Typography variant='h5'>Maintainer:</Typography>
+        <Typography variant='h6'>Description:</Typography>
         <Paper variant='outlined' className={classes.contentColumn}>
-          <Typography variant='h5'>{maintainer}</Typography>
+          <Typography variant='body1'>{description}</Typography>
         </Paper>
       </Paper>
     </Paper>

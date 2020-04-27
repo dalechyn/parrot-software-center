@@ -4,6 +4,7 @@ import { debounce, CircularProgress, TextField } from '@material-ui/core'
 
 import { Autocomplete } from '@material-ui/lab'
 import { grey } from '@material-ui/core/colors'
+import { Search } from '@material-ui/icons'
 import PropTypes from 'prop-types'
 
 import { withTimeout } from '../../utils'
@@ -113,6 +114,7 @@ const SearchBar = ({ setError }) => {
           inputProps={{ ...params.inputProps, autoComplete: 'new-password' }}
           InputProps={{
             ...params.InputProps,
+            startAdornment: <Search />,
             endAdornment: (
               <>
                 {loading && <CircularProgress color='inherit' size={20} />}
