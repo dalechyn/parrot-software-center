@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import {
   AppBar,
@@ -38,10 +39,9 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const Header = () => {
+const Header = ({ alert }) => {
   const classes = useStyles()
   const [drawerOpen, setDrawer] = useState(false)
-  const [searchError, setSearchError] = useState('')
 
   const handleDrawerOpen = () => setDrawer(true)
   const handleDrawerClose = () => setDrawer(false)
@@ -62,7 +62,7 @@ const Header = () => {
           <Box className={classes.leftContent}>
             <Typography variant='h6'>ParrotOS Software Center</Typography>
           </Box>
-          <SearchBar setError={setSearchError} />
+          <SearchBar />
         </Toolbar>
         <Divider />
       </AppBar>
@@ -82,19 +82,18 @@ const Header = () => {
       </Drawer>
       {/* if the error came from GoLang, it is not a JavaScript error object and doesn`t
       have message prop. I will open an issue on WebView about that */}
-      {searchError && (
-        <Alert severity='error'>
-          {searchError.message ? searchError.message : searchError}
-        </Alert>
-      )}
+      {alert && <Alert severity='error'>{alert}</Alert>}
     </>
   )
 }
 
+const mapStateToProps = ({ alert }) => ({ alert })
+
 if (process.env.node_env === 'development') {
   Header.propTypes = {
-    classes: PropTypes.object
+    classes: PropTypes.object,
+    alert: PropTypes.object
   }
 }
 
-export default Header
+export default connect(mapStateToProps)(Header)

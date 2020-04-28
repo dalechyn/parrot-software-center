@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react'
+import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { useLocation } from 'react-router-dom'
 import { Grid, makeStyles } from '@material-ui/core'
 import { Pagination, Skeleton } from '@material-ui/lab'
 
 import { formPackagePreviews } from './fetch'
+import { bindActionCreators } from 'redux'
+import { alertActions } from '../../actions'
 
 const componentsInPage = 5
 
@@ -30,7 +33,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const SearchResults = () => {
+const SearchResults = ({ setAlert }) => {
   const [resultsNames, setResultsNames] = useState([])
   const [packagePreviews, setPackagePreviews] = useState([])
   const [page, setPage] = useState(1)
@@ -41,14 +44,12 @@ const SearchResults = () => {
   // Initial package names fetching effect
   useEffect(() => {
     let active = true
-
     const f = async () => {
       try {
         const res = await window.aptSearch(searchQuery)
         if (active) setResultsNames(res)
       } catch (e) {
-        // I will replace it with redux action later
-        console.log(e)
+        setAlert(e)
       }
     }
 
@@ -72,10 +73,10 @@ const SearchResults = () => {
         if (!active) return
         setPackagePreviews(components)
       } catch (e) {
-        // I will replace it with redux action later
-        console.log(e)
+        setAlert(e)
       }
     }
+
     f()
     return () => {
       active = false
@@ -135,8 +136,17 @@ const SearchResults = () => {
 
 if (process.env.node_env === 'development') {
   SearchResults.propTypes = {
-    classes: PropTypes.object
+    classes: PropTypes.object,
+    setAlert: PropTypes.func
   }
 }
 
-export default SearchResults
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(
+    {
+      setAlert: alertActions.set
+    },
+    dispatch
+  )
+
+export default connect(null, mapDispatchToProps)(SearchResults)

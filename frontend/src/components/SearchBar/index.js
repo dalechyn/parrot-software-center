@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { bindActionCreators } from 'redux'
+import { connect } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { debounce, CircularProgress, TextField } from '@material-ui/core'
 
@@ -6,6 +8,7 @@ import { Autocomplete } from '@material-ui/lab'
 import { Search } from '@material-ui/icons'
 import PropTypes from 'prop-types'
 
+import { alertActions } from '../../actions'
 import { delayPromise } from './utils'
 
 const requestTimeout = 5000
@@ -16,7 +19,7 @@ const styles = {
   }
 }
 
-const SearchBar = ({ setError }) => {
+const SearchBar = ({ setAlert, clearAlert }) => {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState([])
@@ -47,9 +50,7 @@ const SearchBar = ({ setError }) => {
   }, [value])
 
   const handleBlur = () => {
-    if (value.trim().length === 0) {
-      setValue('')
-    }
+    if (value.trim().length === 0) setValue('')
   }
   const handleInput = (e, newValue) => {
     setValue(newValue)
@@ -62,28 +63,25 @@ const SearchBar = ({ setError }) => {
   }
   const handleRequestSearch = async () => {
     if (value === '') return
+    clearAlert()
     try {
       await Promise.race([
         delayPromise(requestTimeout),
         (async () => {
-          try {
-            history.push({
-              pathname: '/search',
-              state: { searchQuery: value }
-            })
-            setError()
-          } catch (e) {
-            setError(e)
-          }
+          history.push({
+            pathname: '/search',
+            state: { searchQuery: value }
+          })
+          clearAlert()
         })()
       ])
     } catch (e) {
-      setError(e)
+      setAlert(e)
     }
   }
-  const handleKeyUp = e => {
+  const handleKeyUp = async e => {
     if (e.charCode === 13 || e.key === 'Enter') {
-      handleRequestSearch()
+      await handleRequestSearch()
     } else if (e.charCode === 27 || e.key === 'Escape') {
       handleCancel()
     }
@@ -130,8 +128,18 @@ const SearchBar = ({ setError }) => {
 
 if (process.env.node_env === 'development') {
   SearchBar.propTypes = {
-    setError: PropTypes.func
+    clearAlert: PropTypes.func,
+    setAlert: PropTypes.func
   }
 }
 
-export default SearchBar
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(
+    {
+      clearAlert: alertActions.clear,
+      setAlert: alertActions.set
+    },
+    dispatch
+  )
+
+export default connect(null, mapDispatchToProps)(SearchBar)

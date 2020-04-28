@@ -88,13 +88,16 @@ func aptInject(w webview.WebView) error {
 		return splitted[:len(splitted) - 1]
 	})
 
-	err = w.Bind("aptSearch", func (prefix string) []string {
+	err = w.Bind("aptSearch", func (prefix string) ([]string, error) {
 		args := fmt.Sprintf("apt-cache pkgnames %s | sort -n", prefix)
 		cmd := exec.Command("bash", "-c", args)
 
 		res, _ := cmd.CombinedOutput()
+		if len(res) == 0 {
+			return []string{}, fmt.Errorf("Package %s not found", prefix)
+		}
 		splitted := strings.Split(string(res), "\n")
-		return splitted[:len(splitted) - 1]
+		return splitted[:len(splitted) - 1], nil
 	})
 
 	err = w.Bind("getUrl", func () string {
