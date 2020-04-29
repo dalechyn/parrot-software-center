@@ -1,5 +1,6 @@
 /*
- * Copyright 2019 Lorenzo "Palinuro" Faletra <palinuro@parrotsec.org>
+ * Copyright 2019 Lorenzo "Palinuro" Faletra <palinuro@parrotsec.org>,
+ * Vladyslav "h0tw4t3r" Dalechyn <h0tw4t3r@parrotsec.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,25 +22,37 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/sirupsen/logrus"
+	flag "github.com/spf13/pflag"
 	"github.com/zserge/webview"
 )
 
 const (
 	windowWidth  = 920
 	windowHeight = 600
+)
 
-	backendUrl = "http://127.0.0.1"
-	backendPort = 8000
-	reactServePort = 3000
+var (
+	API string
+	reactServePort int
 )
 
 func init() {
+	debug := flag.BoolP("debug", "v", false, "debug")
+
+	flag.StringVar(&API, "api", "http://127.0.0.1:8000/", "api endpoint")
+	flag.IntVar(&reactServePort, "reactPort", 3000, "react serve port")
+
+	flag.Parse()
+
+	if *debug {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
+
 	if _, err := os.Stat("frontend/build/index.html"); os.IsNotExist(err) {
 		logrus.Fatal(`Nothing to serve! Probably you didn't build react frontend.
 cd frontend &&
@@ -73,8 +86,7 @@ func main() {
 	signal.Notify(signalChannel, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		sig := <-signalChannel
-		log.Printf("Exit by signal: %s", sig)
-		os.Exit(1)
+		logrus.Fatal("Exit by signal: %s", sig)
 	}()
 
 	w.Run()

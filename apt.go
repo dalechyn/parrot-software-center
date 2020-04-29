@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/zserge/webview"
 	"os/exec"
 	"strings"
@@ -12,6 +13,7 @@ func aptInject(w webview.WebView) error {
 	var err error
 
 	err = w.Bind("aptCheckForUpdates", func () (string, error) {
+		logrus.Debug("aptCheckForUpdates called")
 		cmd := exec.Command("apt-get", "update", "-q")
 		res, err := cmd.CombinedOutput()
 		if err != nil {
@@ -24,6 +26,7 @@ func aptInject(w webview.WebView) error {
 	}
 
 	err = w.Bind("aptInstall", func (packageNames []string) error {
+		logrus.Debugf("aptInstall called: %s", strings.Join(packageNames, ", "))
 		if len(packageNames) == 0 {
 			return errors.New("aptInstall: no packages passed")
 		}
@@ -45,18 +48,17 @@ func aptInject(w webview.WebView) error {
 		return nil
 	})
 
-	err = w.Bind("aptShow", func (packageNames []string) ([]string, error) {
-
+	err = w.Bind("aptSearch", func (packageNames []string) ([]string, error) {
+		logrus.Debugf("aptSearch called: %s", strings.Join(packageNames, ", "))
 		if len(packageNames) == 0 {
-			return []string{}, errors.New("aptShow: no packages passed")
+			return []string{}, errors.New("aptSearch: no packages passed")
 		}
 
 		args := []string{"show"}
-		for _, pkg := range packageNames {
-			if pkg == "" {
-				return []string{}, fmt.Errorf("aptShow: invalid package with empty name")
+		for _, name := range packageNames {
+			if name != "" {
+				args = append(args, name)
 			}
-			args = append(args, pkg)
 		}
 
 		cmd := exec.Command("apt-cache", args...)
@@ -69,6 +71,7 @@ func aptInject(w webview.WebView) error {
 	})
 
 	err = w.Bind("dpkgQuery", func (packageName string) bool {
+		logrus.Debugf("dpkgQuery called: %s", packageName)
 		args := []string{"-W", packageName}
 		cmd := exec.Command("dpkg-query", args...)
 
@@ -80,7 +83,10 @@ func aptInject(w webview.WebView) error {
 	})
 
 	err = w.Bind("aptAutoComplete", func (prefix string) []string {
-		args := fmt.Sprintf("apt-cache pkgnames %s | sort -n | head -5", prefix)
+		logrus.Debugf("aptAutoComplete called: %s", prefix)
+		args := fmt.Sprintf("apt-cache search %s --names-only | egrep -o '^([a-z0-9.-]*)' | " +
+			"awk '{print length\"\\t\"$0}' | sort -n | cut -f2- | head -5",
+			prefix)
 		cmd := exec.Command("bash", "-c", args)
 
 		res, _ := cmd.CombinedOutput()
@@ -88,20 +94,21 @@ func aptInject(w webview.WebView) error {
 		return splitted[:len(splitted) - 1]
 	})
 
-	err = w.Bind("aptSearch", func (prefix string) ([]string, error) {
-		args := fmt.Sprintf("apt-cache pkgnames %s | sort -n", prefix)
+	err = w.Bind("aptSearchPackageNames", func (prefix string) ([]string, error) {
+		logrus.Debugf("aptSearchPackageNames called: %s", prefix)
+		args := fmt.Sprintf("apt-cache search %s --names-only | egrep -o '^([a-z0-9.-]*)'", prefix)
 		cmd := exec.Command("bash", "-c", args)
 
 		res, _ := cmd.CombinedOutput()
 		if len(res) == 0 {
-			return []string{}, fmt.Errorf("Package %s not found", prefix)
+			return []string{}, fmt.Errorf("aptSearchPackageNames: Package %s not found", prefix)
 		}
 		splitted := strings.Split(string(res), "\n")
 		return splitted[:len(splitted) - 1], nil
 	})
 
 	err = w.Bind("getUrl", func () string {
-		return fmt.Sprintf("%s:%d/", backendUrl, backendPort)
+		return API
 	})
 
 	return nil
