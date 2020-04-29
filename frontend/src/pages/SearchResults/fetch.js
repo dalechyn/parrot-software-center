@@ -55,7 +55,10 @@ export const formPackagePreviews = async searchQueryResults => {
         return match
       })
     ) {
-      console.warn(`required fields are invalid, skipping invalid package`)
+      console.warn(
+        `required fields are invalid, skipping invalid package`,
+        JSON.stringify(searchQueryResults[i])
+      )
       continue
     }
 

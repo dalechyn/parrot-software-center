@@ -14,6 +14,7 @@
     "connected-react-router": "^6.8.0",
     "hack-font": "^3.3.0",
     "history": "^4.10.1",
+    "leven": "^3.1.0",
     "material-ui-popup-state": "^1.5.4",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",

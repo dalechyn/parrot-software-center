@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
+import leven from 'leven'
 import { useLocation } from 'react-router-dom'
 import { Grid, makeStyles } from '@material-ui/core'
 import { Pagination, Skeleton } from '@material-ui/lab'
@@ -43,11 +44,16 @@ const SearchResults = ({ setAlert }) => {
 
   // Initial package names fetching effect
   useEffect(() => {
+    if (searchQuery === '') return
     let active = true
+    setPackagePreviews([])
     const f = async () => {
       try {
-        const res = await window.aptSearch(searchQuery)
-        if (active) setResultsNames(res)
+        const res = await window.aptSearchPackageNames(searchQuery)
+        if (active)
+          setResultsNames(
+            res.sort((a, b) => leven(a, searchQuery) - leven(b, searchQuery))
+          )
       } catch (e) {
         setAlert(e)
       }
@@ -57,14 +63,15 @@ const SearchResults = ({ setAlert }) => {
     return () => {
       active = false
     }
-  }, [searchQuery])
+  }, [searchQuery, setAlert])
 
   // Effect that sets package previews depending on selected page
   useEffect(() => {
+    if (resultsNames.length === 0) return
     let active = true
     const f = async () => {
       try {
-        const rawPackageData = await window.aptShow(
+        const rawPackageData = await window.aptSearch(
           resultsNames.slice((page - 1) * componentsInPage, page * componentsInPage)
         )
         if (!active) return
@@ -81,7 +88,7 @@ const SearchResults = ({ setAlert }) => {
     return () => {
       active = false
     }
-  }, [resultsNames, page])
+  }, [resultsNames, page, setAlert])
 
   const pageChange = (e, n) => {
     if (n === page) return

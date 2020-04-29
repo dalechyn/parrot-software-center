@@ -31,21 +31,20 @@ const SearchBar = ({ setAlert, clearAlert }) => {
 
     debounce(() => {
       const fetchCompletion = async name => {
-        if (active) {
-          const response = await window.aptAutoComplete(name)
-          setLoading(false)
-          setOptions(response)
-        }
+        const response = await window.aptAutoComplete(name)
+        setLoading(false)
+        setOptions(response)
       }
 
       if (value.length > 2) {
         setLoading(true)
-        fetchCompletion(value)
+        if (active) fetchCompletion(value)
       } else setOptions([])
-    }, 300)()
+    }, 1000)()
 
     return () => {
       active = false
+      setLoading(false)
     }
   }, [value])
 
