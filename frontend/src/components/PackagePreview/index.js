@@ -1,3 +1,12 @@
+import React, { useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
+
+import { bindActionCreators } from 'redux'
+import { connect } from 'react-redux'
+import { push } from 'connected-react-router'
+
+import classnames from 'classnames'
+import Img from 'react-image'
 import {
   Button,
   Card,
@@ -10,12 +19,7 @@ import {
   makeStyles
 } from '@material-ui/core'
 import { grey, red, orange } from '@material-ui/core/colors'
-import Img from 'react-image'
 import dummyPackageImg from '../../assets/package.png'
-import React, { useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import PropTypes from 'prop-types'
-import classnames from 'classnames'
 
 const cveAPIInfo = {
   api: 'http://cve.circl.lu/api/search/',
@@ -65,7 +69,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const PackagePreview = ({ imageUrl, name, description, ...rest }) => {
+const PackagePreview = ({ imageUrl, name, description, push, ...rest }) => {
   const [installed, setInstalled] = useState(false)
   const [cveInfo, setCVEInfo] = useState({})
   const [cveLoaded, setCVELoaded] = useState(false)
@@ -106,11 +110,10 @@ const PackagePreview = ({ imageUrl, name, description, ...rest }) => {
   }, [name])
 
   const classes = useStyles()
-  const history = useHistory()
   return (
     <Card
       onClick={() =>
-        history.push({
+        push({
           pathname: '/package',
           state: { name, description, ...rest }
         })
@@ -179,8 +182,17 @@ if (process.env.node_env === 'development') {
   PackagePreview.propTypes = {
     imageUrl: PropTypes.string,
     name: PropTypes.string,
-    description: PropTypes.string
+    description: PropTypes.string,
+    push: PropTypes.func
   }
 }
 
-export default PackagePreview
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(
+    {
+      push
+    },
+    dispatch
+  )
+
+export default connect(null, mapDispatchToProps)(PackagePreview)

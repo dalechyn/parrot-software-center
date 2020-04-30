@@ -1,5 +1,10 @@
 import React from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import PropTypes from 'prop-types'
+
+import { bindActionCreators } from 'redux'
+import { connect } from 'react-redux'
+import { goBack } from 'connected-react-router'
+
 import { Button, Paper, Typography, makeStyles } from '@material-ui/core'
 import { ArrowBack } from '@material-ui/icons'
 import { blue } from '@material-ui/core/colors'
@@ -32,17 +37,12 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const PackageInfo = () => {
-  const history = useHistory()
-  const {
-    state: { name, description, version, maintainer }
-  } = useLocation()
-
+const PackageInfo = ({ name, description, version, maintainer, goBack }) => {
   const classes = useStyles()
 
   return (
     <Paper elevation={8} className={classes.root}>
-      <Button size='large' startIcon={<ArrowBack />} onClick={() => history.goBack()}>
+      <Button size='large' startIcon={<ArrowBack />} onClick={() => goBack()}>
         Go Back
       </Button>
       <Paper variant='outlined' className={classes.nameContainer}>
@@ -68,4 +68,28 @@ const PackageInfo = () => {
   )
 }
 
-export default PackageInfo
+PackageInfo.propTypes = {
+  name: PropTypes.string,
+  description: PropTypes.string,
+  version: PropTypes.string,
+  maintainer: PropTypes.string,
+  goBack: PropTypes.func
+}
+
+const mapStateToProps = ({
+  router: {
+    location: {
+      state: { name, description, version, maintainer }
+    }
+  }
+}) => ({ name, description, version, maintainer })
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(
+    {
+      goBack
+    },
+    dispatch
+  )
+
+export default connect(mapStateToProps, mapDispatchToProps)(PackageInfo)

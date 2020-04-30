@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import leven from 'leven'
-import { useLocation } from 'react-router-dom'
+
+import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
+
 import { Grid, makeStyles } from '@material-ui/core'
 import { Pagination, Skeleton } from '@material-ui/lab'
+import leven from 'leven'
 
 import { formPackagePreviews } from './fetch'
-import { bindActionCreators } from 'redux'
 import { alertActions } from '../../actions'
 
 const componentsInPage = 5
@@ -34,13 +35,10 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const SearchResults = ({ setAlert }) => {
+const SearchResults = ({ searchQuery, setAlert }) => {
   const [resultsNames, setResultsNames] = useState([])
   const [packagePreviews, setPackagePreviews] = useState([])
   const [page, setPage] = useState(1)
-  const {
-    state: { searchQuery }
-  } = useLocation()
 
   // Initial package names fetching effect
   useEffect(() => {
@@ -143,10 +141,18 @@ const SearchResults = ({ setAlert }) => {
 
 if (process.env.node_env === 'development') {
   SearchResults.propTypes = {
-    classes: PropTypes.object,
-    setAlert: PropTypes.func
+    setAlert: PropTypes.func,
+    searchQuery: PropTypes.string
   }
 }
+
+const mapStateToProps = ({
+  router: {
+    location: {
+      state: { searchQuery }
+    }
+  }
+}) => ({ searchQuery })
 
 const mapDispatchToProps = dispatch =>
   bindActionCreators(
@@ -156,4 +162,4 @@ const mapDispatchToProps = dispatch =>
     dispatch
   )
 
-export default connect(null, mapDispatchToProps)(SearchResults)
+export default connect(mapStateToProps, mapDispatchToProps)(SearchResults)

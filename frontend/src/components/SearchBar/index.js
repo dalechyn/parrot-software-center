@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
+
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { useHistory } from 'react-router-dom'
-import { debounce, CircularProgress, TextField } from '@material-ui/core'
+import { push } from 'connected-react-router'
 
+import { debounce, CircularProgress, TextField } from '@material-ui/core'
 import { Autocomplete } from '@material-ui/lab'
 import { Search } from '@material-ui/icons'
-import PropTypes from 'prop-types'
+import leven from 'leven'
 
 import { alertActions } from '../../actions'
 import { delayPromise } from './utils'
-import leven from 'leven'
 
 const requestTimeout = 5000
 
@@ -20,12 +21,11 @@ const styles = {
   }
 }
 
-const SearchBar = ({ setAlert, clearAlert }) => {
+const SearchBar = ({ setAlert, clearAlert, push }) => {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState([])
   const [value, setValue] = useState('')
-  const history = useHistory()
 
   useEffect(() => {
     let active = true
@@ -73,7 +73,7 @@ const SearchBar = ({ setAlert, clearAlert }) => {
       await Promise.race([
         delayPromise(requestTimeout),
         (async () => {
-          history.push({
+          push({
             pathname: '/search',
             state: { searchQuery: value }
           })
@@ -134,7 +134,8 @@ const SearchBar = ({ setAlert, clearAlert }) => {
 if (process.env.node_env === 'development') {
   SearchBar.propTypes = {
     clearAlert: PropTypes.func,
-    setAlert: PropTypes.func
+    setAlert: PropTypes.func,
+    push: PropTypes.func
   }
 }
 
@@ -142,7 +143,8 @@ const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
       clearAlert: alertActions.clear,
-      setAlert: alertActions.set
+      setAlert: alertActions.set,
+      push
     },
     dispatch
   )
