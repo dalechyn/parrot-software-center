@@ -10,6 +10,7 @@ import PropTypes from 'prop-types'
 
 import { alertActions } from '../../actions'
 import { delayPromise } from './utils'
+import leven from 'leven'
 
 const requestTimeout = 5000
 
@@ -31,9 +32,14 @@ const SearchBar = ({ setAlert, clearAlert }) => {
 
     debounce(() => {
       const fetchCompletion = async name => {
-        const response = await window.aptAutoComplete(name)
+        try {
+          const response = await window.aptSearchPackageNames(name)
+          setOptions(response.sort((a, b) => leven(a, name) - leven(b, name)).slice(0, 5))
+        } catch (e) {
+          console.log(e)
+          // setOptions([])
+        }
         setLoading(false)
-        setOptions(response)
       }
 
       if (value.length > 2) {

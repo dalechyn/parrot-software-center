@@ -82,18 +82,6 @@ func aptInject(w webview.WebView) error {
 		return true
 	})
 
-	err = w.Bind("aptAutoComplete", func (prefix string) []string {
-		logrus.Debugf("aptAutoComplete called: %s", prefix)
-		args := fmt.Sprintf("apt-cache search %s --names-only | egrep -o '^([a-z0-9.-]*)' | " +
-			"awk '{print length\"\\t\"$0}' | sort -n | cut -f2- | head -5",
-			prefix)
-		cmd := exec.Command("bash", "-c", args)
-
-		res, _ := cmd.CombinedOutput()
-		splitted := strings.Split(string(res), "\n")
-		return splitted[:len(splitted) - 1]
-	})
-
 	err = w.Bind("aptSearchPackageNames", func (prefix string) ([]string, error) {
 		logrus.Debugf("aptSearchPackageNames called: %s", prefix)
 		args := fmt.Sprintf("apt-cache search %s --names-only | egrep -o '^([a-z0-9.-]*)'", prefix)
