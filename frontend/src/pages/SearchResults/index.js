@@ -9,7 +9,7 @@ import { Pagination, Skeleton } from '@material-ui/lab'
 import leven from 'leven'
 
 import { formPackagePreviews } from './fetch'
-import { alertActions } from '../../actions'
+import { alertActions, searchResultsActions } from '../../actions'
 
 const componentsInPage = 5
 
@@ -35,10 +35,9 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const SearchResults = ({ searchQuery, setAlert }) => {
+const SearchResults = ({ searchQuery, setAlert, setPage, page }) => {
   const [resultsNames, setResultsNames] = useState([])
   const [packagePreviews, setPackagePreviews] = useState([])
-  const [page, setPage] = useState(1)
 
   // Initial package names fetching effect
   useEffect(() => {
@@ -142,6 +141,8 @@ const SearchResults = ({ searchQuery, setAlert }) => {
 if (process.env.node_env === 'development') {
   SearchResults.propTypes = {
     setAlert: PropTypes.func,
+    setPage: PropTypes.func,
+    page: PropTypes.number,
     searchQuery: PropTypes.string
   }
 }
@@ -151,13 +152,15 @@ const mapStateToProps = ({
     location: {
       state: { searchQuery }
     }
-  }
-}) => ({ searchQuery })
+  },
+  searchResults: { page }
+}) => ({ searchQuery, page })
 
 const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
-      setAlert: alertActions.set
+      setAlert: alertActions.set,
+      setPage: searchResultsActions.pageSet
     },
     dispatch
   )

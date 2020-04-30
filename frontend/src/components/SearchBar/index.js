@@ -36,8 +36,7 @@ const SearchBar = ({ setAlert, clearAlert, push }) => {
           const response = await window.aptSearchPackageNames(name)
           setOptions(response.sort((a, b) => leven(a, name) - leven(b, name)).slice(0, 5))
         } catch (e) {
-          console.log(e)
-          // setOptions([])
+          setOptions([])
         }
         setLoading(false)
       }
