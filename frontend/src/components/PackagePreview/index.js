@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 
 import { bindActionCreators } from 'redux'
+import { queueActions } from '../../actions'
 import { connect } from 'react-redux'
 import { push } from 'connected-react-router'
+import { useSnackbar } from 'notistack'
 
 import classnames from 'classnames'
 import Img from 'react-image'
@@ -40,16 +42,21 @@ const useStyles = makeStyles(theme => ({
     height: 40,
     width: 40
   },
+  header: {
+    padding: theme.spacing(2),
+    display: 'flex',
+    flexFlow: 'column'
+  },
   nameHolder: {
     display: 'flex',
-    alignItems: 'center',
-    padding: theme.spacing(1)
+    alignItems: 'center'
   },
   cve: {
     display: 'inline-grid',
     gridTemplateColumns: 'auto auto auto auto',
     alignItems: 'center',
     gridGap: theme.spacing(1),
+    paddingTop: theme.spacing(1),
     marginLeft: 'auto'
   },
   buttons: {
@@ -69,10 +76,21 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const PackagePreview = ({ imageUrl, name, description, push, ...rest }) => {
+const PackagePreview = ({
+  imageUrl,
+  name,
+  version,
+  description,
+  push,
+  install,
+  uninstall,
+  queue,
+  ...rest
+}) => {
   const [installed, setInstalled] = useState(false)
   const [cveInfo, setCVEInfo] = useState({})
   const [cveLoaded, setCVELoaded] = useState(false)
+  const { enqueueSnackbar } = useSnackbar()
 
   useEffect(() => {
     // Commented until cve-search#420 resolves.
@@ -111,32 +129,34 @@ const PackagePreview = ({ imageUrl, name, description, push, ...rest }) => {
 
   const classes = useStyles()
   return (
-    <Card
-      onClick={() =>
-        push({
-          pathname: '/package',
-          state: { name, description, ...rest }
-        })
-      }
-      className={classes.root}
-    >
-      <CardActionArea>
+    <Card className={classes.root}>
+      <CardActionArea
+        onClick={() =>
+          push({
+            pathname: '/package',
+            state: { name, description, ...rest }
+          })
+        }
+      >
         <CardContent>
-          <Paper className={classes.nameHolder} elevation={10}>
-            <Img
-              className={classes.media}
-              src={imageUrl}
-              unloader={
-                <img
-                  className={classes.media}
-                  src={dummyPackageImg}
-                  alt={'No Package Found'}
-                />
-              }
-            />
-            <Typography className={classes.name} variant='h5'>
-              {name}
-            </Typography>
+          <Paper className={classes.header} elevation={10}>
+            <div className={classes.nameHolder}>
+              <Img
+                className={classes.media}
+                src={imageUrl}
+                unloader={
+                  <img
+                    className={classes.media}
+                    src={dummyPackageImg}
+                    alt={'No Package Found'}
+                  />
+                }
+              />
+              <Typography className={classes.name} variant='h5'>
+                {name}
+              </Typography>
+            </div>
+
             {cveLoaded && (
               <div className={classes.cve}>
                 <Chip label={'This month CVEs:'} />
@@ -165,11 +185,43 @@ const PackagePreview = ({ imageUrl, name, description, push, ...rest }) => {
       </CardActionArea>
       <CardActions className={classes.buttons}>
         {installed ? (
-          <Button variant='outlined' size='medium' color='secondary'>
+          <Button
+            onClick={() => {
+              enqueueSnackbar(
+                queue.find(el => el.name === name && el.version === version)
+                  ? `Package ${name}@${version} dequeued`
+                  : `Package ${name}@${version} queued for deletion`,
+                {
+                  variant: 'error'
+                }
+              )
+              uninstall(name, version)
+              setInstalled(false)
+            }}
+            variant='outlined'
+            size='medium'
+            color='secondary'
+          >
             Uninstall
           </Button>
         ) : (
-          <Button variant='outlined' size='medium' color='primary'>
+          <Button
+            onClick={() => {
+              enqueueSnackbar(
+                queue.find(el => el.name === name && el.version === version)
+                  ? `Package ${name}@${version} dequeued`
+                  : `Package ${name}@${version} queued for installation`,
+                {
+                  variant: 'success'
+                }
+              )
+              install(name, version)
+              setInstalled(true)
+            }}
+            variant='outlined'
+            size='medium'
+            color='primary'
+          >
             Install
           </Button>
         )}
@@ -182,17 +234,25 @@ if (process.env.node_env === 'development') {
   PackagePreview.propTypes = {
     imageUrl: PropTypes.string,
     name: PropTypes.string,
+    version: PropTypes.string,
     description: PropTypes.string,
-    push: PropTypes.func
+    push: PropTypes.func,
+    install: PropTypes.func,
+    uninstall: PropTypes.func,
+    queue: PropTypes.array
   }
 }
+
+const mapStateToProps = ({ queue }) => ({ queue })
 
 const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
-      push
+      push,
+      install: queueActions.queue,
+      uninstall: queueActions.dequeue
     },
     dispatch
   )
 
-export default connect(null, mapDispatchToProps)(PackagePreview)
+export default connect(mapStateToProps, mapDispatchToProps)(PackagePreview)

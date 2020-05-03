@@ -4,14 +4,14 @@ export default (
   state = {
     token: localStorage.getItem('accessToken')
   },
-  action
+  { type, payload }
 ) => {
-  switch (action.type) {
+  switch (type) {
     case tokenConstants.TOKEN_REQUEST:
       return {}
     case tokenConstants.TOKEN_SUCCESS:
       return {
-        token: action.token
+        token: payload.token
       }
     case tokenConstants.TOKEN_FAILURE:
       return {}

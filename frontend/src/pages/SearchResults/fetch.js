@@ -81,7 +81,7 @@ export const formPackagePreviews = async searchQueryResults => {
         description={processDescription(pkg.description)}
         version={pkg.version}
         maintainer={pkg.maintainer}
-        key={pkg.package}
+        key={`${pkg.package}@${pkg.version}`}
         imageUrl={`${imageUrl}${pkg.package}.png`}
       />
     )

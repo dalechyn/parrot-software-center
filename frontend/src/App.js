@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { Provider } from 'react-redux'
 import { Switch, Route } from 'react-router-dom'
+import { SnackbarProvider } from 'notistack'
 import { ConnectedRouter } from 'connected-react-router'
 import {
   ThemeProvider,
@@ -39,27 +40,29 @@ const App = () => {
   return (
     <Provider store={store}>
       <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <ConnectedRouter history={history}>
-          <Header />
-          <Switch>
-            <Route exact path='/'>
-              <Home />
-            </Route>
-            <Route exact path='/store'>
-              Store
-            </Route>
-            <Route exact path='/about'>
-              About
-            </Route>
-            <Route exact path='/search'>
-              <SearchResults />
-            </Route>
-            <Route exact path='/package'>
-              <PackageInfo />
-            </Route>
-          </Switch>
-        </ConnectedRouter>
+        <SnackbarProvider maxSnack={3}>
+          <CssBaseline />
+          <ConnectedRouter history={history}>
+            <Header />
+            <Switch>
+              <Route exact path='/'>
+                <Home />
+              </Route>
+              <Route exact path='/store'>
+                Store
+              </Route>
+              <Route exact path='/about'>
+                About
+              </Route>
+              <Route exact path='/search'>
+                <SearchResults />
+              </Route>
+              <Route exact path='/package'>
+                <PackageInfo />
+              </Route>
+            </Switch>
+          </ConnectedRouter>
+        </SnackbarProvider>
       </ThemeProvider>
     </Provider>
   )

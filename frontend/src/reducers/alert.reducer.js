@@ -1,9 +1,9 @@
 import { alertConstants } from '../constants'
 
-export default (state = '', action) => {
-  switch (action.type) {
+export default (state = '', { type, payload }) => {
+  switch (type) {
     case alertConstants.SET:
-      return action.message
+      return payload.message
     case alertConstants.CLEAR:
       return ''
     default:
