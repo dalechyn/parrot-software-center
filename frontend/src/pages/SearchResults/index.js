@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
+import { useLocation } from 'react-router-dom'
 
 import { Grid, makeStyles } from '@material-ui/core'
 import { Pagination, Skeleton } from '@material-ui/lab'
@@ -35,9 +36,12 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const SearchResults = ({ searchQuery, setAlert, setPage, page }) => {
+const SearchResults = ({ setAlert, setPage, page }) => {
   const [resultsNames, setResultsNames] = useState([])
   const [packagePreviews, setPackagePreviews] = useState([])
+  const {
+    state: { searchQuery }
+  } = useLocation()
 
   // Initial package names fetching effect
   useEffect(() => {
@@ -147,14 +151,7 @@ if (process.env.node_env === 'development') {
   }
 }
 
-const mapStateToProps = ({
-  router: {
-    location: {
-      state: { searchQuery }
-    }
-  },
-  searchResults: { page }
-}) => ({ searchQuery, page })
+const mapStateToProps = ({ searchResults: { page } }) => ({ page })
 
 const mapDispatchToProps = dispatch =>
   bindActionCreators(

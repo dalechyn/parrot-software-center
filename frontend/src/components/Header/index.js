@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 
+import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 
@@ -23,6 +24,7 @@ import {
 } from '@material-ui/icons'
 import Alert from '@material-ui/lab/Alert'
 import SearchBar from '../SearchBar'
+import { alertActions } from '../../actions'
 
 const useStyles = makeStyles(theme => ({
   drawer: { width: 250 },
@@ -41,7 +43,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const Header = ({ alert }) => {
+const Header = ({ alert, clear }) => {
   const classes = useStyles()
   const [drawerOpen, setDrawer] = useState(false)
 
@@ -84,18 +86,31 @@ const Header = ({ alert }) => {
       </Drawer>
       {/* if the error came from GoLang, it is not a JavaScript error object and doesn`t
       have message prop. I will open an issue on WebView about that */}
-      {alert && <Alert severity='error'>{alert}</Alert>}
+      {alert && (
+        <Alert severity='error' onClose={() => clear()}>
+          {alert}
+        </Alert>
+      )}
     </>
   )
 }
 
 const mapStateToProps = ({ alert }) => ({ alert })
 
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(
+    {
+      clear: alertActions.clear
+    },
+    dispatch
+  )
+
 if (process.env.node_env === 'development') {
   Header.propTypes = {
     classes: PropTypes.object,
-    alert: PropTypes.object
+    alert: PropTypes.object,
+    clear: PropTypes.func
   }
 }
 
-export default connect(mapStateToProps)(Header)
+export default connect(mapStateToProps, mapDispatchToProps)(Header)

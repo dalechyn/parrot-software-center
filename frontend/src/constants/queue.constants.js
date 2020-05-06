@@ -1,4 +1,6 @@
 export default {
   INSTALL: 'queue/INSTALL',
-  UNINSTALL: 'queue/UNINSTALL'
+  UNINSTALL: 'queue/UNINSTALL',
+  SWAP: 'queue/SWAP',
+  DELETE: 'queue/DELETE'
 }

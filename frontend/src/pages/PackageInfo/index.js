@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 import { bindActionCreators } from 'redux'
+import { useLocation } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { goBack } from 'connected-react-router'
 
@@ -37,9 +38,12 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const PackageInfo = ({ name, description, version, maintainer, goBack }) => {
+const PackageInfo = ({ goBack }) => {
   const classes = useStyles()
 
+  const {
+    state: { name, description, version, maintainer }
+  } = useLocation()
   return (
     <Paper elevation={8} className={classes.root}>
       <Button size='large' startIcon={<ArrowBack />} onClick={() => goBack()}>
@@ -68,21 +72,11 @@ const PackageInfo = ({ name, description, version, maintainer, goBack }) => {
   )
 }
 
-PackageInfo.propTypes = {
-  name: PropTypes.string,
-  description: PropTypes.string,
-  version: PropTypes.string,
-  maintainer: PropTypes.string,
-  goBack: PropTypes.func
-}
-
-const mapStateToProps = ({
-  router: {
-    location: {
-      state: { name, description, version, maintainer }
-    }
+if (process.env.node_env === 'development') {
+  PackageInfo.propTypes = {
+    goBack: PropTypes.func
   }
-}) => ({ name, description, version, maintainer })
+}
 
 const mapDispatchToProps = dispatch =>
   bindActionCreators(
@@ -92,4 +86,4 @@ const mapDispatchToProps = dispatch =>
     dispatch
   )
 
-export default connect(mapStateToProps, mapDispatchToProps)(PackageInfo)
+export default connect(null, mapDispatchToProps)(PackageInfo)

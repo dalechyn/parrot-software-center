@@ -25,21 +25,10 @@ func aptInject(w webview.WebView) error {
 		return err
 	}
 
-	err = w.Bind("aptInstall", func (packageNames []string) error {
-		logrus.Debugf("aptInstall called: %s", strings.Join(packageNames, ", "))
-		if len(packageNames) == 0 {
-			return errors.New("aptInstall: no packages passed")
-		}
+	err = w.Bind("aptInstall", func (packageName string) error {
+		logrus.Debugf("aptInstall called: %s", packageName)
 
-		args := []string{"install", "-y"}
-		for _, pkg := range packageNames {
-			if pkg == "" {
-				return fmt.Errorf("aptInstall: invalid package with empty Nnme")
-			}
-			args = append(args, pkg)
-		}
-
-		cmd := exec.Command("apt-get", args...)
+		cmd := exec.Command("pkexec", "apt-get", "install", "-y", packageName)
 		_, err := cmd.CombinedOutput()
 		if err != nil {
 			return err
@@ -99,5 +88,10 @@ func aptInject(w webview.WebView) error {
 		return API
 	})
 
+	err = w.Bind("whoami", func () string {
+		cmd := exec.Command("whoami")
+		res, _ := cmd.CombinedOutput()
+		return string(res)
+	})
 	return nil
 }

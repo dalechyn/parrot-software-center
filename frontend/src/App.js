@@ -12,7 +12,7 @@ import {
 import { blue } from '@material-ui/core/colors'
 
 import { configureStore, history } from './helpers'
-import { Home, SearchResults, PackageInfo } from './pages'
+import { Home, SearchResults, PackageInfo, Queue } from './pages'
 import { Header } from './components'
 
 const store = configureStore()
@@ -59,6 +59,9 @@ const App = () => {
               </Route>
               <Route exact path='/package'>
                 <PackageInfo />
+              </Route>
+              <Route exact path='/queue'>
+                <Queue />
               </Route>
             </Switch>
           </ConnectedRouter>
