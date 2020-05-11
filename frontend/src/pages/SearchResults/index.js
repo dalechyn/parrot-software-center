@@ -6,9 +6,10 @@ import { bindActionCreators } from 'redux'
 import { useLocation } from 'react-router-dom'
 
 import { Grid, makeStyles } from '@material-ui/core'
-import { Pagination, Skeleton } from '@material-ui/lab'
+import { Pagination } from '@material-ui/lab'
 import leven from 'leven'
 
+import { SearchSkeleton } from '../../components'
 import { formPackagePreviews } from './fetch'
 import { alertActions, searchResultsActions } from '../../actions'
 
@@ -120,11 +121,11 @@ const SearchResults = ({ setAlert, setPage, page }) => {
         />
         {packagePreviews.length === 0 ? (
           <>
-            <Skeleton className={classes.skeleton} variant='rect' />
-            <Skeleton className={classes.skeleton} variant='rect' />
-            <Skeleton className={classes.skeleton} variant='rect' />
-            <Skeleton className={classes.skeleton} variant='rect' />
-            <Skeleton className={classes.skeleton} variant='rect' />
+            <SearchSkeleton />
+            <SearchSkeleton />
+            <SearchSkeleton />
+            <SearchSkeleton />
+            <SearchSkeleton />
           </>
         ) : (
           packagePreviews

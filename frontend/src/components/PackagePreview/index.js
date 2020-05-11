@@ -255,4 +255,5 @@ const mapDispatchToProps = dispatch =>
     dispatch
   )
 
+export { default as SearchSkeleton } from './skeleton'
 export default connect(mapStateToProps, mapDispatchToProps)(PackagePreview)

@@ -51,6 +51,11 @@ const makeChip = (flag, classes) => {
   )
 }
 
+const binding = {
+  [queueConstants.UNINSTALL]: window.aptRemove,
+  [queueConstants.INSTALL]: window.aptInstall
+}
+
 const Queue = ({ queue, swap, clear, setAlert }) => {
   const [progress, setProgress] = useState(0)
   const classes = useStyles()
@@ -58,7 +63,7 @@ const Queue = ({ queue, swap, clear, setAlert }) => {
   const processPackages = useCallback(async () => {
     try {
       for (let i = 0; i < queue.length; i++) {
-        await window.aptInstall(`${queue[i].name}=${queue[i].version}`)
+        await binding[queue[i].flag](`${queue[i].name}=${queue[i].version}`)
         setProgress(i)
       }
     } catch (e) {

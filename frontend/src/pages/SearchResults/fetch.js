@@ -1,4 +1,4 @@
-import PackagePreview from '../../components/PackagePreview'
+import { PackagePreview } from '../../components'
 import React from 'react'
 
 const pkgRegex = {
