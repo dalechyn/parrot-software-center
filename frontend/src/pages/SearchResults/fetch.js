@@ -89,16 +89,16 @@ export const formPackagePreviews = async searchQueryResults => {
     )
   )
 
-  return parsedPackages.map((pkg, i) => {
+  return parsedPackages.map(({ name, description, version, maintainer }, i) => {
     const [installed, cveInfo] = info[i]
     return (
       <PackagePreview
-        name={pkg.name}
-        description={processDescription(pkg.description)}
-        version={pkg.version}
-        maintainer={pkg.maintainer}
-        key={`${pkg.package}@${pkg.version}`}
-        imageUrl={`${resourceURL}${pkg.name}.png`}
+        name={name}
+        description={processDescription(description)}
+        version={version}
+        maintainer={maintainer}
+        key={`${name}@${version}`}
+        imageUrl={`${resourceURL}${name}.png`}
         cveInfo={cveInfo}
         installed={installed}
       />
