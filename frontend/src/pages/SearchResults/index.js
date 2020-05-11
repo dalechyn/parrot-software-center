@@ -9,9 +9,9 @@ import { Grid, makeStyles } from '@material-ui/core'
 import { Pagination } from '@material-ui/lab'
 import leven from 'leven'
 
-import { SearchSkeleton } from '../../components'
 import { formPackagePreviews } from './fetch'
 import { alertActions, searchResultsActions } from '../../actions'
+import { PackagePreviewSkeleton } from '../../components'
 
 const componentsInPage = 5
 
@@ -111,21 +111,13 @@ const SearchResults = ({ setAlert, setPage, page }) => {
         alignItems='center'
         className={classes.grid}
       >
-        <Pagination
-          className={classes.pagination}
-          count={Math.ceil(resultsNames.length / componentsInPage)}
-          onChange={pageChange}
-          page={page}
-          variant='outlined'
-          shape='rounded'
-        />
         {packagePreviews.length === 0 ? (
           <>
-            <SearchSkeleton />
-            <SearchSkeleton />
-            <SearchSkeleton />
-            <SearchSkeleton />
-            <SearchSkeleton />
+            <PackagePreviewSkeleton />
+            <PackagePreviewSkeleton />
+            <PackagePreviewSkeleton />
+            <PackagePreviewSkeleton />
+            <PackagePreviewSkeleton />
           </>
         ) : (
           packagePreviews

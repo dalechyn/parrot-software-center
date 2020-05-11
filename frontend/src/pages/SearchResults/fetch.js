@@ -1,6 +1,11 @@
 import { PackagePreview } from '../../components'
 import React from 'react'
 
+const cveAPIInfo = {
+  api: 'http://cve.circl.lu/api/search/',
+  handleResult: json => json
+}
+
 const pkgRegex = {
   required: {
     package: /^Package: ([a-z0-9.+-]+)/gm,
@@ -72,18 +77,27 @@ export const formPackagePreviews = async searchQueryResults => {
     parsedPackages.push(el)
   }
 
-  const imageUrl = new URL('assets/packages/', await window.getUrl()).toString()
-
-  return parsedPackages.map(pkg => {
-    return (
+  const components = []
+  const resourceURL = new URL('assets/packages/', await window.getUrl()).toString()
+  for (const pkg of parsedPackages) {
+    const [installed, cveInfo] = await Promise.all([
+      window.dpkgQuery(pkg.package),
+      cveAPIInfo.handleResult({ critical: 3, important: 41, low: 412 })
+    ])
+    console.log('INSTALLED:', pkg.package, installed)
+    components.push(
       <PackagePreview
         name={pkg.package}
         description={processDescription(pkg.description)}
         version={pkg.version}
         maintainer={pkg.maintainer}
         key={`${pkg.package}@${pkg.version}`}
-        imageUrl={`${imageUrl}${pkg.package}.png`}
+        imageUrl={`${resourceURL}${pkg.package}.png`}
+        cveInfo={cveInfo}
+        installed={installed}
       />
     )
-  })
+  }
+
+  return components
 }

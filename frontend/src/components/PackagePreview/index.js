@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
+import classnames from 'classnames'
 
 import { bindActionCreators } from 'redux'
-import { queueActions } from '../../actions'
 import { connect } from 'react-redux'
+import Img from 'react-image'
 import { push } from 'connected-react-router'
 import { useSnackbar } from 'notistack'
 
-import classnames from 'classnames'
-import Img from 'react-image'
 import {
   Button,
   Card,
@@ -22,11 +21,7 @@ import {
 } from '@material-ui/core'
 import { grey, red, orange } from '@material-ui/core/colors'
 import dummyPackageImg from '../../assets/package.png'
-
-const cveAPIInfo = {
-  api: 'http://cve.circl.lu/api/search/',
-  handleResult: json => json
-}
+import { queueActions } from '../../actions'
 
 const maxDescriptionLength = 500
 
@@ -85,48 +80,12 @@ const PackagePreview = ({
   install,
   uninstall,
   queue,
+  cveInfo,
+  installed,
   ...rest
 }) => {
-  const [installed, setInstalled] = useState(false)
-  const [cveInfo, setCVEInfo] = useState({})
-  const [cveLoaded, setCVELoaded] = useState(false)
+  const [installedOrQueried, setInstalled] = useState(installed)
   const { enqueueSnackbar } = useSnackbar()
-
-  useEffect(() => {
-    // Commented until cve-search#420 resolves.
-    // If it won't resolve though, I will have to cache results on the backend :/
-    /* const f = async () => {
-      const currentDate = new Date()
-      currentDate.setMonth(currentDate.getMonth() - 1)
-
-      const requestURL = new URL(`${name}`, cveAPI).toString()
-
-      return await fetch(requestURL, {
-        method: 'GET',
-        // mode: 'no-cors',
-        headers: {
-          Accept: 'application/json',
-          'User-Agent': ' ',
-          'Accept-Language': ' '
-        }
-      })
-    }
-
-    f().then(json => {
-      setCVEInfo(json)
-      setCVELoaded(true)
-    }) */
-
-    const f = async () => {
-      setInstalled(await window.dpkgQuery(name))
-    }
-
-    f()
-
-    setCVEInfo(cveAPIInfo.handleResult({ critical: 3, important: 41, low: 412 }))
-    setCVELoaded(true)
-  }, [name])
-
   const classes = useStyles()
   return (
     <Card className={classes.root}>
@@ -156,21 +115,18 @@ const PackagePreview = ({
                 {name}
               </Typography>
             </div>
-
-            {cveLoaded && (
-              <div className={classes.cve}>
-                <Chip label={'This month CVEs:'} />
-                <Chip
-                  className={classnames(classes.cveCritical, classes.chipText)}
-                  label={`Critical: ${cveInfo.critical}`}
-                />
-                <Chip
-                  className={classnames(classes.cveImportant, classes.chipText)}
-                  label={`Important: ${cveInfo.important}`}
-                />
-                <Chip label={`Low: ${cveInfo.low}`} />
-              </div>
-            )}
+            <div className={classes.cve}>
+              <Chip label={'This month CVEs:'} />
+              <Chip
+                className={classnames(classes.cveCritical, classes.chipText)}
+                label={`Critical: ${cveInfo.critical}`}
+              />
+              <Chip
+                className={classnames(classes.cveImportant, classes.chipText)}
+                label={`Important: ${cveInfo.important}`}
+              />
+              <Chip label={`Low: ${cveInfo.low}`} />
+            </div>
           </Paper>
           <Typography
             className={classes.description}
@@ -184,7 +140,7 @@ const PackagePreview = ({
         </CardContent>
       </CardActionArea>
       <CardActions className={classes.buttons}>
-        {installed ? (
+        {installedOrQueried ? (
           <Button
             onClick={() => {
               enqueueSnackbar(
@@ -233,13 +189,19 @@ const PackagePreview = ({
 if (process.env.node_env === 'development') {
   PackagePreview.propTypes = {
     imageUrl: PropTypes.string,
-    name: PropTypes.string,
-    version: PropTypes.string,
+    name: PropTypes.string.isRequired,
+    version: PropTypes.string.isRequired,
     description: PropTypes.string,
     push: PropTypes.func,
-    install: PropTypes.func,
+    install: PropTypes.func.isRequired,
+    installed: PropTypes.bool,
     uninstall: PropTypes.func,
-    queue: PropTypes.array
+    queue: PropTypes.array,
+    cveInfo: PropTypes.shape({
+      critical: PropTypes.number,
+      important: PropTypes.number,
+      low: PropTypes.number
+    }).isRequired
   }
 }
 
@@ -255,5 +217,4 @@ const mapDispatchToProps = dispatch =>
     dispatch
   )
 
-export { default as SearchSkeleton } from './skeleton'
 export default connect(mapStateToProps, mapDispatchToProps)(PackagePreview)

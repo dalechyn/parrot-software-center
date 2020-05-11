@@ -1,12 +1,10 @@
 import React from 'react'
 import {
-  Button,
   Box,
   Card,
   CardActionArea,
   CardActions,
   CardContent,
-  Chip,
   makeStyles,
   Paper
 } from '@material-ui/core'
