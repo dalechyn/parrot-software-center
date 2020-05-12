@@ -50,9 +50,7 @@ const PackageInfo = ({ goBack }) => {
         Go Back
       </Button>
       <Paper variant='outlined' className={classes.nameContainer}>
-        <Typography className={classes.hack} variant='h5'>
-          {name}
-        </Typography>
+        <Typography variant='h5'>{name}</Typography>
       </Paper>
       <Paper className={classes.grid}>
         <Typography variant='h6'>Version:</Typography>

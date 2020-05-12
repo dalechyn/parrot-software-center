@@ -74,6 +74,7 @@ const SearchBar = ({ setAlert, clearAlert, push }) => {
         (async () => {
           push({
             pathname: '/search',
+            query: value,
             state: { searchQuery: value }
           })
           clearAlert()
@@ -112,7 +113,7 @@ const SearchBar = ({ setAlert, clearAlert, push }) => {
           label='Search a package'
           variant='outlined'
           size='small'
-          color='secondary'
+          color='primary'
           inputProps={{ ...params.inputProps, autoComplete: 'new-password' }}
           InputProps={{
             ...params.InputProps,

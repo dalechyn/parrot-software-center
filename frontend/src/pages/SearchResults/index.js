@@ -37,25 +37,28 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const SearchResults = ({ setAlert, setPage, page }) => {
-  const [resultsNames, setResultsNames] = useState([])
-  const [packagePreviews, setPackagePreviews] = useState([])
+const SearchResults = ({
+  setAlert,
+  setPage,
+  page,
+  results,
+  setResults,
+  names,
+  setNames
+}) => {
+  const location = useLocation()
   const {
     state: { searchQuery }
-  } = useLocation()
+  } = location
 
   // Initial package names fetching effect
   useEffect(() => {
-    if (searchQuery === '') return
     let active = true
-    setPackagePreviews([])
     const f = async () => {
       try {
         const res = await window.aptSearchPackageNames(searchQuery)
         if (active)
-          setResultsNames(
-            res.sort((a, b) => leven(a, searchQuery) - leven(b, searchQuery))
-          )
+          setNames(res.sort((a, b) => leven(a, searchQuery) - leven(b, searchQuery)))
       } catch (e) {
         setAlert(e)
       }
@@ -65,22 +68,20 @@ const SearchResults = ({ setAlert, setPage, page }) => {
     return () => {
       active = false
     }
-  }, [searchQuery, setAlert])
+  }, [setNames, searchQuery, setAlert])
 
   // Effect that sets package previews depending on selected page
   useEffect(() => {
-    if (resultsNames.length === 0) return
+    if (names.length === 0) return
     let active = true
     const f = async () => {
       try {
         const rawPackageData = await window.aptSearch(
-          resultsNames.slice((page - 1) * componentsInPage, page * componentsInPage)
+          names.slice((page - 1) * componentsInPage, page * componentsInPage)
         )
         if (!active) return
         const components = await formPackagePreviews(rawPackageData)
-
-        if (!active) return
-        setPackagePreviews(components)
+        setResults(components)
       } catch (e) {
         setAlert(e)
       }
@@ -90,13 +91,13 @@ const SearchResults = ({ setAlert, setPage, page }) => {
     return () => {
       active = false
     }
-  }, [resultsNames, page, setAlert])
+  }, [setResults, names, page, setAlert])
 
   const pageChange = (e, n) => {
     if (n === page) return
 
     setPage(n)
-    setPackagePreviews([])
+    setResults([])
   }
 
   const classes = useStyles()
@@ -111,7 +112,7 @@ const SearchResults = ({ setAlert, setPage, page }) => {
         alignItems='center'
         className={classes.grid}
       >
-        {packagePreviews.length === 0 ? (
+        {results && results.length === 0 ? (
           <>
             <PackagePreviewSkeleton />
             <PackagePreviewSkeleton />
@@ -120,11 +121,11 @@ const SearchResults = ({ setAlert, setPage, page }) => {
             <PackagePreviewSkeleton />
           </>
         ) : (
-          packagePreviews
+          results
         )}
         <Pagination
           className={classes.pagination}
-          count={Math.ceil(resultsNames.length / componentsInPage)}
+          count={Math.ceil(names.length / componentsInPage)}
           onChange={pageChange}
           page={page}
           variant='outlined'
@@ -140,17 +141,22 @@ if (process.env.node_env === 'development') {
     setAlert: PropTypes.func,
     setPage: PropTypes.func,
     page: PropTypes.number,
-    searchQuery: PropTypes.string
+    results: PropTypes.array,
+    setResults: PropTypes.func,
+    names: PropTypes.array,
+    setNames: PropTypes.func
   }
 }
 
-const mapStateToProps = ({ searchResults: { page } }) => ({ page })
+const mapStateToProps = ({ searchResults }) => ({ ...searchResults })
 
 const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
       setAlert: alertActions.set,
-      setPage: searchResultsActions.pageSet
+      setPage: searchResultsActions.setPage,
+      setResults: searchResultsActions.setResults,
+      setNames: searchResultsActions.setNames
     },
     dispatch
   )

@@ -5,6 +5,7 @@ import classnames from 'classnames'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import Img from 'react-image'
+import { Link, useLocation } from 'react-router-dom'
 import { push } from 'connected-react-router'
 import { useSnackbar } from 'notistack'
 
@@ -93,7 +94,12 @@ const PackagePreview = ({
         onClick={() =>
           push({
             pathname: '/package',
-            state: { name, description, ...rest }
+            state: {
+              name,
+              description,
+              version,
+              ...rest
+            }
           })
         }
       >
@@ -156,7 +162,7 @@ const PackagePreview = ({
             }}
             variant='outlined'
             size='medium'
-            color='secondary'
+            color='#e3e3e3'
           >
             Uninstall
           </Button>
