@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 
 import { bindActionCreators } from 'redux'
@@ -10,6 +10,7 @@ import {
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
+  ExpansionPanelActions,
   Paper,
   Typography,
   makeStyles
@@ -18,6 +19,8 @@ import { ArrowBack, ExpandMore } from '@material-ui/icons'
 import { blue, green } from '@material-ui/core/colors'
 import dummyPackageImg from '../../assets/package.png'
 import Img from 'react-image'
+import { useSnackbar } from 'notistack'
+import { queueActions } from '../../actions'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -44,7 +47,6 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2)
   },
   contentColumn: {
-    marginLeft: theme.spacing(2),
     padding: theme.spacing(1)
   },
   media: {
@@ -56,7 +58,8 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(4)
   },
   button: {
-    marginTop: theme.spacing(3)
+    marginTop: theme.spacing(3),
+    marginLeft: 'auto'
   }
 }))
 
@@ -68,9 +71,18 @@ const PackageInfo = ({
   installed,
   imageUrl,
   goBack,
+  queue,
+  install,
+  uninstall,
   ...rest
 }) => {
   const classes = useStyles()
+  const [installedOrQueried, setInstalled] = useState(installed)
+  useEffect(() => {
+    const queuePackage = queue.find(pkg => name === pkg.name && version === pkg.version)
+    if (queuePackage) setInstalled(queuePackage.flag)
+  }, [])
+  const { enqueueSnackbar } = useSnackbar()
   return (
     <Paper elevation={8} className={classes.root}>
       <Button size='large' startIcon={<ArrowBack />} onClick={() => goBack()}>
@@ -152,20 +164,50 @@ const PackageInfo = ({
           Screenshots should be here!
         </ExpansionPanelDetails>
       </ExpansionPanel>
-      {installed ? (
-        <Button variant='outlined' className={classes.button} size='large'>
-          Uninstall
-        </Button>
-      ) : (
-        <Button
-          variant='outlined'
-          color='primary'
-          className={classes.button}
-          size='large'
-        >
-          Install
-        </Button>
-      )}
+      <ExpansionPanelActions>
+        {installedOrQueried ? (
+          <Button
+            variant='outlined'
+            className={classes.button}
+            onClick={() => {
+              enqueueSnackbar(
+                queue.find(el => el.name === name && el.version === version)
+                  ? `Package ${name}@${version} dequeued`
+                  : `Package ${name}@${version} queued for deletion`,
+                {
+                  variant: 'error'
+                }
+              )
+              uninstall(name, version)
+              setInstalled(false)
+            }}
+            size='large'
+          >
+            Uninstall
+          </Button>
+        ) : (
+          <Button
+            variant='outlined'
+            color='primary'
+            className={classes.button}
+            size='large'
+            onClick={() => {
+              enqueueSnackbar(
+                queue.find(el => el.name === name && el.version === version)
+                  ? `Package ${name}@${version} dequeued`
+                  : `Package ${name}@${version} queued for installation`,
+                {
+                  variant: 'success'
+                }
+              )
+              install(name, version)
+              setInstalled(true)
+            }}
+          >
+            Install
+          </Button>
+        )}
+      </ExpansionPanelActions>
     </Paper>
   )
 }
@@ -178,7 +220,10 @@ if (process.env.node_env === 'development') {
     maintainer: PropTypes.string.isRequired,
     goBack: PropTypes.func,
     installed: PropTypes.bool,
-    imageUrl: PropTypes.string
+    imageUrl: PropTypes.string,
+    install: PropTypes.func,
+    uninstall: PropTypes.func,
+    queue: PropTypes.array
   }
 }
 
@@ -187,13 +232,16 @@ const mapStateToProps = ({
     location: {
       state: { data }
     }
-  }
-}) => data
+  },
+  queue
+}) => ({ ...data, queue })
 
 const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
-      goBack
+      goBack,
+      install: queueActions.queue,
+      uninstall: queueActions.dequeue
     },
     dispatch
   )

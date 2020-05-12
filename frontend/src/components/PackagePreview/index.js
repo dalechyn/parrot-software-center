@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import classnames from 'classnames'
 
@@ -87,6 +87,10 @@ const PackagePreview = ({
   const [installedOrQueried, setInstalled] = useState(installed)
   const { enqueueSnackbar } = useSnackbar()
   const classes = useStyles()
+  useEffect(() => {
+    const queuePackage = queue.find(pkg => name === pkg.name && version === pkg.version)
+    if (queuePackage) setInstalled(queuePackage.flag)
+  }, [])
   return (
     <Card className={classes.root}>
       <CardActionArea

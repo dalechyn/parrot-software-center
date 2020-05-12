@@ -149,9 +149,7 @@ if (process.env.node_env === 'development') {
 const mapStateToProps = ({
   searchResults,
   router: {
-    location: {
-      state: { searchQuery }
-    }
+    location: { state: { searchQuery } = {} }
   }
 }) => ({
   ...searchResults,
