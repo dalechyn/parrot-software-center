@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { useLocation } from 'react-router-dom'
 
 import { Grid, makeStyles } from '@material-ui/core'
 import { Pagination } from '@material-ui/lab'
@@ -44,13 +43,9 @@ const SearchResults = ({
   results,
   setResults,
   names,
-  setNames
+  setNames,
+  searchQuery
 }) => {
-  const location = useLocation()
-  const {
-    state: { searchQuery }
-  } = location
-
   // Initial package names fetching effect
   useEffect(() => {
     let active = true
@@ -144,11 +139,22 @@ if (process.env.node_env === 'development') {
     results: PropTypes.array,
     setResults: PropTypes.func,
     names: PropTypes.array,
-    setNames: PropTypes.func
+    setNames: PropTypes.func,
+    searchQuery: PropTypes.string.isRequired
   }
 }
 
-const mapStateToProps = ({ searchResults }) => ({ ...searchResults })
+const mapStateToProps = ({
+  searchResults,
+  router: {
+    location: {
+      state: { searchQuery }
+    }
+  }
+}) => ({
+  ...searchResults,
+  searchQuery
+})
 
 const mapDispatchToProps = dispatch =>
   bindActionCreators(

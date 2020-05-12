@@ -5,7 +5,6 @@ import classnames from 'classnames'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import Img from 'react-image'
-import { Link, useLocation } from 'react-router-dom'
 import { push } from 'connected-react-router'
 import { useSnackbar } from 'notistack'
 
@@ -75,8 +74,8 @@ const useStyles = makeStyles(theme => ({
 const PackagePreview = ({
   imageUrl,
   name,
-  version,
   description,
+  version,
   push,
   install,
   uninstall,
@@ -95,10 +94,7 @@ const PackagePreview = ({
           push({
             pathname: '/package',
             state: {
-              name,
-              description,
-              version,
-              ...rest
+              data: { name, version, description, installed, imageUrl, ...rest }
             }
           })
         }
@@ -162,7 +158,7 @@ const PackagePreview = ({
             }}
             variant='outlined'
             size='medium'
-            color='#e3e3e3'
+            color='secondary'
           >
             Uninstall
           </Button>

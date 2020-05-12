@@ -6,6 +6,15 @@ const cveAPIInfo = {
   handleResult: json => json
 }
 
+const processDescription = str => {
+  const cleared = str.replace(/^ \./gm, '\n').replace(/^ /gm, '')
+  const upperCased = cleared.charAt(0).toUpperCase() + cleared.slice(1)
+  const firstSentenceDotted = upperCased.replace(/\n/, '.\n')
+  const lines = firstSentenceDotted.split('\n')
+  lines[0] = lines[0] + '\n'
+  return lines.join('')
+}
+
 const pkgRegex = {
   required: {
     name: /^Package: ([a-z0-9.+-]+)/gm,
@@ -37,15 +46,6 @@ const pkgRegex = {
     aptManualInstalled: /^APT-Manual-Installed: (.*)/gm,
     aptSources: /^APT-Sources: (https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)(?: (?:\S+ ?)+))/gm
   }
-}
-
-const processDescription = str => {
-  const cleared = str.replace(/^ \./gm, '\n').replace(/^ /gm, '')
-  const upperCased = cleared.charAt(0).toUpperCase() + cleared.slice(1)
-  const firstSentenceDotted = upperCased.replace(/\n/, '.\n')
-  const lines = firstSentenceDotted.split('\n')
-  lines[0] = lines[0] + '\n'
-  return lines.join('')
 }
 
 export const formPackagePreviews = async searchQueryResults => {
@@ -89,18 +89,18 @@ export const formPackagePreviews = async searchQueryResults => {
     )
   )
 
-  return parsedPackages.map(({ name, description, version, maintainer }, i) => {
+  return parsedPackages.map(({ name, version, description, ...rest }, i) => {
     const [installed, cveInfo] = info[i]
     return (
       <PackagePreview
         name={name}
-        description={processDescription(description)}
         version={version}
-        maintainer={maintainer}
+        description={processDescription(description)}
         key={`${name}@${version}`}
         imageUrl={`${resourceURL}${name}.png`}
         cveInfo={cveInfo}
         installed={installed}
+        {...rest}
       />
     )
   })
