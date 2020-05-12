@@ -75,7 +75,9 @@ const SearchResults = ({
           names.slice((page - 1) * componentsInPage, page * componentsInPage)
         )
         if (!active) return
-        const components = await formPackagePreviews(rawPackageData)
+        const components = await formPackagePreviews(
+          rawPackageData.slice(0, rawPackageData.length - 1)
+        )
         setResults(components)
       } catch (e) {
         setAlert(e)

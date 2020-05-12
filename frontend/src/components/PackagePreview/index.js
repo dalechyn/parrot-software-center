@@ -134,7 +134,7 @@ const PackagePreview = ({
             className={classes.description}
             variant='body1'
             color='textSecondary'
-            component={'p'}
+            component='p'
             noWrap
           >
             {description.slice(0, maxDescriptionLength) + '...'}

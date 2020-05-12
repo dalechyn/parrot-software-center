@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import PropTypes from 'prop-types'
 
 import { bindActionCreators } from 'redux'
@@ -129,14 +129,14 @@ const PackageInfo = ({
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.grid}>
           {Object.keys(rest).map(key => (
-            <div key={`${name}@${version}@${key}`}>
-              <Typography variant='h6'>
-                key.charAt(0).toUpperCase() + key.slice(1)
+            <Fragment key={`${name}@${version}@${key}`}>
+              <Typography style={{ width: 'min-content' }} variant='h6'>
+                {key.charAt(0).toUpperCase() + key.slice(1)}:
               </Typography>
               <Paper variant='outlined' className={classes.contentColumn}>
                 <Typography variant='body1'>{rest[key]}</Typography>
               </Paper>
-            </div>
+            </Fragment>
           ))}
         </ExpansionPanelDetails>
       </ExpansionPanel>
@@ -176,7 +176,9 @@ if (process.env.node_env === 'development') {
     description: PropTypes.string.isRequired,
     version: PropTypes.string.isRequired,
     maintainer: PropTypes.string.isRequired,
-    goBack: PropTypes.func
+    goBack: PropTypes.func,
+    installed: PropTypes.bool,
+    imageUrl: PropTypes.string
   }
 }
 
