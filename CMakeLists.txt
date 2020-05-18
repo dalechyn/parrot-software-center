@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(parrot-software-center)
 
+set(CMAKE_CXX_STANDARD 14)
+
 find_package(PkgConfig REQUIRED)
 
 # include webview
@@ -16,8 +18,6 @@ pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 include_directories(${GTK3_INCLUDE_DIRS})
 link_directories(${GTK3_LIBRARY_DIRS})
 add_definitions(${GTK3_CFLAGS_OTHER})
-
-set(CMAKE_CXX_STANDARD 14)
 
 add_executable(parrot-software-center main.cpp webview.h)
 target_link_libraries(parrot-software-center ${GTK3_LIBRARIES} ${WEBVIEW_LIBRARIES})
