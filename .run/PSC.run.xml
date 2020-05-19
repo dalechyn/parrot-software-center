@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="PSC" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="parrot-software-center" RUN_TARGET_NAME="parrot-software-center" EXPLICIT_BUILD_TARGET_NAME="all">
+  <configuration default="false" name="PSC" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="parrot-software-center" TARGET_NAME="parrot-software-center" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="parrot-software-center" RUN_TARGET_NAME="parrot-software-center">
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
     </method>
