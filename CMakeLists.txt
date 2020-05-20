@@ -19,5 +19,6 @@ include_directories(${GTK3_INCLUDE_DIRS})
 link_directories(${GTK3_LIBRARY_DIRS})
 add_definitions(${GTK3_CFLAGS_OTHER})
 
-add_executable(parrot-software-center main.cpp webview.h)
-target_link_libraries(parrot-software-center ${GTK3_LIBRARIES} ${WEBVIEW_LIBRARIES})
+add_executable(parrot-software-center main.cpp webview.h Injector.cpp Injector.h)
+target_sources(parrot-software-center PUBLIC webview.h)
+target_link_libraries(parrot-software-center ${WEBVIEW_LIBRARIES} ${GTK3_LIBRARIES})

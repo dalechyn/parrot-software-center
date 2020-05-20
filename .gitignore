@@ -28,3 +28,7 @@ frontend/yarn-error.log*
 
 # cmake
 cmake-build-debug/
+
+# ts
+**/*.js.map
+node_modules/
