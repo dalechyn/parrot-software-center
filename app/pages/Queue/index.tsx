@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import { connect } from 'react-redux'
-import PropTypes from 'prop-types'
+import { RootState, RootAction } from 'typesafe-actions'
 import {
   Button,
   Container,
@@ -13,9 +13,10 @@ import {
   Grid
 } from '@material-ui/core'
 import { ArrowUpward, ArrowDownward, Delete } from '@material-ui/icons'
-import { QueueConstants } from '../../constants'
-import { alertActions, queueActions } from '../../actions'
-import { bindActionCreators } from 'redux'
+import { AlertActions, QueueActions } from '../../actions'
+import { bindActionCreators, Dispatch } from 'redux'
+import { Package } from '../SearchResults/fetch'
+import { INSTALL, UNINSTALL } from '../../store/reducers/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -35,26 +36,35 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const flagMap = {
-  [QueueConstants.INSTALL]: {
+  [INSTALL]: {
     label: 'Install',
     color: 'primary'
   },
-  [QueueConstants.UNINSTALL]: {
+  [UNINSTALL]: {
     label: 'Uninstall',
     color: 'secondary'
   }
 }
 
-const makeChip = (flag, classes) => {
+type PackageChipProps = {
+  flag: string
+  classes: {
+    chip: string
+  }
+}
+
+const PackageChip = ({ flag, classes }: PackageChipProps) => {
   return <Chip className={classes.chip} size="medium" variant="outlined" {...flagMap[flag]} />
 }
 
-const binding = {
-  [QueueConstants.UNINSTALL]: window.aptRemove,
-  [QueueConstants.INSTALL]: window.aptInstall
+const binding: Record<string, Function> = {
+  [UNINSTALL]: window.aptRemove,
+  [INSTALL]: window.aptInstall
 }
 
-const Queue = ({ queue, swap, clear, setAlert }) => {
+type QueueProps = ReturnType<typeof mapStateToProps> | ReturnType<typeof mapDispatchToProps>
+
+const Queue = ({ queue, swap, remove, setAlert }: QueueProps) => {
   const [progress, setProgress] = useState(0)
   const classes = useStyles()
 
@@ -80,10 +90,10 @@ const Queue = ({ queue, swap, clear, setAlert }) => {
       className={classes.root}
       xs={12}
     >
-      {queue.map((el, i) => (
+      {queue.map((el: Package, i: number) => (
         <Grid item container xs={9} key={el.name + el.version}>
           <Container component={Paper} className={classes.package} key={el.name + el.version}>
-            {makeChip(el.flag, classes)}
+            <PackageChip flag={el.flag} classes={classes} />
             <Typography variant="body1">
               {el.name}@{el.version}
             </Typography>
@@ -104,7 +114,7 @@ const Queue = ({ queue, swap, clear, setAlert }) => {
               >
                 <ArrowDownward />
               </IconButton>
-              <IconButton color="secondary" aria-label="move to down" onClick={() => clear(i)}>
+              <IconButton color="secondary" aria-label="move to down" onClick={() => remove(i)}>
                 <Delete />
               </IconButton>
             </div>
@@ -129,23 +139,14 @@ const Queue = ({ queue, swap, clear, setAlert }) => {
   )
 }
 
-if (process.env.node_env === 'development') {
-  Queue.propTypes = {
-    queue: PropTypes.array,
-    swap: PropTypes.func,
-    clear: PropTypes.func,
-    setAlert: PropTypes.func
-  }
-}
+const mapStateToProps = ({ queue }: RootState) => ({ queue })
 
-const mapStateToProps = ({ queue }) => ({ queue })
-
-const mapDispatchToProps = dispatch =>
+const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
   bindActionCreators(
     {
-      swap: queueActions.swap,
-      clear: queueActions.delete,
-      setAlert: alertActions.set
+      swap: QueueActions.swap,
+      remove: QueueActions.remove,
+      setAlert: AlertActions.set
     },
     dispatch
   )

@@ -60,26 +60,26 @@ const SearchSkeleton = () => {
         <CardContent>
           <Paper className={classes.header} elevation={10}>
             <div className={classes.nameHolder}>
-              <Skeleton className={classes.media} variant='circle' />
-              <Skeleton className={classes.name} variant='rect' />
+              <Skeleton className={classes.media} variant="circle" />
+              <Skeleton className={classes.name} variant="rect" />
             </div>
             <div className={classes.cve}>
-              <Skeleton className={classes.chip} variant='rect' />
-              <Skeleton className={classes.chip} variant='rect' />
-              <Skeleton className={classes.chip} variant='rect' />
-              <Skeleton className={classes.chip} variant='rect' />
+              <Skeleton className={classes.chip} variant="rect" />
+              <Skeleton className={classes.chip} variant="rect" />
+              <Skeleton className={classes.chip} variant="rect" />
+              <Skeleton className={classes.chip} variant="rect" />
             </div>
           </Paper>
           <Box className={classes.description}>
-            <Skeleton variant='rect' width='75%' />
-            <Skeleton variant='rect' width='100%' />
-            <Skeleton variant='rect' width='95%' />
-            <Skeleton variant='rect' width='30%' />
+            <Skeleton variant="rect" width="75%" />
+            <Skeleton variant="rect" width="100%" />
+            <Skeleton variant="rect" width="95%" />
+            <Skeleton variant="rect" width="30%" />
           </Box>
         </CardContent>
       </CardActionArea>
       <CardActions className={classes.buttons}>
-        <Skeleton variant='rect' height={35} width={90} />
+        <Skeleton variant="rect" height={35} width={90} />
       </CardActions>
     </Card>
   )

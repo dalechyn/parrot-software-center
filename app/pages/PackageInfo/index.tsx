@@ -1,9 +1,10 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
+import { RootState, RootAction } from 'typesafe-actions'
 
-import { bindActionCreators } from 'redux'
+import { bindActionCreators, Dispatch } from 'redux'
 import { connect } from 'react-redux'
-import { goBack } from 'connected-react-router'
+import { GoBack, goBack } from 'connected-react-router'
 
 import {
   Button,
@@ -20,7 +21,8 @@ import { blue, green } from '@material-ui/core/colors'
 import dummyPackageImg from '../../assets/package.png'
 import Img from 'react-image'
 import { useSnackbar } from 'notistack'
-import { queueActions } from '../../actions'
+import { QueueActions } from '../../actions'
+import { Package } from '../SearchResults/fetch'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -63,6 +65,18 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
+type PackageInfoProps =
+  | ReturnType<typeof mapStateToProps>
+  | ReturnType<typeof mapDispatchToProps>
+  | ReturnType<GoBack>
+  | {
+      name: string
+      description: string
+      version: string
+      maintainer: string
+      installed: boolean
+    }
+
 const PackageInfo = ({
   name,
   description,
@@ -75,17 +89,17 @@ const PackageInfo = ({
   install,
   uninstall,
   ...rest
-}) => {
+}: PackageInfoProps) => {
   const classes = useStyles()
   const [installedOrQueried, setInstalled] = useState(installed)
   useEffect(() => {
-    const queuePackage = queue.find(pkg => name === pkg.name && version === pkg.version)
+    const queuePackage = queue.find((pkg: Package) => name === pkg.name && version === pkg.version)
     if (queuePackage) setInstalled(queuePackage.flag)
   }, [])
   const { enqueueSnackbar } = useSnackbar()
   return (
     <Paper elevation={8} className={classes.root}>
-      <Button size='large' startIcon={<ArrowBack />} onClick={() => goBack()}>
+      <Button size="large" startIcon={<ArrowBack />} onClick={() => goBack()}>
         Go Back
       </Button>
       <Paper className={classes.nameContainer} elevation={10}>
@@ -93,60 +107,56 @@ const PackageInfo = ({
           className={classes.media}
           src={imageUrl}
           unloader={
-            <img
-              className={classes.media}
-              src={dummyPackageImg}
-              alt={'No Package Found'}
-            />
+            <img className={classes.media} src={dummyPackageImg} alt={'No Package Found'} />
           }
         />
-        <Typography style={{ color: green[400] }} variant='h5'>
+        <Typography style={{ color: green[400] }} variant="h5">
           {name}
         </Typography>
-        <Typography variant='h5'>@</Typography>
-        <Typography style={{ color: blue[400] }} variant='h5'>
+        <Typography variant="h5">@</Typography>
+        <Typography style={{ color: blue[400] }} variant="h5">
           {version}
         </Typography>
       </Paper>
       <ExpansionPanel className={classes.panel} defaultExpanded>
         <ExpansionPanelSummary
           expandIcon={<ExpandMore />}
-          aria-controls='panel1a-content'
-          id='panel1a-header'
+          aria-controls="panel1a-content"
+          id="panel1a-header"
         >
-          <Typography variant='h5'>General info</Typography>
+          <Typography variant="h5">General info</Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.grid}>
-          <Typography variant='h6'>Version:</Typography>
-          <Paper variant='outlined' className={classes.contentColumn}>
-            <Typography variant='body1'>{version}</Typography>
+          <Typography variant="h6">Version:</Typography>
+          <Paper variant="outlined" className={classes.contentColumn}>
+            <Typography variant="body1">{version}</Typography>
           </Paper>
-          <Typography variant='h6'>Maintainer:</Typography>
-          <Paper variant='outlined' className={classes.contentColumn}>
-            <Typography variant='body1'>{maintainer}</Typography>
+          <Typography variant="h6">Maintainer:</Typography>
+          <Paper variant="outlined" className={classes.contentColumn}>
+            <Typography variant="body1">{maintainer}</Typography>
           </Paper>
-          <Typography variant='h6'>Description:</Typography>
-          <Paper variant='outlined' className={classes.contentColumn}>
-            <Typography variant='body1'>{description}</Typography>
+          <Typography variant="h6">Description:</Typography>
+          <Paper variant="outlined" className={classes.contentColumn}>
+            <Typography variant="body1">{description}</Typography>
           </Paper>
         </ExpansionPanelDetails>
       </ExpansionPanel>
       <ExpansionPanel disabled={Object.keys(rest).length === 0}>
         <ExpansionPanelSummary
           expandIcon={<ExpandMore />}
-          aria-controls='panel1a-content'
-          id='panel1a-header'
+          aria-controls="panel1a-content"
+          id="panel1a-header"
         >
-          <Typography variant='h5'>Additional info</Typography>
+          <Typography variant="h5">Additional info</Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.grid}>
           {Object.keys(rest).map(key => (
             <Fragment key={`${name}@${version}@${key}`}>
-              <Typography style={{ width: 'min-content' }} variant='h6'>
+              <Typography style={{ width: 'min-content' }} variant="h6">
                 {key.charAt(0).toUpperCase() + key.slice(1)}:
               </Typography>
-              <Paper variant='outlined' className={classes.contentColumn}>
-                <Typography variant='body1'>{rest[key]}</Typography>
+              <Paper variant="outlined" className={classes.contentColumn}>
+                <Typography variant="body1">{rest[key]}</Typography>
               </Paper>
             </Fragment>
           ))}
@@ -155,10 +165,10 @@ const PackageInfo = ({
       <ExpansionPanel>
         <ExpansionPanelSummary
           expandIcon={<ExpandMore />}
-          aria-controls='panel1a-content'
-          id='panel1a-header'
+          aria-controls="panel1a-content"
+          id="panel1a-header"
         >
-          <Typography variant='h5'>Screenshots</Typography>
+          <Typography variant="h5">Screenshots</Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.grid}>
           Screenshots should be here!
@@ -167,7 +177,7 @@ const PackageInfo = ({
       <ExpansionPanelActions>
         {installedOrQueried ? (
           <Button
-            variant='outlined'
+            variant="outlined"
             className={classes.button}
             onClick={() => {
               enqueueSnackbar(
@@ -181,19 +191,19 @@ const PackageInfo = ({
               uninstall(name, version)
               setInstalled(false)
             }}
-            size='large'
+            size="large"
           >
             Uninstall
           </Button>
         ) : (
           <Button
-            variant='outlined'
-            color='primary'
+            variant="outlined"
+            color="primary"
             className={classes.button}
-            size='large'
+            size="large"
             onClick={() => {
               enqueueSnackbar(
-                queue.find(el => el.name === name && el.version === version)
+                queue.find((el: Package) => el.name === name && el.version === version)
                   ? `Package ${name}@${version} dequeued`
                   : `Package ${name}@${version} queued for installation`,
                 {
@@ -234,14 +244,14 @@ const mapStateToProps = ({
     }
   },
   queue
-}) => ({ ...data, queue })
+}: RootState) => ({ ...data, queue })
 
-const mapDispatchToProps = dispatch =>
+const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
   bindActionCreators(
     {
       goBack,
-      install: queueActions.queue,
-      uninstall: queueActions.dequeue
+      install: QueueActions.install,
+      uninstall: QueueActions.uninstall
     },
     dispatch
   )

@@ -8,4 +8,4 @@ export default {
   alert: alertActions,
   queue: queueActions,
   searchResults: searchResults
-};
+}

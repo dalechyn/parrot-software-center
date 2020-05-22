@@ -1,15 +1,16 @@
-import React, { useEffect } from 'react'
+import React, { ChangeEvent, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
+import { RootState, RootAction } from 'typesafe-actions'
 import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
+import { bindActionCreators, Dispatch } from 'redux'
 
 import { Grid, makeStyles } from '@material-ui/core'
 import { Pagination } from '@material-ui/lab'
 import leven from 'leven'
 
 import { formPackagePreviews } from './fetch'
-import { alertActions, searchResultsActions } from '../../actions'
+import { AlertActions, SearchResultsActions } from '../../actions'
 import { PackagePreviewSkeleton } from '../../components'
 
 const componentsInPage = 5
@@ -36,16 +37,18 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
+type SearchResultsProps = ReturnType<typeof mapStateToProps> | ReturnType<typeof mapDispatchToProps>
+
 const SearchResults = ({
-  setAlert,
-  setPage,
+  alert,
+  scroll,
   page,
   results,
-  setResults,
+  cacheResults,
   names,
-  setNames,
+  cacheNames,
   searchQuery
-}) => {
+}: SearchResultsProps) => {
   // Initial package names fetching effect
   useEffect(() => {
     let active = true
@@ -53,9 +56,11 @@ const SearchResults = ({
       try {
         const res = await window.aptSearchPackageNames(searchQuery)
         if (active)
-          setNames(res.sort((a, b) => leven(a, searchQuery) - leven(b, searchQuery)))
+          setNames(
+            res.sort((a: string, b: string) => leven(a, searchQuery) - leven(b, searchQuery))
+          )
       } catch (e) {
-        setAlert(e)
+        alert(e)
       }
     }
 
@@ -63,7 +68,7 @@ const SearchResults = ({
     return () => {
       active = false
     }
-  }, [setNames, searchQuery, setAlert])
+  }, [cacheNames, searchQuery, alert])
 
   // Effect that sets package previews depending on selected page
   useEffect(() => {
@@ -78,9 +83,9 @@ const SearchResults = ({
         const components = await formPackagePreviews(
           rawPackageData.slice(0, rawPackageData.length - 1)
         )
-        setResults(components)
+        cacheResults(components)
       } catch (e) {
-        setAlert(e)
+        alert(e)
       }
     }
 
@@ -88,13 +93,13 @@ const SearchResults = ({
     return () => {
       active = false
     }
-  }, [setResults, names, page, setAlert])
+  }, [cacheResults, names, page, alert])
 
-  const pageChange = (e, n) => {
+  const pageChange = (e: ChangeEvent, n: number) => {
     if (n === page) return
 
-    setPage(n)
-    setResults([])
+    scroll(n)
+    cacheResults([])
   }
 
   const classes = useStyles()
@@ -104,9 +109,9 @@ const SearchResults = ({
       <h1>Showing results for {searchQuery}</h1>
       <Grid
         container
-        direction='column'
-        justify='space-evenly'
-        alignItems='center'
+        direction="column"
+        justify="space-evenly"
+        alignItems="center"
         className={classes.grid}
       >
         {results && results.length === 0 ? (
@@ -125,8 +130,8 @@ const SearchResults = ({
           count={Math.ceil(names.length / componentsInPage)}
           onChange={pageChange}
           page={page}
-          variant='outlined'
-          shape='rounded'
+          variant="outlined"
+          shape="rounded"
         />
       </Grid>
     </div>
@@ -151,18 +156,18 @@ const mapStateToProps = ({
   router: {
     location: { state: { searchQuery } = {} }
   }
-}) => ({
+}: RootState) => ({
   ...searchResults,
   searchQuery
 })
 
-const mapDispatchToProps = dispatch =>
+const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
   bindActionCreators(
     {
-      setAlert: alertActions.set,
-      setPage: searchResultsActions.setPage,
-      setResults: searchResultsActions.setResults,
-      setNames: searchResultsActions.setNames
+      alert: AlertActions.set,
+      scroll: SearchResultsActions.scroll,
+      cacheResults: SearchResultsActions.cacheResults,
+      cacheNames: SearchResultsActions.cacheNames
     },
     dispatch
   )

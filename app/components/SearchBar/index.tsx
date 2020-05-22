@@ -1,9 +1,9 @@
-import React, { KeyboardEvent, ChangeEvent, useEffect, useState } from "react";
+import React, { KeyboardEvent, ChangeEvent, useEffect, useState } from 'react'
 
 import { RootAction } from 'typesafe-actions'
-import { bindActionCreators, Dispatch } from "redux";
+import { bindActionCreators, Dispatch } from 'redux'
 import { connect } from 'react-redux'
-import { Push, push } from "connected-react-router";
+import { Push, push } from 'connected-react-router'
 
 import { debounce, CircularProgress, TextField } from '@material-ui/core'
 import { Autocomplete } from '@material-ui/lab'
@@ -94,7 +94,7 @@ const SearchBar = ({ setAlert, clearAlert, push }: SearchBarProps) => {
 
   return (
     <Autocomplete
-      id='search-bar'
+      id="search-bar"
       style={styles.root}
       freeSolo
       open={open}
@@ -108,17 +108,17 @@ const SearchBar = ({ setAlert, clearAlert, push }: SearchBarProps) => {
           {...params}
           onKeyUp={handleKeyUp}
           onBlur={handleBlur}
-          label='Search a package'
-          variant='outlined'
-          size='small'
-          color='primary'
+          label="Search a package"
+          variant="outlined"
+          size="small"
+          color="primary"
           inputProps={{ ...params.inputProps, autoComplete: 'new-password' }}
           InputProps={{
             ...params.InputProps,
             startAdornment: <Search />,
             endAdornment: (
               <>
-                {loading && <CircularProgress color='inherit' size={20} />}
+                {loading && <CircularProgress color="inherit" size={20} />}
                 {params.InputProps.endAdornment}
               </>
             )

@@ -61,10 +61,7 @@ export const formPackagePreviews = async searchQueryResults => {
         return match
       })
     ) {
-      console.warn(
-        `Required fields are missing, skipping invalid package`,
-        searchQueryResults[i]
-      )
+      console.warn(`Required fields are missing, skipping invalid package`, searchQueryResults[i])
       continue
     }
 
@@ -109,4 +106,10 @@ export const formPackagePreviews = async searchQueryResults => {
       />
     )
   })
+}
+
+export interface Package {
+  name: string
+  version: string
+  flag: string
 }

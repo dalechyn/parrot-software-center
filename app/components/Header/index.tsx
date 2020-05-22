@@ -51,20 +51,20 @@ const Header = ({ alert, clear }) => {
   const handleDrawerClose = () => setDrawer(false)
   return (
     <>
-      <AppBar color='primary' position='static'>
+      <AppBar color="primary" position="static">
         <Toolbar>
           <IconButton
-            color='inherit'
-            aria-label='open drawer'
+            color="inherit"
+            aria-label="open drawer"
             onClick={handleDrawerOpen}
-            edge='start'
+            edge="start"
             className={classes.menuButton}
           >
             <MenuIcon />
           </IconButton>
           {/* This should be replaced by logo */}
           <Box className={classes.leftContent}>
-            <Typography variant='h6'>ParrotOS Software Center</Typography>
+            <Typography variant="h6">ParrotOS Software Center</Typography>
           </Box>
           <SearchBar />
         </Toolbar>
@@ -77,17 +77,17 @@ const Header = ({ alert, clear }) => {
           </Button>
         </div>
         <Divider />
-        <Button startIcon={<FeedIcon />} size='large' component={Link} to={'/feed'}>
+        <Button startIcon={<FeedIcon />} size="large" component={Link} to={'/feed'}>
           Feed
         </Button>
-        <Button startIcon={<QueueIcon />} size='large' component={Link} to={'/queue'}>
+        <Button startIcon={<QueueIcon />} size="large" component={Link} to={'/queue'}>
           Queue
         </Button>
       </Drawer>
       {/* if the error came from GoLang, it is not a JavaScript error object and doesn`t
       have message prop. I will open an issue on WebView about that */}
       {alert && (
-        <Alert severity='error' onClose={() => clear()}>
+        <Alert severity="error" onClose={() => clear()}>
           {alert}
         </Alert>
       )}

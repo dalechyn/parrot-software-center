@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react'
 import classnames from 'classnames'
 
 import { RootAction, RootState } from 'typesafe-actions'
-import { bindActionCreators, Dispatch } from "redux";
+import { bindActionCreators, Dispatch } from 'redux'
 import { connect } from 'react-redux'
 import Img from 'react-image'
-import { Push, push } from "connected-react-router";
+import { Push, push } from 'connected-react-router'
 import { useSnackbar } from 'notistack'
+import { Package } from '../../pages/SearchResults/fetch'
 
 import {
   Button,
@@ -71,24 +72,20 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-type PackagePreviewProps = ReturnType<typeof mapDispatchToProps>
-  & ReturnType<typeof mapStateToProps> & ReturnType<Push> & {
-  imageUrl: string,
-  name: string,
-  description: string,
-  version: string,
-  installed: boolean,
-  cveInfo: {
-    critical: number,
-    important: number,
-    low: number
+type PackagePreviewProps = ReturnType<typeof mapDispatchToProps> &
+  ReturnType<typeof mapStateToProps> &
+  ReturnType<Push> & {
+    imageUrl: string
+    name: string
+    description: string
+    version: string
+    installed: boolean
+    cveInfo: {
+      critical: number
+      important: number
+      low: number
+    }
   }
-}
-
-interface Package {
-  name: string,
-  version: string
-}
 
 const PackagePreview = ({
   imageUrl,
@@ -129,14 +126,10 @@ const PackagePreview = ({
                 className={classes.media}
                 src={imageUrl}
                 unloader={
-                  <img
-                    className={classes.media}
-                    src={dummyPackageImg}
-                    alt={'No Package Found'}
-                  />
+                  <img className={classes.media} src={dummyPackageImg} alt={'No Package Found'} />
                 }
               />
-              <Typography className={classes.name} variant='h5'>
+              <Typography className={classes.name} variant="h5">
                 {name}
               </Typography>
             </div>
@@ -155,9 +148,9 @@ const PackagePreview = ({
           </Paper>
           <Typography
             className={classes.description}
-            variant='body1'
-            color='textSecondary'
-            component='p'
+            variant="body1"
+            color="textSecondary"
+            component="p"
             noWrap
           >
             {description.slice(0, maxDescriptionLength) + '...'}
@@ -176,12 +169,12 @@ const PackagePreview = ({
                   variant: 'error'
                 }
               )
-              uninstall({name, version})
+              uninstall({ name, version })
               setInstalled(false)
             }}
-            variant='outlined'
-            size='medium'
-            color='secondary'
+            variant="outlined"
+            size="medium"
+            color="secondary"
           >
             Uninstall
           </Button>
@@ -196,12 +189,12 @@ const PackagePreview = ({
                   variant: 'success'
                 }
               )
-              install({name, version})
+              install({ name, version })
               setInstalled(true)
             }}
-            variant='outlined'
-            size='medium'
-            color='primary'
+            variant="outlined"
+            size="medium"
+            color="primary"
           >
             Install
           </Button>

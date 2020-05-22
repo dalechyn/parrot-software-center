@@ -1,5 +1,5 @@
-import { ActionType, StateType } from "typesafe-actions";
-import store from "./index";
+import { ActionType, StateType } from 'typesafe-actions'
+import store from './index'
 
 declare module 'typesafe-actions' {
   export type Store = StateType<typeof import('./index').default>
