@@ -1,12 +1,18 @@
 import { PackagePreview } from '../../components'
 import React from 'react'
 
-const cveAPIInfo = {
-  api: 'http://cve.circl.lu/api/search/',
-  handleResult: json => json
+export interface CVEInfoType {
+  critical: number
+  important: number
+  low: number
 }
 
-const processDescription = str => {
+const cveAPIInfo = {
+  api: 'http://cve.circl.lu/api/search/',
+  handleResult: (json: CVEInfoType) => json
+}
+
+const processDescription = (str: string) => {
   const cleared = str.replace(/^ \./gm, '\n').replace(/^ /gm, '')
   const upperCased = cleared.charAt(0).toUpperCase() + cleared.slice(1)
   const firstSentenceDotted = upperCased.replace(/\n/, '.\n')
@@ -15,7 +21,47 @@ const processDescription = str => {
   return lines.join('')
 }
 
-const pkgRegex = {
+export interface Package {
+  // Required fields
+  name: string
+  version: string
+  flag: string
+  maintainer: string
+  description: string
+  // Optional fields
+  section?: string
+  priority?: string
+  essential?: string
+  architecture?: string
+  origin?: string
+  bugs?: string
+  homepage?: string
+  tag?: string
+  source?: string
+  depends?: string
+  preDepends?: string
+  recommends?: string
+  suggests?: string
+  breaks?: string
+  conflicts?: string
+  replaces?: string
+  provides?: string
+  installedSize?: string
+  downloadSize?: string
+  aptManualInstalled?: string
+  aptSources?: string
+}
+
+type pkgRegexType = {
+  required: {
+    [index: string]: RegExp
+  }
+  optional: {
+    [index: string]: RegExp
+  }
+}
+
+const pkgRegex: pkgRegexType = {
   required: {
     name: /^Package: ([a-z0-9.+-]+)/m,
     version: /^Version: ((?<epoch>[0-9]{1,4}:)?(?<upstream>[A-Za-z0-9~.]+)(?:-(?<debian>[A-Za-z0-9~.]+))?)/m,
@@ -48,15 +94,17 @@ const pkgRegex = {
   }
 }
 
-export const formPackagePreviews = async searchQueryResults => {
+export const formPackagePreviews = async (searchQueryResults: string[]) => {
   const parsedPackages = []
   for (let i = 0; i < searchQueryResults.length; i++) {
-    const el = {}
+    const newPackage: {
+      [index: string]: string
+    } = {}
     // Filling required fields
     if (
       !Object.keys(pkgRegex.required).every(key => {
         const match = pkgRegex.required[key].exec(searchQueryResults[i])
-        if (match) el[key] = match[1]
+        if (match) newPackage[key] = match[1]
         else console.warn(`Missing ${key}`)
         return match
       })
@@ -69,14 +117,14 @@ export const formPackagePreviews = async searchQueryResults => {
     Object.keys(pkgRegex.optional).forEach(key => {
       try {
         const match = pkgRegex.optional[key].exec(searchQueryResults[i])
-        if (match) el[key] = match[1]
+        if (match) newPackage[key] = match[1]
         return match
       } catch (e) {
         console.error(e)
       }
     })
 
-    parsedPackages.push(el)
+    parsedPackages.push(newPackage)
   }
 
   const resourceURL = new URL('assets/packages/', await window.getUrl()).toString()
@@ -106,10 +154,4 @@ export const formPackagePreviews = async searchQueryResults => {
       />
     )
   })
-}
-
-export interface Package {
-  name: string
-  version: string
-  flag: string
 }

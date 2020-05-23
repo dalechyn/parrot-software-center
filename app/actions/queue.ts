@@ -1,15 +1,15 @@
-import { createAction } from 'typesafe-actions'
+import { createAction } from '@reduxjs/toolkit'
 
-export const swap = createAction('@queue/SET')<{
+export const swap = createAction<{
   first: number
   second: number
-}>()
-export const remove = createAction('@queue/REMOVE')<number>()
-export const install = createAction('@queue/INSTALL')<{
+}>('@queue/SET')
+export const remove = createAction<number>('@queue/REMOVE')
+export const install = createAction<{
   name: string
   version: string
-}>()
-export const uninstall = createAction('@queue/UNINSTALL')<{
+}>('@queue/INSTALL')
+export const uninstall = createAction<{
   name: string
   version: string
-}>()
+}>('@queue/UNINSTALL')

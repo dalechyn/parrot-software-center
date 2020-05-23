@@ -1,4 +1,4 @@
-import { createAction } from 'typesafe-actions'
+import { createAction } from '@reduxjs/toolkit'
 
-export const set = createAction('@alert/SET')<string>()
-export const clear = createAction('@alert/CLEAR')()
+export const set = createAction<string>('@alert/SET')
+export const clear = createAction('@alert/CLEAR')

@@ -1,6 +1,8 @@
 import { AlertActions } from '../../actions'
-import { createReducer } from 'typesafe-actions'
+import { createReducer } from '@reduxjs/toolkit'
 
-export default createReducer('')
-  .handleAction(AlertActions.set, (state, action) => action.payload)
-  .handleAction(AlertActions.clear, (state, _) => '')
+export default createReducer('', builder =>
+  builder
+    .addCase(AlertActions.set, (state, action) => action.payload)
+    .addCase(AlertActions.clear, () => '')
+)

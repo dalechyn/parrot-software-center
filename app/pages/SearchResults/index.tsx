@@ -1,7 +1,6 @@
 import React, { ChangeEvent, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
-import { RootState, RootAction } from 'typesafe-actions'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch } from 'redux'
 
@@ -37,6 +36,27 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
+const mapStateToProps = ({
+  searchResults,
+  router: {
+    location: { state: { searchQuery } = {} }
+  }
+}: RootState) => ({
+  ...searchResults,
+  searchQuery
+})
+
+const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
+  bindActionCreators(
+    {
+      alert: AlertActions.set,
+      scroll: SearchResultsActions.scroll,
+      cacheResults: SearchResultsActions.cacheResults,
+      cacheNames: SearchResultsActions.cacheNames
+    },
+    dispatch
+  )
+
 type SearchResultsProps = ReturnType<typeof mapStateToProps> | ReturnType<typeof mapDispatchToProps>
 
 const SearchResults = ({
@@ -56,7 +76,7 @@ const SearchResults = ({
       try {
         const res = await window.aptSearchPackageNames(searchQuery)
         if (active)
-          setNames(
+          cacheNames(
             res.sort((a: string, b: string) => leven(a, searchQuery) - leven(b, searchQuery))
           )
       } catch (e) {
@@ -150,26 +170,5 @@ if (process.env.node_env === 'development') {
     searchQuery: PropTypes.string.isRequired
   }
 }
-
-const mapStateToProps = ({
-  searchResults,
-  router: {
-    location: { state: { searchQuery } = {} }
-  }
-}: RootState) => ({
-  ...searchResults,
-  searchQuery
-})
-
-const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
-  bindActionCreators(
-    {
-      alert: AlertActions.set,
-      scroll: SearchResultsActions.scroll,
-      cacheResults: SearchResultsActions.cacheResults,
-      cacheNames: SearchResultsActions.cacheNames
-    },
-    dispatch
-  )
 
 export default connect(mapStateToProps, mapDispatchToProps)(SearchResults)

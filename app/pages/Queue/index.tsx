@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react'
 import { connect } from 'react-redux'
-import { RootState, RootAction } from 'typesafe-actions'
 import {
   Button,
   Container,
@@ -61,6 +60,18 @@ const binding: Record<string, Function> = {
   [UNINSTALL]: window.aptRemove,
   [INSTALL]: window.aptInstall
 }
+
+const mapStateToProps = ({ queue }: RootState) => ({ queue })
+
+const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
+  bindActionCreators(
+    {
+      swap: QueueActions.swap,
+      remove: QueueActions.remove,
+      setAlert: AlertActions.set
+    },
+    dispatch
+  )
 
 type QueueProps = ReturnType<typeof mapStateToProps> | ReturnType<typeof mapDispatchToProps>
 
@@ -138,17 +149,5 @@ const Queue = ({ queue, swap, remove, setAlert }: QueueProps) => {
     </Grid>
   )
 }
-
-const mapStateToProps = ({ queue }: RootState) => ({ queue })
-
-const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
-  bindActionCreators(
-    {
-      swap: QueueActions.swap,
-      remove: QueueActions.remove,
-      setAlert: AlertActions.set
-    },
-    dispatch
-  )
 
 export default connect(mapStateToProps, mapDispatchToProps)(Queue)

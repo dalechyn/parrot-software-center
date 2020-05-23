@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import classnames from 'classnames'
 
-import { RootAction, RootState } from 'typesafe-actions'
 import { bindActionCreators, Dispatch } from 'redux'
 import { connect } from 'react-redux'
 import Img from 'react-image'
@@ -71,6 +70,18 @@ const useStyles = makeStyles(theme => ({
     color: grey[900]
   }
 }))
+
+const mapStateToProps = ({ queue }: RootState) => ({ queue })
+
+const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
+  bindActionCreators(
+    {
+      push,
+      install: QueueActions.install,
+      uninstall: QueueActions.uninstall
+    },
+    dispatch
+  )
 
 type PackagePreviewProps = ReturnType<typeof mapDispatchToProps> &
   ReturnType<typeof mapStateToProps> &
@@ -203,17 +214,5 @@ const PackagePreview = ({
     </Card>
   )
 }
-
-const mapStateToProps = ({ queue }: RootState) => ({ queue })
-
-const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
-  bindActionCreators(
-    {
-      push,
-      install: QueueActions.install,
-      uninstall: QueueActions.uninstall
-    },
-    dispatch
-  )
 
 export default connect(mapStateToProps, mapDispatchToProps)(PackagePreview)

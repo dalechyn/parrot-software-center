@@ -1,6 +1,5 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { RootState, RootAction } from 'typesafe-actions'
 
 import { bindActionCreators, Dispatch } from 'redux'
 import { connect } from 'react-redux'
@@ -65,17 +64,34 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-type PackageInfoProps =
-  | ReturnType<typeof mapStateToProps>
-  | ReturnType<typeof mapDispatchToProps>
-  | ReturnType<GoBack>
-  | {
-      name: string
-      description: string
-      version: string
-      maintainer: string
-      installed: boolean
+const mapStateToProps = ({
+  router: {
+    location: {
+      state: { data }
     }
+  },
+  queue
+}: RootState) => ({ ...data, queue })
+
+const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
+  bindActionCreators(
+    {
+      goBack,
+      install: QueueActions.install,
+      uninstall: QueueActions.uninstall
+    },
+    dispatch
+  )
+
+type PackageInfoProps = ReturnType<typeof mapStateToProps> &
+  ReturnType<typeof mapDispatchToProps> &
+  ReturnType<GoBack> & {
+    name: string
+    description: string
+    version: string
+    maintainer: string
+    installed: boolean
+  }
 
 const PackageInfo = ({
   name,
@@ -181,7 +197,7 @@ const PackageInfo = ({
             className={classes.button}
             onClick={() => {
               enqueueSnackbar(
-                queue.find(el => el.name === name && el.version === version)
+                queue.find((el: Package) => el.name === name && el.version === version)
                   ? `Package ${name}@${version} dequeued`
                   : `Package ${name}@${version} queued for deletion`,
                 {
@@ -221,39 +237,5 @@ const PackageInfo = ({
     </Paper>
   )
 }
-
-if (process.env.node_env === 'development') {
-  PackageInfo.propTypes = {
-    name: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    version: PropTypes.string.isRequired,
-    maintainer: PropTypes.string.isRequired,
-    goBack: PropTypes.func,
-    installed: PropTypes.bool,
-    imageUrl: PropTypes.string,
-    install: PropTypes.func,
-    uninstall: PropTypes.func,
-    queue: PropTypes.array
-  }
-}
-
-const mapStateToProps = ({
-  router: {
-    location: {
-      state: { data }
-    }
-  },
-  queue
-}: RootState) => ({ ...data, queue })
-
-const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
-  bindActionCreators(
-    {
-      goBack,
-      install: QueueActions.install,
-      uninstall: QueueActions.uninstall
-    },
-    dispatch
-  )
 
 export default connect(mapStateToProps, mapDispatchToProps)(PackageInfo)

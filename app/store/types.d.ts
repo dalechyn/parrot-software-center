@@ -1,12 +1,8 @@
-import { ActionType, StateType } from 'typesafe-actions'
 import store from './index'
+import rootReducer from './root.reducer'
 
-declare module 'typesafe-actions' {
-  export type Store = StateType<typeof import('./index').default>
-  export type RootState = StateType<typeof import('./root.reducer').default>
-  export type RootAction = ActionType<typeof import('./root.actions').default>
-
-  interface Types {
-    RootAction: RootAction
-  }
+declare global {
+  type Store = { [K in keyof typeof store]: ReturnType<typeof store[K]> }
+  export type RootState = ReturnType<typeof rootReducer>
+  export type RootAction = ReturnType<typeof store.dispatch>
 }

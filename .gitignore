@@ -32,3 +32,5 @@ cmake-build-debug/
 # ts
 **/*.js.map
 node_modules/
+dist/
+yarn-error.log*

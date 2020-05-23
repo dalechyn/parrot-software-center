@@ -1,6 +1,5 @@
 import React, { KeyboardEvent, ChangeEvent, useEffect, useState } from 'react'
 
-import { RootAction } from 'typesafe-actions'
 import { bindActionCreators, Dispatch } from 'redux'
 import { connect } from 'react-redux'
 import { Push, push } from 'connected-react-router'
@@ -22,9 +21,19 @@ const styles = {
   }
 }
 
+const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
+  bindActionCreators(
+    {
+      clearAlert: AlertActions.clear,
+      setAlert: AlertActions.set,
+      push
+    },
+    dispatch
+  )
+
 type SearchBarProps = ReturnType<typeof mapDispatchToProps> & ReturnType<Push>
 
-const SearchBar = ({ setAlert, clearAlert, push }: SearchBarProps) => {
+const SearchBar: React.FC<SearchBarProps> = ({ setAlert, clearAlert, push }) => {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState([])
@@ -128,15 +137,5 @@ const SearchBar = ({ setAlert, clearAlert, push }: SearchBarProps) => {
     />
   )
 }
-
-const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
-  bindActionCreators(
-    {
-      clearAlert: AlertActions.clear,
-      setAlert: AlertActions.set,
-      push
-    },
-    dispatch
-  )
 
 export default connect(null, mapDispatchToProps)(SearchBar)
