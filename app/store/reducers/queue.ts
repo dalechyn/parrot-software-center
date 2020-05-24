@@ -4,7 +4,7 @@ import { createReducer } from '@reduxjs/toolkit'
 export const INSTALL = 'INSTALL'
 export const UNINSTALL = 'UNINSTALL'
 
-interface QueueNode {
+export interface QueueNode {
   name: string
   version: string
   flag: string
@@ -12,7 +12,7 @@ interface QueueNode {
 
 let newState: QueueNode[]
 
-export default createReducer([], builder =>
+export default createReducer(Array<QueueNode>(), builder =>
   builder
     .addCase(QueueActions.install, (state, action) => {
       newState = state.filter(

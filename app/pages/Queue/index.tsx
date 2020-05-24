@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { connect } from 'react-redux'
 import {
   Button,
@@ -9,13 +9,13 @@ import {
   Paper,
   Typography,
   makeStyles,
-  Grid
+  Grid,
+  PropTypes
 } from '@material-ui/core'
 import { ArrowUpward, ArrowDownward, Delete } from '@material-ui/icons'
-import { AlertActions, QueueActions } from '../../actions'
+import { AlertActions, QueueActions, AptActions } from '../../actions'
 import { bindActionCreators, Dispatch } from 'redux'
-import { Package } from '../SearchResults/fetch'
-import { INSTALL, UNINSTALL } from '../../store/reducers/queue'
+import { INSTALL, QueueNode, UNINSTALL } from '../../store/reducers/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -34,7 +34,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const flagMap = {
+const flagMap: Record<string, { label: string; color: PropTypes.Color }> = {
   [INSTALL]: {
     label: 'Install',
     color: 'primary'
@@ -56,11 +56,6 @@ const PackageChip = ({ flag, classes }: PackageChipProps) => {
   return <Chip className={classes.chip} size="medium" variant="outlined" {...flagMap[flag]} />
 }
 
-const binding: Record<string, Function> = {
-  [UNINSTALL]: window.aptRemove,
-  [INSTALL]: window.aptInstall
-}
-
 const mapStateToProps = ({ queue }: RootState) => ({ queue })
 
 const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
@@ -68,16 +63,26 @@ const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
     {
       swap: QueueActions.swap,
       remove: QueueActions.remove,
-      setAlert: AlertActions.set
+      setAlert: AlertActions.set,
+      aptInstall: AptActions.install,
+      aptUninstall: AptActions.uninstall
     },
     dispatch
   )
 
-type QueueProps = ReturnType<typeof mapStateToProps> | ReturnType<typeof mapDispatchToProps>
+type QueueProps = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>
 
-const Queue = ({ queue, swap, remove, setAlert }: QueueProps) => {
+const Queue = ({ queue, swap, remove, setAlert, aptInstall, aptUninstall }: QueueProps) => {
   const [progress, setProgress] = useState(0)
   const classes = useStyles()
+
+  const binding: Record<string, Function> = useMemo(
+    () => ({
+      [INSTALL]: aptInstall,
+      [UNINSTALL]: aptUninstall
+    }),
+    []
+  )
 
   const processPackages = useCallback(async () => {
     try {
@@ -101,7 +106,7 @@ const Queue = ({ queue, swap, remove, setAlert }: QueueProps) => {
       className={classes.root}
       xs={12}
     >
-      {queue.map((el: Package, i: number) => (
+      {queue.map((el: QueueNode, i: number) => (
         <Grid item container xs={9} key={el.name + el.version}>
           <Container component={Paper} className={classes.package} key={el.name + el.version}>
             <PackageChip flag={el.flag} classes={classes} />
@@ -113,7 +118,7 @@ const Queue = ({ queue, swap, remove, setAlert }: QueueProps) => {
                 disabled={i === 0}
                 color="secondary"
                 aria-label="move to up"
-                onClick={() => swap(i, i - 1)}
+                onClick={() => swap({ first: i, second: i - 1 })}
               >
                 <ArrowUpward />
               </IconButton>
@@ -121,7 +126,7 @@ const Queue = ({ queue, swap, remove, setAlert }: QueueProps) => {
                 disabled={i === queue.length - 1}
                 color="secondary"
                 aria-label="move to down"
-                onClick={() => swap(i, i + 1)}
+                onClick={() => swap({ first: i, second: i + 1 })}
               >
                 <ArrowDownward />
               </IconButton>

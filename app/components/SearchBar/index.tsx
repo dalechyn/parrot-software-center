@@ -2,14 +2,15 @@ import React, { KeyboardEvent, ChangeEvent, useEffect, useState } from 'react'
 
 import { bindActionCreators, Dispatch } from 'redux'
 import { connect } from 'react-redux'
-import { Push, push } from 'connected-react-router'
+import { push } from 'connected-react-router'
 
 import { debounce, CircularProgress, TextField } from '@material-ui/core'
 import { Autocomplete } from '@material-ui/lab'
 import { Search } from '@material-ui/icons'
 import leven from 'leven'
 
-import { AlertActions } from '../../actions'
+import { AlertActions, AptActions } from '../../actions'
+import { unwrapResult } from '@reduxjs/toolkit'
 
 export const delayPromise = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -26,14 +27,15 @@ const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
     {
       clearAlert: AlertActions.clear,
       setAlert: AlertActions.set,
+      searchNames: AptActions.searchNames,
       push
     },
     dispatch
   )
 
-type SearchBarProps = ReturnType<typeof mapDispatchToProps> & ReturnType<Push>
+type SearchBarProps = ReturnType<typeof mapDispatchToProps>
 
-const SearchBar: React.FC<SearchBarProps> = ({ setAlert, clearAlert, push }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ setAlert, clearAlert, push, searchNames }) => {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState([])
@@ -45,9 +47,13 @@ const SearchBar: React.FC<SearchBarProps> = ({ setAlert, clearAlert, push }) => 
     debounce(() => {
       const fetchCompletion = async (name: string) => {
         try {
-          // TODO: Commented until project typescriptization
-          // const response = await window.aptSearchPackageNames(name)
-          // setOptions(response.sort((a: string, b: string) => leven(a, name) - leven(b, name)).slice(0, 5))
+          const response = await searchNames(name)
+          if (AptActions.searchNames.fulfilled.match(response)) {
+            const names = unwrapResult(response)
+            setOptions(
+              names.sort((a: string, b: string) => leven(a, name) - leven(b, name)).slice(0, 5)
+            )
+          }
         } catch (e) {
           setOptions([])
         }
@@ -69,11 +75,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ setAlert, clearAlert, push }) => 
   const handleBlur = () => {
     if (value.trim().length === 0) setValue('')
   }
-  const handleInput = (e: InputEvent, newValue: string) => {
-    setValue(newValue)
-  }
-  const handleChange = (e: ChangeEvent<HTMLInputElement>, value: string, reason: string) => {
-    if (reason === 'select-option') setValue(value)
+  const handleChange = (_: ChangeEvent<{}>, value: string) => {
+    setValue(value)
   }
   const handleCancel = () => {
     setValue('')
@@ -111,7 +114,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ setAlert, clearAlert, push }) => 
       onClose={() => setOpen(false)}
       options={options}
       loading={loading}
-      onChange={handleChange}
+      onInputChange={handleChange}
       renderInput={params => (
         <TextField
           {...params}

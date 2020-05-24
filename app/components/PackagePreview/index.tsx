@@ -3,8 +3,8 @@ import classnames from 'classnames'
 
 import { bindActionCreators, Dispatch } from 'redux'
 import { connect } from 'react-redux'
-import Img from 'react-image'
-import { Push, push } from 'connected-react-router'
+import { Img } from 'react-image'
+import { push } from 'connected-react-router'
 import { useSnackbar } from 'notistack'
 import { Package } from '../../pages/SearchResults/fetch'
 
@@ -20,8 +20,9 @@ import {
   makeStyles
 } from '@material-ui/core'
 import { grey, red, orange } from '@material-ui/core/colors'
-import dummyPackageImg from '../../assets/package.png'
+import * as dummyPackageImg from '../../assets/package.png'
 import { QueueActions } from '../../actions'
+import { QueueNode } from '../../store/reducers/queue'
 
 const maxDescriptionLength = 500
 
@@ -84,8 +85,7 @@ const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
   )
 
 type PackagePreviewProps = ReturnType<typeof mapDispatchToProps> &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<Push> & {
+  ReturnType<typeof mapStateToProps> & {
     imageUrl: string
     name: string
     description: string
@@ -115,8 +115,12 @@ const PackagePreview = ({
   const { enqueueSnackbar } = useSnackbar()
   const classes = useStyles()
   useEffect(() => {
-    const queuePackage = queue.find((pkg: Package) => name === pkg.name && version === pkg.version)
-    if (queuePackage) setInstalled(queuePackage.flag)
+    const foundPackage = queue.find(
+      (pkg: QueueNode) => name === pkg.name && version === pkg.version
+    )
+    if (!foundPackage) return
+    const queuePackage = foundPackage as Package
+    setInstalled(!!queuePackage.flag)
   }, [])
   return (
     <Card className={classes.root}>
@@ -173,7 +177,7 @@ const PackagePreview = ({
           <Button
             onClick={() => {
               enqueueSnackbar(
-                queue.find((el: Package) => el.name === name && el.version === version)
+                queue.find((el: QueueNode) => el.name === name && el.version === version)
                   ? `Package ${name}@${version} dequeued`
                   : `Package ${name}@${version} queued for deletion`,
                 {
@@ -193,7 +197,7 @@ const PackagePreview = ({
           <Button
             onClick={() => {
               enqueueSnackbar(
-                queue.find((el: Package) => el.name === name && el.version === version)
+                queue.find((el: QueueNode) => el.name === name && el.version === version)
                   ? `Package ${name}@${version} dequeued`
                   : `Package ${name}@${version} queued for installation`,
                 {

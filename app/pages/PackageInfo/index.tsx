@@ -1,9 +1,8 @@
 import React, { Fragment, useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
 
 import { bindActionCreators, Dispatch } from 'redux'
 import { connect } from 'react-redux'
-import { GoBack, goBack } from 'connected-react-router'
+import { goBack } from 'connected-react-router'
 
 import {
   Button,
@@ -18,10 +17,11 @@ import {
 import { ArrowBack, ExpandMore } from '@material-ui/icons'
 import { blue, green } from '@material-ui/core/colors'
 import dummyPackageImg from '../../assets/package.png'
-import Img from 'react-image'
+import { Img } from 'react-image'
 import { useSnackbar } from 'notistack'
 import { QueueActions } from '../../actions'
 import { Package } from '../SearchResults/fetch'
+import { QueueNode } from '../../store/reducers/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -85,11 +85,8 @@ const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
 
 type PackageInfoProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
-  ReturnType<GoBack> & {
-    name: string
-    description: string
-    version: string
-    maintainer: string
+  Package & {
+    imageUrl: string
     installed: boolean
   }
 
@@ -109,8 +106,10 @@ const PackageInfo = ({
   const classes = useStyles()
   const [installedOrQueried, setInstalled] = useState(installed)
   useEffect(() => {
-    const queuePackage = queue.find((pkg: Package) => name === pkg.name && version === pkg.version)
-    if (queuePackage) setInstalled(queuePackage.flag)
+    const queuePackage = queue.find(
+      (pkg: QueueNode) => name === pkg.name && version === pkg.version
+    )
+    if (queuePackage) setInstalled(!!queuePackage?.flag)
   }, [])
   const { enqueueSnackbar } = useSnackbar()
   return (
@@ -197,14 +196,14 @@ const PackageInfo = ({
             className={classes.button}
             onClick={() => {
               enqueueSnackbar(
-                queue.find((el: Package) => el.name === name && el.version === version)
+                queue.find((el: QueueNode) => el.name === name && el.version === version)
                   ? `Package ${name}@${version} dequeued`
                   : `Package ${name}@${version} queued for deletion`,
                 {
                   variant: 'error'
                 }
               )
-              uninstall(name, version)
+              uninstall({ name, version })
               setInstalled(false)
             }}
             size="large"
@@ -219,14 +218,14 @@ const PackageInfo = ({
             size="large"
             onClick={() => {
               enqueueSnackbar(
-                queue.find((el: Package) => el.name === name && el.version === version)
+                queue.find((el: QueueNode) => el.name === name && el.version === version)
                   ? `Package ${name}@${version} dequeued`
                   : `Package ${name}@${version} queued for installation`,
                 {
                   variant: 'success'
                 }
               )
-              install(name, version)
+              install({ name, version })
               setInstalled(true)
             }}
           >

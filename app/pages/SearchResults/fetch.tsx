@@ -1,5 +1,7 @@
 import { PackagePreview } from '../../components'
-import React from 'react'
+import React, { ReactElement } from 'react'
+import { Dispatch } from 'redux'
+import { AptActions } from '../../actions'
 
 export interface CVEInfoType {
   critical: number
@@ -22,10 +24,11 @@ const processDescription = (str: string) => {
 }
 
 export interface Package {
+  [index: string]: string | undefined
   // Required fields
   name: string
   version: string
-  flag: string
+  flag?: string
   maintainer: string
   description: string
   // Optional fields
@@ -94,7 +97,10 @@ const pkgRegex: pkgRegexType = {
   }
 }
 
-export const formPackagePreviews = async (searchQueryResults: string[]) => {
+export const formPackagePreviews = async (
+  searchQueryResults: string[],
+  dispatch: Dispatch<RootAction>
+): Promise<ReactElement[]> => {
   const parsedPackages = []
   for (let i = 0; i < searchQueryResults.length; i++) {
     const newPackage: {
@@ -118,7 +124,6 @@ export const formPackagePreviews = async (searchQueryResults: string[]) => {
       try {
         const match = pkgRegex.optional[key].exec(searchQueryResults[i])
         if (match) newPackage[key] = match[1]
-        return match
       } catch (e) {
         console.error(e)
       }
@@ -133,7 +138,7 @@ export const formPackagePreviews = async (searchQueryResults: string[]) => {
   const info = await Promise.all(
     parsedPackages.map(({ name }) =>
       Promise.all([
-        window.dpkgQuery(name),
+        dispatch(AptActions.status(name)),
         cveAPIInfo.handleResult({ critical: 3, important: 41, low: 412 })
       ])
     )

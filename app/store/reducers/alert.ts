@@ -3,6 +3,6 @@ import { createReducer } from '@reduxjs/toolkit'
 
 export default createReducer('', builder =>
   builder
-    .addCase(AlertActions.set, (state, action) => action.payload)
+    .addCase(AlertActions.set, (_state, action) => action.payload)
     .addCase(AlertActions.clear, () => '')
 )

@@ -1,3 +1,9 @@
-import { createBrowserHistory } from 'history'
+import { createBrowserHistory, LocationState } from 'history'
+import { Package } from '../pages/SearchResults/fetch'
 
-export default createBrowserHistory()
+export type MyLocationState = LocationState & {
+  data?: Package
+  searchQuery?: string
+}
+
+export default createBrowserHistory<MyLocationState>()

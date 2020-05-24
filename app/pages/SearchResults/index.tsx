@@ -39,7 +39,9 @@ const useStyles = makeStyles(theme => ({
 const mapStateToProps = ({
   searchResults,
   router: {
-    location: { state: { searchQuery } = {} }
+    location: {
+      state: { searchQuery }
+    }
   }
 }: RootState) => ({
   ...searchResults,
@@ -57,7 +59,7 @@ const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
     dispatch
   )
 
-type SearchResultsProps = ReturnType<typeof mapStateToProps> | ReturnType<typeof mapDispatchToProps>
+type SearchResultsProps = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>
 
 const SearchResults = ({
   alert,

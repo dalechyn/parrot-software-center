@@ -1,14 +1,15 @@
 import { combineReducers } from 'redux'
 import { connectRouter } from 'connected-react-router'
-import history from './history'
+import history, { MyLocationState } from './history'
 
-import { alert, queue, searchResults } from './reducers'
+import { alert, queue, searchResults, apt } from './reducers'
 
 const rootReducer = combineReducers({
-  router: connectRouter(history),
+  router: connectRouter<MyLocationState>(history),
   alert,
   queue,
-  searchResults
+  searchResults,
+  apt
 })
 
 export default rootReducer
