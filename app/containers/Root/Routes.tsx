@@ -1,6 +1,6 @@
 import React from 'react'
 import { Switch, Route } from 'react-router-dom'
-import { Home, PackageInfo, SearchResults, Queue } from './containers'
+import { Home, PackageInfo, SearchResults, Queue } from '../index'
 
 const Routes = () => {
   return (

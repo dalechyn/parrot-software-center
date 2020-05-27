@@ -29,7 +29,7 @@ module.exports = {
       }
     ],
     'react/prop-types': 'off',
-    '@typescript/explicit-function-return-type': 'off'
+    '@typescript-eslint/explicit-function-return-type': 'off'
   },
   settings: {
     'import/resolver': {
