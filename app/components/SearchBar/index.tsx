@@ -1,7 +1,6 @@
 import React, { KeyboardEvent, ChangeEvent, useEffect, useState } from 'react'
 
-import { bindActionCreators, Dispatch } from 'redux'
-import { connect } from 'react-redux'
+import { connect, ConnectedProps } from 'react-redux'
 import { push } from 'connected-react-router'
 
 import { debounce, CircularProgress, TextField } from '@material-ui/core'
@@ -22,23 +21,21 @@ const styles = {
   }
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
-  bindActionCreators(
-    {
-      clearAlert: AlertActions.clear,
-      setAlert: AlertActions.set,
-      searchNames: AptActions.searchNames,
-      push
-    },
-    dispatch
-  )
+const mapDispatchToProps = {
+  clearAlert: AlertActions.clear,
+  setAlert: AlertActions.set,
+  searchNames: AptActions.searchNames,
+  push
+}
 
-type SearchBarProps = ReturnType<typeof mapDispatchToProps>
+const connector = connect(null, mapDispatchToProps)
 
-const SearchBar: React.FC<SearchBarProps> = ({ setAlert, clearAlert, push, searchNames }) => {
+type SearchBarProps = ConnectedProps<typeof connector>
+
+const SearchBar = ({ setAlert, clearAlert, push, searchNames }: SearchBarProps) => {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [options, setOptions] = useState([])
+  const [options, setOptions] = useState(Array<string>())
   const [value, setValue] = useState('')
 
   useEffect(() => {
@@ -141,4 +138,4 @@ const SearchBar: React.FC<SearchBarProps> = ({ setAlert, clearAlert, push, searc
   )
 }
 
-export default connect(null, mapDispatchToProps)(SearchBar)
+export default connector(SearchBar)

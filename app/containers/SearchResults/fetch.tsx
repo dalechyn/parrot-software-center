@@ -1,6 +1,5 @@
 import { PackagePreview } from '../../components'
 import React, { ReactElement } from 'react'
-import { Dispatch } from 'redux'
 import { AptActions } from '../../actions'
 
 export interface CVEInfoType {
@@ -99,7 +98,7 @@ const pkgRegex: pkgRegexType = {
 
 export const formPackagePreviews = async (
   searchQueryResults: string[],
-  dispatch: Dispatch<RootAction>
+  dispatch: AppDispatch
 ): Promise<ReactElement[]> => {
   const parsedPackages = []
   for (let i = 0; i < searchQueryResults.length; i++) {
@@ -132,7 +131,7 @@ export const formPackagePreviews = async (
     parsedPackages.push(newPackage)
   }
 
-  const resourceURL = new URL('assets/packages/', await window.getUrl()).toString()
+  const resourceURL = new URL('assets/packages/', APIUrl).toString()
 
   // Fetch whole package info at once
   const info = await Promise.all(
@@ -154,7 +153,7 @@ export const formPackagePreviews = async (
         key={`${name}@${version}`}
         imageUrl={`${resourceURL}${name}.png`}
         cveInfo={cveInfo}
-        installed={installed}
+        installed={AptActions.status.fulfilled.match(installed)}
         {...rest}
       />
     )

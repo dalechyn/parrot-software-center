@@ -1,7 +1,6 @@
 import React, { Fragment, useEffect, useState } from 'react'
 
-import { bindActionCreators, Dispatch } from 'redux'
-import { connect } from 'react-redux'
+import { connect, ConnectedProps } from 'react-redux'
 import { goBack } from 'connected-react-router'
 
 import {
@@ -73,18 +72,15 @@ const mapStateToProps = ({
   queue
 }: RootState) => ({ ...data, queue })
 
-const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
-  bindActionCreators(
-    {
-      goBack,
-      install: QueueActions.install,
-      uninstall: QueueActions.uninstall
-    },
-    dispatch
-  )
+const mapDispatchToProps = {
+  goBack,
+  install: QueueActions.install,
+  uninstall: QueueActions.uninstall
+}
 
-type PackageInfoProps = ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps> &
+const connector = connect(mapStateToProps, mapDispatchToProps)
+
+type PackageInfoProps = ConnectedProps<typeof connector> &
   Package & {
     imageUrl: string
     installed: boolean
@@ -237,4 +233,4 @@ const PackageInfo = ({
   )
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PackageInfo)
+export default connector(PackageInfo)

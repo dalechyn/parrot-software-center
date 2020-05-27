@@ -1,5 +1,5 @@
 import { createBrowserHistory, LocationState } from 'history'
-import { Package } from '../pages/SearchResults/fetch'
+import { Package } from '../containers/SearchResults/fetch'
 
 export type MyLocationState = LocationState & {
   data?: Package

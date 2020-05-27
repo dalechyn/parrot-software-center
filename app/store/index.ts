@@ -12,7 +12,11 @@ const store = configureStore({
   reducer: rootReducer,
   preloadedState: initialState,
   devTools: true,
-  middleware: [...getDefaultMiddleware(), routerMiddleware(history), logger as Middleware]
+  middleware: [
+    routerMiddleware(history),
+    logger as Middleware,
+    ...getDefaultMiddleware<RootState>()
+  ] as const
 })
 
 // export store singleton instance

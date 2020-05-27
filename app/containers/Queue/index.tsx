@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { connect } from 'react-redux'
+import { connect, ConnectedProps } from 'react-redux'
 import {
   Button,
   Container,
@@ -14,7 +14,6 @@ import {
 } from '@material-ui/core'
 import { ArrowUpward, ArrowDownward, Delete } from '@material-ui/icons'
 import { AlertActions, QueueActions, AptActions } from '../../actions'
-import { bindActionCreators, Dispatch } from 'redux'
 import { INSTALL, QueueNode, UNINSTALL } from '../../store/reducers/queue'
 
 const useStyles = makeStyles(theme => ({
@@ -58,19 +57,17 @@ const PackageChip = ({ flag, classes }: PackageChipProps) => {
 
 const mapStateToProps = ({ queue }: RootState) => ({ queue })
 
-const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
-  bindActionCreators(
-    {
-      swap: QueueActions.swap,
-      remove: QueueActions.remove,
-      setAlert: AlertActions.set,
-      aptInstall: AptActions.install,
-      aptUninstall: AptActions.uninstall
-    },
-    dispatch
-  )
+const mapDispatchToProps = {
+  swap: QueueActions.swap,
+  remove: QueueActions.remove,
+  setAlert: AlertActions.set,
+  aptInstall: AptActions.install,
+  aptUninstall: AptActions.uninstall
+}
 
-type QueueProps = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>
+const connector = connect(mapStateToProps, mapDispatchToProps)
+
+type QueueProps = ConnectedProps<typeof connector>
 
 const Queue = ({ queue, swap, remove, setAlert, aptInstall, aptUninstall }: QueueProps) => {
   const [progress, setProgress] = useState(0)
@@ -104,7 +101,6 @@ const Queue = ({ queue, swap, remove, setAlert, aptInstall, aptUninstall }: Queu
       alignContent="stretch"
       spacing={2}
       className={classes.root}
-      xs={12}
     >
       {queue.map((el: QueueNode, i: number) => (
         <Grid item container xs={9} key={el.name + el.version}>
@@ -155,4 +151,4 @@ const Queue = ({ queue, swap, remove, setAlert, aptInstall, aptUninstall }: Queu
   )
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Queue)
+export default connector(Queue)

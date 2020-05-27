@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import classnames from 'classnames'
 
-import { bindActionCreators, Dispatch } from 'redux'
-import { connect } from 'react-redux'
+import { connect, ConnectedProps } from 'react-redux'
 import { Img } from 'react-image'
 import { push } from 'connected-react-router'
 import { useSnackbar } from 'notistack'
-import { Package } from '../../pages/SearchResults/fetch'
+import { Package } from '../../containers/SearchResults/fetch'
 
 import {
   Button,
@@ -74,29 +73,26 @@ const useStyles = makeStyles(theme => ({
 
 const mapStateToProps = ({ queue }: RootState) => ({ queue })
 
-const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
-  bindActionCreators(
-    {
-      push,
-      install: QueueActions.install,
-      uninstall: QueueActions.uninstall
-    },
-    dispatch
-  )
+const mapDispatchToProps = {
+  push,
+  install: QueueActions.install,
+  uninstall: QueueActions.uninstall
+}
 
-type PackagePreviewProps = ReturnType<typeof mapDispatchToProps> &
-  ReturnType<typeof mapStateToProps> & {
-    imageUrl: string
-    name: string
-    description: string
-    version: string
-    installed: boolean
-    cveInfo: {
-      critical: number
-      important: number
-      low: number
-    }
+const connector = connect(mapStateToProps, mapDispatchToProps)
+
+type PackagePreviewProps = ConnectedProps<typeof connector> & {
+  imageUrl: string
+  name: string
+  description: string
+  version: string
+  installed: boolean
+  cveInfo: {
+    critical: number
+    important: number
+    low: number
   }
+}
 
 const PackagePreview = ({
   imageUrl,
@@ -219,4 +215,4 @@ const PackagePreview = ({
   )
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PackagePreview)
+export default connector(PackagePreview)

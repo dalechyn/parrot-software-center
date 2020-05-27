@@ -1,16 +1,14 @@
 import React, { ChangeEvent, useEffect } from 'react'
-import PropTypes from 'prop-types'
-
-import { connect } from 'react-redux'
-import { bindActionCreators, Dispatch } from 'redux'
+import { connect, ConnectedProps, useDispatch } from 'react-redux'
 
 import { Grid, makeStyles } from '@material-ui/core'
 import { Pagination } from '@material-ui/lab'
 import leven from 'leven'
 
 import { formPackagePreviews } from './fetch'
-import { AlertActions, SearchResultsActions } from '../../actions'
+import { AptActions, AlertActions, SearchResultsActions } from '../../actions'
 import { PackagePreviewSkeleton } from '../../components'
+import { unwrapResult } from '@reduxjs/toolkit'
 
 const componentsInPage = 5
 
@@ -48,18 +46,18 @@ const mapStateToProps = ({
   searchQuery
 })
 
-const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
-  bindActionCreators(
-    {
-      alert: AlertActions.set,
-      scroll: SearchResultsActions.scroll,
-      cacheResults: SearchResultsActions.cacheResults,
-      cacheNames: SearchResultsActions.cacheNames
-    },
-    dispatch
-  )
+const mapDispatchToProps = {
+  alert: AlertActions.set,
+  scroll: SearchResultsActions.scroll,
+  cacheResults: SearchResultsActions.cacheResults,
+  cacheNames: SearchResultsActions.cacheNames,
+  searchNames: AptActions.searchNames,
+  search: AptActions.search
+}
 
-type SearchResultsProps = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>
+const connector = connect(mapStateToProps, mapDispatchToProps)
+
+type SearchResultsProps = ConnectedProps<typeof connector>
 
 const SearchResults = ({
   alert,
@@ -69,17 +67,21 @@ const SearchResults = ({
   cacheResults,
   names,
   cacheNames,
-  searchQuery
+  searchNames,
+  search,
+  searchQuery = ''
 }: SearchResultsProps) => {
   // Initial package names fetching effect
   useEffect(() => {
     let active = true
     const f = async () => {
       try {
-        const res = await window.aptSearchPackageNames(searchQuery)
-        if (active)
+        const response = await searchNames(searchQuery)
+        if (active && AptActions.searchNames.fulfilled.match(response))
           cacheNames(
-            res.sort((a: string, b: string) => leven(a, searchQuery) - leven(b, searchQuery))
+            unwrapResult(response).sort(
+              (a: string, b: string) => leven(a, searchQuery) - leven(b, searchQuery)
+            )
           )
       } catch (e) {
         alert(e)
@@ -98,14 +100,17 @@ const SearchResults = ({
     let active = true
     const f = async () => {
       try {
-        const rawPackageData = await window.aptSearch(
+        const response = await search(
           names.slice((page - 1) * componentsInPage, page * componentsInPage)
         )
-        if (!active) return
-        const components = await formPackagePreviews(
-          rawPackageData.slice(0, rawPackageData.length - 1)
-        )
-        cacheResults(components)
+        if (active && AptActions.search.fulfilled.match(response)) {
+          const result = unwrapResult(response)
+          const components = await formPackagePreviews(
+            result.slice(0, result.length - 1),
+            useDispatch()
+          )
+          cacheResults(components)
+        }
       } catch (e) {
         alert(e)
       }
@@ -117,7 +122,7 @@ const SearchResults = ({
     }
   }, [cacheResults, names, page, alert])
 
-  const pageChange = (e: ChangeEvent, n: number) => {
+  const pageChange = (_: ChangeEvent<unknown>, n: number) => {
     if (n === page) return
 
     scroll(n)
@@ -160,17 +165,4 @@ const SearchResults = ({
   )
 }
 
-if (process.env.node_env === 'development') {
-  SearchResults.propTypes = {
-    setAlert: PropTypes.func,
-    setPage: PropTypes.func,
-    page: PropTypes.number,
-    results: PropTypes.array,
-    setResults: PropTypes.func,
-    names: PropTypes.array,
-    setNames: PropTypes.func,
-    searchQuery: PropTypes.string.isRequired
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(SearchResults)
+export default connector(SearchResults)

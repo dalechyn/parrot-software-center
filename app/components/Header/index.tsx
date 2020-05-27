@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 
-import { bindActionCreators, Dispatch } from 'redux'
-import { connect } from 'react-redux'
+import { connect, ConnectedProps } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 import {
@@ -44,17 +43,15 @@ const useStyles = makeStyles(theme => ({
 
 const mapStateToProps = ({ alert }: RootState) => ({ alert })
 
-const mapDispatchToProps = (dispatch: Dispatch<RootAction>) =>
-  bindActionCreators(
-    {
-      clear: AlertActions.clear
-    },
-    dispatch
-  )
+const mapDispatchToProps = {
+  clear: AlertActions.clear
+}
 
-type HeaderProps = ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps>
+const connector = connect(mapStateToProps, mapDispatchToProps)
 
-const Header: React.FC<HeaderProps> = ({ alert, clear }) => {
+type HeaderProps = ConnectedProps<typeof connector>
+
+const Header = ({ alert, clear }: HeaderProps) => {
   const classes = useStyles()
   const [drawerOpen, setDrawer] = useState(false)
 
@@ -106,4 +103,4 @@ const Header: React.FC<HeaderProps> = ({ alert, clear }) => {
   )
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Header)
+export default connector(Header)

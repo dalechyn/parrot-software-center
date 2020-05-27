@@ -14,3 +14,7 @@ export const searchNames = createAsyncThunk('@apt/SEARCH_NAMES', async (packageN
   console.log('searchNames called on ', packageName)
   return ['asd', 'sdsa']
 })
+export const search = createAsyncThunk('@apt/SEARCH', async (packageNames: string[]) => {
+  console.log('search called on ', packageNames)
+  return ['asdasdasd', 'asdasd']
+})

@@ -1,8 +1,8 @@
-import React from 'react';
-import { Switch, Route } from 'react-router-dom';
-import { Home, PackageInfo, SearchResults, Queue } from './pages';
+import React from 'react'
+import { Switch, Route } from 'react-router-dom'
+import { Home, PackageInfo, SearchResults, Queue } from './containers'
 
-export default function Routes() {
+const Routes = () => {
   return (
     <Switch>
       <Route exact path="/">
@@ -24,5 +24,7 @@ export default function Routes() {
         <Queue />
       </Route>
     </Switch>
-  );
+  )
 }
+
+export default Routes
