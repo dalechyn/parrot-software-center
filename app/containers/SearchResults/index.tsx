@@ -37,9 +37,7 @@ const useStyles = makeStyles(theme => ({
 const mapStateToProps = ({
   searchResults,
   router: {
-    location: {
-      state: { searchQuery }
-    }
+    location: { state: { searchQuery } = {} }
   }
 }: RootState) => ({
   ...searchResults,
