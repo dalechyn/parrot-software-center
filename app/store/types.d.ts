@@ -1,5 +1,4 @@
 import store from './index'
-import { ThunkAction, ThunkDispatch } from '@reduxjs/toolkit'
 import rootReducer from './root.reducer'
 
 declare global {
