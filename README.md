@@ -21,5 +21,3 @@ yarn install
 ```console
 yarn dev
 ```
-
-``
