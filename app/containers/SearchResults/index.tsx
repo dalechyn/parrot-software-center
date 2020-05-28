@@ -72,6 +72,7 @@ const SearchResults = ({
   searchQuery = ''
 }: SearchResultsProps) => {
   // Initial package names fetching effect
+  const dispatch = useDispatch()
   useEffect(() => {
     let active = true
     const f = async () => {
@@ -105,10 +106,7 @@ const SearchResults = ({
         )
         if (active && AptActions.search.fulfilled.match(response)) {
           const result = unwrapResult(response)
-          const components = await formPackagePreviews(
-            result.slice(0, result.length - 1),
-            useDispatch()
-          )
+          const components = await formPackagePreviews(result.slice(0, result.length - 1), dispatch)
           cacheResults(components)
         }
       } catch (e) {
