@@ -31,13 +31,13 @@ export const uninstall = createAsyncThunk(
     return
   }
 )
-export const status = createAsyncThunk('@apt/STATUS', async (packageName: string, thunkAPI) => {
+export const status = createAsyncThunk('@apt/STATUS', async (packageName: string) => {
   console.log('dpkg query called on ', packageName)
   try {
     const { stdout, stderr } = await exec(`dpkg-query -W ${packageName}`)
     return stdout.length === 0 || stderr.length !== 0
   } catch (e) {
-    return thunkAPI.rejectWithValue(e)
+    return false
   }
 })
 export const searchNames = createAsyncThunk(
