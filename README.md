@@ -1,20 +1,25 @@
 # Parrot Software Center
 
-Uses ReactJS with material-ui styling and GoLang WebView.
+Uses ReactJS with material-ui styling and Electron.
 
 ## Development
 
-1. Clone the repo: `git clone https://nest.parrot.sh/packages/parrot/software-center-team/parrot-software-center.git`
+1. Clone the repo:
 
-2. First is first, you need `nodejs` and `npm`.
-
-### Debian
-```bash
-sudo apt-get install nodejs golang
+```git
+git clone https://nest.parrot.sh/packages/parrot/software-center-team/parrot-software-center.git
 ```
 
-3. Running
-```bash
-make build
-./parrot-software-center
+2. Install dependencies:
+
+```console
+yarn install
 ```
+
+3. Run in development mode:
+
+```console
+yarn dev
+```
+
+``
