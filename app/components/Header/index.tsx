@@ -85,7 +85,7 @@ const Header = ({ alert, clear }: HeaderProps) => {
           </Button>
         </div>
         <Divider />
-        <Button startIcon={<FeedIcon />} size="large" component={Link} to={'/feed'}>
+        <Button disabled startIcon={<FeedIcon />} size="large" component={Link} to={'/feed'}>
           Feed
         </Button>
         <Button startIcon={<QueueIcon />} size="large" component={Link} to={'/queue'}>

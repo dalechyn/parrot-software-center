@@ -19,7 +19,7 @@ import {
   makeStyles
 } from '@material-ui/core'
 import { grey, red, orange } from '@material-ui/core/colors'
-import * as dummyPackageImg from '../../assets/package.png'
+import dummyPackageImg from '../../assets/package.png'
 import { QueueActions } from '../../actions'
 import { QueueNode } from '../../store/reducers/queue'
 

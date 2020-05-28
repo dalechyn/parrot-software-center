@@ -2,6 +2,8 @@ import { PackagePreview } from '../../components'
 import React, { ReactElement } from 'react'
 import { AptActions } from '../../actions'
 
+const APIUrl = 'http://localhost:8000/'
+
 export interface CVEInfoType {
   critical: number
   important: number
