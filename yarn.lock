@@ -1758,6 +1758,13 @@
   resolved "https://registry.yarnpkg.com/@types/q/-/q-1.5.4.tgz#15925414e0ad2cd765bfef58842f7e26a7accb24"
   integrity sha512-1HcDas8SEj4z1Wc696tH56G8OlRaH/sqZOynNNB+HF0WOeXPaxTtbYzJY2oEfiUxjSKjhCKr+MvR7dCHcEelug==
 
+"@types/ramda@^0.27.6":
+  version "0.27.6"
+  resolved "https://registry.yarnpkg.com/@types/ramda/-/ramda-0.27.6.tgz#5b914266cb73ea61fe3778949ef9b0aa455804b4"
+  integrity sha512-ephagb0ZIAJSoS5I/qMS4Mqo1b/Nd50pWM+o1QO/dz8NF//GsCGPTLDVRqgXlVncy74KShfHzE5rPZXTeek4PA==
+  dependencies:
+    ts-toolbelt "^6.3.3"
+
 "@types/react-dom@^16.9.7":
   version "16.9.8"
   resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-16.9.8.tgz#fe4c1e11dfc67155733dfa6aa65108b4971cb423"
@@ -11964,6 +11971,11 @@ railroad-diagrams@^1.0.0:
   resolved "https://registry.yarnpkg.com/railroad-diagrams/-/railroad-diagrams-1.0.0.tgz#eb7e6267548ddedfb899c1b90e57374559cddb7e"
   integrity sha1-635iZ1SN3t+4mcG5Dlc3RVnN234=
 
+ramda@^0.27.0:
+  version "0.27.0"
+  resolved "https://registry.yarnpkg.com/ramda/-/ramda-0.27.0.tgz#915dc29865c0800bf3f69b8fd6c279898b59de43"
+  integrity sha512-pVzZdDpWwWqEVVLshWUHjNwuVP7SfcmPraYuqocJp1yo2U1R7P+5QAfDhdItkuoGqIBnBYrtPp7rEPqDn9HlZA==
+
 randexp@0.4.6:
   version "0.4.6"
   resolved "https://registry.yarnpkg.com/randexp/-/randexp-0.4.6.tgz#e986ad5e5e31dae13ddd6f7b3019aa7c87f60ca3"
@@ -14533,6 +14545,11 @@ tryer@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/tryer/-/tryer-1.0.1.tgz#f2c85406800b9b0f74c9f7465b81eaad241252f8"
   integrity sha512-c3zayb8/kWWpycWYg87P71E1S1ZL6b6IJxfb5fvsUgsf0S2MVGaDhDXXjDMpdCpfWXqptc+4mXwmiy1ypXqRAA==
+
+ts-toolbelt@^6.3.3:
+  version "6.9.4"
+  resolved "https://registry.yarnpkg.com/ts-toolbelt/-/ts-toolbelt-6.9.4.tgz#cc3a070d99c557c552b4f69e36f13d430c47a760"
+  integrity sha512-muRZZqfOTOVvLk5cdnp7YWm6xX+kD/WL2cS/L4zximBRcbQSuMoTbQQ2ZZBVMs1gB0EZw1qThP+HrIQB35OmEw==
 
 tslib@^1.8.1, tslib@^1.9.0:
   version "1.13.0"

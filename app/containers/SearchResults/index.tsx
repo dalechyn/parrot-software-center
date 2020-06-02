@@ -1,14 +1,16 @@
-import React, { ChangeEvent, useEffect } from 'react'
-import { connect, ConnectedProps, useDispatch } from 'react-redux'
+import React, { ChangeEvent, useEffect, useState } from 'react'
+import { connect, ConnectedProps } from 'react-redux'
 
-import { Grid, makeStyles } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core'
 import { Pagination } from '@material-ui/lab'
 import leven from 'leven'
 
-import { formPackagePreviews } from './fetch'
-import { AptActions, AlertActions, SearchResultsActions } from '../../actions'
-import { PackagePreviewSkeleton } from '../../components'
+import PackagePreviewList from '../../components/PackagePreviewList'
+import { AptActions, AlertActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
+import { RouteComponentProps, withRouter } from 'react-router-dom'
+import { Preview } from '../../actions/apt'
+import { Package } from '../PackageInfo'
 
 const componentsInPage = 5
 
@@ -18,97 +20,57 @@ const useStyles = makeStyles(theme => ({
     flexFlow: 'column',
     padding: theme.spacing(3)
   },
-  grid: {
-    display: 'inline-grid',
-    gridGap: theme.spacing(2)
-  },
-  pagination: {
-    justifySelf: 'center'
-  },
   progress: {
     alignSelf: 'center'
   },
-  skeleton: {
-    width: '80vw',
-    height: '250px'
+  pagination: {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+    marginLeft: 'auto',
+    marginRight: 'auto'
   }
 }))
 
 const mapStateToProps = ({
-  searchResults,
   router: {
-    location: { state: { searchQuery } = {} }
+    location: { state }
   }
 }: RootState) => ({
-  ...searchResults,
-  searchQuery
+  ...state
 })
 
 const mapDispatchToProps = {
-  alert: AlertActions.set,
-  scroll: SearchResultsActions.scroll,
-  cacheResults: SearchResultsActions.cacheResults,
-  cacheNames: SearchResultsActions.cacheNames,
-  searchNames: AptActions.searchNames,
+  setAlert: AlertActions.set,
+  searchPreviews: AptActions.searchPreviews,
   search: AptActions.search
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
 
-type SearchResultsProps = ConnectedProps<typeof connector>
+type SearchResultsProps = ConnectedProps<typeof connector> & RouteComponentProps
 
 const SearchResults = ({
-  alert,
-  scroll,
-  page,
-  results,
-  cacheResults,
-  names,
-  cacheNames,
-  searchNames,
-  search,
-  searchQuery = ''
-}: SearchResultsProps) => {
+  setAlert,
+  searchPreviews,
+  match
+}: SearchResultsProps & RouteComponentProps<Package & { page: string }>) => {
+  const [previews, setPreviews] = useState(Array<Preview>())
+  const { name, page: initialPage } = match.params
+  const [page, scroll] = useState(initialPage ? parseInt(initialPage) : 1)
   // Initial package names fetching effect
-  const dispatch = useDispatch()
   useEffect(() => {
+    if (!name) return
     let active = true
     const f = async () => {
       try {
-        const response = await searchNames(searchQuery)
-        if (active && AptActions.searchNames.fulfilled.match(response))
-          cacheNames(
-            unwrapResult(response).sort(
-              (a: string, b: string) => leven(a, searchQuery) - leven(b, searchQuery)
-            )
+        const response = await searchPreviews(name)
+        if (active && AptActions.searchPreviews.fulfilled.match(response)) {
+          setPreviews(
+            unwrapResult(response).sort((a, b) => leven(a.name, name) - leven(b.name, name))
           )
-      } catch (e) {
-        alert(e)
-      }
-    }
-
-    f()
-    return () => {
-      active = false
-    }
-  }, [cacheNames, searchQuery, alert])
-
-  // Effect that sets package previews depending on selected page
-  useEffect(() => {
-    if (names.length === 0) return
-    let active = true
-    const f = async () => {
-      try {
-        const response = await search(
-          names.slice((page - 1) * componentsInPage, page * componentsInPage)
-        )
-        if (active && AptActions.search.fulfilled.match(response)) {
-          const result = unwrapResult(response)
-          const components = await formPackagePreviews(result.slice(0, result.length - 1), dispatch)
-          cacheResults(components)
         }
       } catch (e) {
-        alert(e)
+        setAlert(e)
       }
     }
 
@@ -116,49 +78,38 @@ const SearchResults = ({
     return () => {
       active = false
     }
-  }, [cacheResults, names, page, alert])
+  }, [name, setAlert])
 
   const pageChange = (_: ChangeEvent<unknown>, n: number) => {
     if (n === page) return
-
     scroll(n)
-    cacheResults([])
   }
-
   const classes = useStyles()
 
   return (
     <div className={classes.root}>
-      <h1>Showing results for {searchQuery}</h1>
-      <Grid
-        container
-        direction="column"
-        justify="space-evenly"
-        alignItems="center"
-        className={classes.grid}
-      >
-        {results && results.length === 0 ? (
-          <>
-            <PackagePreviewSkeleton />
-            <PackagePreviewSkeleton />
-            <PackagePreviewSkeleton />
-            <PackagePreviewSkeleton />
-            <PackagePreviewSkeleton />
-          </>
-        ) : (
-          results
-        )}
-        <Pagination
-          className={classes.pagination}
-          count={Math.ceil(names.length / componentsInPage)}
-          onChange={pageChange}
-          page={page}
-          variant="outlined"
-          shape="rounded"
-        />
-      </Grid>
+      <h1>Showing results for {name}</h1>
+      <Pagination
+        className={classes.pagination}
+        count={Math.ceil(previews.length / componentsInPage)}
+        onChange={pageChange}
+        page={page}
+        variant="outlined"
+        shape="rounded"
+      />
+      <PackagePreviewList
+        previews={previews.slice((page - 1) * componentsInPage, page * componentsInPage)}
+      />
+      <Pagination
+        className={classes.pagination}
+        count={Math.ceil(previews.length / componentsInPage)}
+        onChange={pageChange}
+        page={page}
+        variant="outlined"
+        shape="rounded"
+      />
     </div>
   )
 }
 
-export default connector(SearchResults)
+export default connector(withRouter(SearchResults))

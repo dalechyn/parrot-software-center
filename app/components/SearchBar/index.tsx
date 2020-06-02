@@ -24,7 +24,7 @@ const styles = {
 const mapDispatchToProps = {
   clearAlert: AlertActions.clear,
   setAlert: AlertActions.set,
-  searchNames: AptActions.searchNames,
+  searchPreviews: AptActions.searchPreviews,
   push
 }
 
@@ -32,7 +32,7 @@ const connector = connect(null, mapDispatchToProps)
 
 type SearchBarProps = ConnectedProps<typeof connector>
 
-const SearchBar = ({ setAlert, clearAlert, push, searchNames }: SearchBarProps) => {
+const SearchBar = ({ setAlert, clearAlert, push, searchPreviews }: SearchBarProps) => {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState(Array<string>())
@@ -44,11 +44,14 @@ const SearchBar = ({ setAlert, clearAlert, push, searchNames }: SearchBarProps) 
     debounce(() => {
       const fetchCompletion = async (name: string) => {
         try {
-          const response = await searchNames(name)
-          if (AptActions.searchNames.fulfilled.match(response)) {
-            const names = unwrapResult(response)
+          const response = await searchPreviews(name)
+          if (AptActions.searchPreviews.fulfilled.match(response)) {
+            const previews = unwrapResult(response)
             setOptions(
-              names.sort((a: string, b: string) => leven(a, name) - leven(b, name)).slice(0, 5)
+              previews
+                .map(preview => preview.name)
+                .sort((a: string, b: string) => leven(a, name) - leven(b, name))
+                .slice(0, 5)
             )
           }
         } catch (e) {
@@ -85,7 +88,7 @@ const SearchBar = ({ setAlert, clearAlert, push, searchNames }: SearchBarProps) 
       await Promise.race([
         delayPromise(requestTimeout),
         (async () => {
-          push('/search', { searchQuery: value })
+          push(`/search/${value}`)
           clearAlert()
         })()
       ])

@@ -21,7 +21,7 @@ const Root = () => {
           secondary: {
             main: blue[50]
           },
-          type: prefersDarkMode ? 'dark' : 'light'
+          type: /*prefersDarkMode ?*/ 'dark' /* : 'light'*/
         },
         typography: {
           fontFamily: 'Hack'

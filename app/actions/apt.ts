@@ -4,6 +4,11 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 
 const exec = promisify(_exec)
 
+export type Preview = {
+  name: string
+  description: string
+}
+
 export const install = createAsyncThunk('@apt/INSTALL', async (packageName: string, thunkAPI) => {
   console.log('apt install called on ', packageName)
   try {
@@ -35,36 +40,41 @@ export const status = createAsyncThunk('@apt/STATUS', async (packageName: string
   console.log('dpkg query called on ', packageName)
   try {
     const { stdout, stderr } = await exec(`dpkg-query -W ${packageName}`)
-    return stdout.length === 0 || stderr.length !== 0
+    return stdout.length !== 0 || stderr.length === 0
   } catch (e) {
     return false
   }
 })
-export const searchNames = createAsyncThunk(
-  '@apt/SEARCH_NAMES',
+export const searchPreviews = createAsyncThunk(
+  '@apt/SEARCH_PREVIEWS',
   async (packageName: string, thunkAPI) => {
-    console.log('searchNames called on ', packageName)
+    console.log('searchPreviews called on ', packageName)
     try {
-      const { stdout, stderr } = await exec(
-        `apt-cache search --names-only ${packageName} | egrep -o '^([a-z0-9.-]*)'`
-      )
+      const { stdout, stderr } = await exec(`apt-cache search --names-only ${packageName}`)
       if (stderr) {
         return thunkAPI.rejectWithValue(stderr)
       }
-      return stdout.split('\n')
+      return stdout.split('\n').map(str => {
+        const res = str.split(/ - /)
+        const preview: Preview = {
+          name: res[0],
+          description: res[1]
+        }
+        return preview
+      })
     } catch (e) {
       return thunkAPI.rejectWithValue(e)
     }
   }
 )
-export const search = createAsyncThunk('@apt/SEARCH', async (packageNames: string[], thunkAPI) => {
-  console.log('search called on ', packageNames)
+export const search = createAsyncThunk('@apt/SEARCH', async (packageName: string, thunkAPI) => {
+  console.log('search called on ', packageName)
   try {
-    const { stdout, stderr } = await exec(`apt-cache show ${packageNames.join(' ')}`)
+    const { stdout, stderr } = await exec(`apt-cache show ${packageName}`)
     if (stderr) {
       return thunkAPI.rejectWithValue(stderr)
     }
-    return stdout.split('\n\n')
+    return stdout
   } catch (e) {
     return thunkAPI.rejectWithValue(e)
   }

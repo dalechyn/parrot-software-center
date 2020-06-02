@@ -1,9 +1,11 @@
 import { createBrowserHistory, LocationState } from 'history'
-import { Package } from '../containers/SearchResults/fetch'
+import { Package } from '../containers/PackageInfo'
 
 export type MyLocationState = LocationState & {
-  data?: Package
-  searchQuery?: string
-}
+  page: number
+  installed: boolean
+  imageUrl: string
+  rest: Package
+} & Package
 
 export default createBrowserHistory<MyLocationState>()

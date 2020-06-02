@@ -5,7 +5,6 @@ import { connect, ConnectedProps } from 'react-redux'
 import { Img } from 'react-image'
 import { push } from 'connected-react-router'
 import { useSnackbar } from 'notistack'
-import { Package } from '../../containers/SearchResults/fetch'
 
 import {
   Button,
@@ -14,16 +13,15 @@ import {
   CardActions,
   CardContent,
   Chip,
+  makeStyles,
   Paper,
-  Typography,
-  makeStyles
+  Typography
 } from '@material-ui/core'
-import { grey, red, orange } from '@material-ui/core/colors'
+import { grey, orange, red } from '@material-ui/core/colors'
 import dummyPackageImg from '../../assets/package.png'
-import { QueueActions } from '../../actions'
+import { AptActions, QueueActions } from '../../actions'
 import { QueueNode } from '../../store/reducers/queue'
-
-const maxDescriptionLength = 500
+import { unwrapResult } from '@reduxjs/toolkit'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -76,7 +74,8 @@ const mapStateToProps = ({ queue }: RootState) => ({ queue })
 const mapDispatchToProps = {
   push,
   install: QueueActions.install,
-  uninstall: QueueActions.uninstall
+  uninstall: QueueActions.uninstall,
+  status: AptActions.status
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
@@ -85,8 +84,6 @@ type PackagePreviewProps = ConnectedProps<typeof connector> & {
   imageUrl: string
   name: string
   description: string
-  version: string
-  installed: boolean
   cveInfo: {
     critical: number
     important: number
@@ -98,25 +95,24 @@ const PackagePreview = ({
   imageUrl,
   name,
   description,
-  version,
   push,
   install,
   uninstall,
   queue,
   cveInfo,
-  installed,
+  status,
   ...rest
 }: PackagePreviewProps) => {
-  const [installedOrQueried, setInstalled] = useState(installed)
+  const [installedOrQueried, setInstalled] = useState(false)
   const { enqueueSnackbar } = useSnackbar()
   const classes = useStyles()
   useEffect(() => {
-    const foundPackage = queue.find(
-      (pkg: QueueNode) => name === pkg.name && version === pkg.version
-    )
-    if (!foundPackage) return
-    const queuePackage = foundPackage as Package
-    setInstalled(!!queuePackage.flag)
+    const f = async () => {
+      const foundPackage = queue.find((pkg: QueueNode) => name === pkg.name)
+      if (foundPackage) setInstalled(!!foundPackage.flag)
+      else setInstalled(unwrapResult(await status(name)))
+    }
+    f()
   }, [])
   return (
     <Card className={classes.root}>
@@ -125,7 +121,10 @@ const PackagePreview = ({
           push({
             pathname: '/package',
             state: {
-              data: { name, version, description, installed, imageUrl, ...rest }
+              name,
+              description,
+              imageUrl,
+              rest
             }
           })
         }
@@ -148,7 +147,7 @@ const PackagePreview = ({
               <Chip label={'This month CVEs:'} />
               <Chip
                 className={classnames(classes.cveCritical, classes.chipText)}
-                label={`Critical: ${cveInfo.critical}`}
+                label={`Crnamesitical: ${cveInfo.critical}`}
               />
               <Chip
                 className={classnames(classes.cveImportant, classes.chipText)}
@@ -164,7 +163,7 @@ const PackagePreview = ({
             component="p"
             noWrap
           >
-            {description.slice(0, maxDescriptionLength) + '...'}
+            {description}
           </Typography>
         </CardContent>
       </CardActionArea>
@@ -173,14 +172,14 @@ const PackagePreview = ({
           <Button
             onClick={() => {
               enqueueSnackbar(
-                queue.find((el: QueueNode) => el.name === name && el.version === version)
-                  ? `Package ${name}@${version} dequeued`
-                  : `Package ${name}@${version} queued for deletion`,
+                queue.find((el: QueueNode) => el.name === name)
+                  ? `Package ${name} dequeued`
+                  : `Package ${name} queued for deletion`,
                 {
                   variant: 'error'
                 }
               )
-              uninstall({ name, version })
+              uninstall(name)
               setInstalled(false)
             }}
             variant="outlined"
@@ -193,14 +192,14 @@ const PackagePreview = ({
           <Button
             onClick={() => {
               enqueueSnackbar(
-                queue.find((el: QueueNode) => el.name === name && el.version === version)
-                  ? `Package ${name}@${version} dequeued`
-                  : `Package ${name}@${version} queued for installation`,
+                queue.find((el: QueueNode) => el.name === name)
+                  ? `Package ${name} dequeued`
+                  : `Package ${name} queued for installation`,
                 {
                   variant: 'success'
                 }
               )
-              install({ name, version })
+              install(name)
               setInstalled(true)
             }}
             variant="outlined"

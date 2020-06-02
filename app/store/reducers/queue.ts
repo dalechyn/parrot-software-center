@@ -6,7 +6,6 @@ export const UNINSTALL = 'UNINSTALL'
 
 export interface QueueNode {
   name: string
-  version: string
   flag: string
 }
 
@@ -15,16 +14,12 @@ let newState: QueueNode[]
 export default createReducer(Array<QueueNode>(), builder =>
   builder
     .addCase(QueueActions.install, (state, action) => {
-      newState = state.filter(
-        ({ name, version, flag }) =>
-          action.payload.name !== name || action.payload.version !== version || flag !== UNINSTALL
-      )
+      newState = state.filter(({ name, flag }) => action.payload !== name || flag !== UNINSTALL)
       if (newState.length === state.length) {
         return [
           ...state,
           {
-            name: action.payload.name,
-            version: action.payload.version,
+            name: action.payload,
             flag: INSTALL
           }
         ]
@@ -32,16 +27,12 @@ export default createReducer(Array<QueueNode>(), builder =>
       return newState
     })
     .addCase(QueueActions.uninstall, (state, action) => {
-      newState = state.filter(
-        ({ name, version, flag }) =>
-          action.payload.name !== name || action.payload.version !== version || flag !== INSTALL
-      )
+      newState = state.filter(({ name, flag }) => action.payload !== name || flag !== INSTALL)
       if (newState.length === state.length) {
         return [
           ...state,
           {
-            name: action.payload.name,
-            version: action.payload.version,
+            name: action.payload,
             flag: UNINSTALL
           }
         ]

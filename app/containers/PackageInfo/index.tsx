@@ -6,21 +6,21 @@ import { goBack } from 'connected-react-router'
 import {
   Button,
   ExpansionPanel,
-  ExpansionPanelSummary,
-  ExpansionPanelDetails,
   ExpansionPanelActions,
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
+  makeStyles,
   Paper,
-  Typography,
-  makeStyles
+  Typography
 } from '@material-ui/core'
 import { ArrowBack, ExpandMore } from '@material-ui/icons'
 import { blue, green } from '@material-ui/core/colors'
 import dummyPackageImg from '../../assets/package.png'
 import { Img } from 'react-image'
 import { useSnackbar } from 'notistack'
-import { QueueActions } from '../../actions'
-import { Package } from '../SearchResults/fetch'
+import { AptActions, QueueActions } from '../../actions'
 import { QueueNode } from '../../store/reducers/queue'
+import { unwrapResult } from '@reduxjs/toolkit'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -63,51 +63,134 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
+const processDescription = (str: string) => {
+  if (!str) return
+  const cleared = str.replace(/^ \./gm, '\n').replace(/^ /gm, '')
+  const upperCased = cleared.charAt(0).toUpperCase() + cleared.slice(1)
+  const firstSentenceDotted = upperCased.replace(/\n/, '.\n')
+  const lines = firstSentenceDotted.split('\n')
+  lines[0] = lines[0] + '\n'
+  return lines.join('')
+}
+
 const mapStateToProps = ({
   router: {
-    location: {
-      state: { data }
-    }
+    location: { state }
   },
   queue
-}: RootState) => ({ ...data, queue })
+}: RootState) => ({ ...state, queue })
 
 const mapDispatchToProps = {
   goBack,
   install: QueueActions.install,
-  uninstall: QueueActions.uninstall
+  uninstall: QueueActions.uninstall,
+  search: AptActions.search
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
 
-type PackageInfoProps = ConnectedProps<typeof connector> &
-  Package & {
-    imageUrl: string
-    installed: boolean
+const pkgRegex = {
+  required: {
+    name: /^Package: ([a-z0-9.+-]+)/m,
+    version: /^Version: ((?<epoch>[0-9]{1,4}:)?(?<upstream>[A-Za-z0-9~.]+)(?:-(?<debian>[A-Za-z0-9~.]+))?)/m,
+    // eslint-disable-next-line no-control-regex
+    maintainer: /^Maintainer: ((?<name>(?:[\S ]+\S+)) <(?<email>(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)]))>)/m,
+    description: /^Description-(?:[a-z]{2}): (.*(?:\n \S.*)*)/m
+  },
+  optional: {
+    section: /^Section: ([a-z]+)/m,
+    priority: /^Priority: (\S+)/m,
+    essential: /^Essential: (yes|no)/m,
+    architecture: /^Architecture: (.*)/m,
+    origin: /^Origin: ([a-z0-9.+-]+)/m,
+    bugs: /^Bugs: (?:([a-z]+):\/\/)[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)/m,
+    homepage: /^Homepage: (?:([a-z]+):\/\/)[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)/m,
+    tag: /^Tag: ((?: ?[A-Za-z-+:]*(?:,(?:[ \n])?)?)+)/m,
+    source: /^Source: ([a-zA-Z0-9-+.]+)/m,
+    depends: /^Depends: ((?:(?:(?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)(?: \| )?)+)/m,
+    preDepends: /^Pre-Depends: ((?:(?:(?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)(?: \| )?)+)/m,
+    recommends: /^Recommends: ((?:(?:(?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)(?: \| )?)+)/m,
+    suggests: /^Suggests: ((?:(?:(?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)(?: \| )?)+)/m,
+    breaks: /^Breaks: ((?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)/m,
+    conflicts: /^Conflicts: ((?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)/m,
+    replaces: /^Replaces: ((?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)/m,
+    provides: /^Provides: ((?:(?:[a-z0-9.+-]+(?: \((?:(?:<<|>>|<=|>=|=) (?:[0-9]{1,4}:)?(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)\))?)(?:, )?)+)/m,
+    installedSize: /^Installed-Size: (.*)/m,
+    downloadSize: /^Download-Size: (.*)/m,
+    aptManualInstalled: /^APT-Manual-Installed: (.*)/m,
+    aptSources: /^APT-Sources: (https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)(?: (?:\S+ ?)+))/m
   }
+}
+export type Package = {
+  [K in keyof (typeof pkgRegex.required & Partial<typeof pkgRegex.optional>)]: string
+}
+type PackageInfoProps = ConnectedProps<typeof connector> & {
+  imageUrl: string
+  installed: boolean
+  rest: Package
+}
 
 const PackageInfo = ({
   name,
-  description,
-  version,
-  maintainer,
-  installed,
   imageUrl,
   goBack,
   queue,
   install,
   uninstall,
-  ...rest
+  search,
+  installed
 }: PackageInfoProps) => {
+  if (!name) return null
   const classes = useStyles()
   const [installedOrQueried, setInstalled] = useState(installed)
+  const [packageInfo, setPackageInfo] = useState({} as Package)
   useEffect(() => {
-    const queuePackage = queue.find(
-      (pkg: QueueNode) => name === pkg.name && version === pkg.version
-    )
-    if (queuePackage) setInstalled(!!queuePackage?.flag)
+    const f = async () => {
+      const queuePackage = queue.find((pkg: QueueNode) => name === pkg.name)
+      if (queuePackage) setInstalled(!!queuePackage?.flag)
+      const searchWrappedResult = await search(name)
+      if (AptActions.search.rejected.match(searchWrappedResult)) {
+        alert(searchWrappedResult.error.message)
+        return
+      }
+
+      const searchResult = unwrapResult(searchWrappedResult)
+      const newPackage: Package = {
+        name: '',
+        description: '',
+        maintainer: '',
+        version: ''
+      }
+
+      if (
+        !Object.keys(pkgRegex.required).every(prop => {
+          const key = prop as keyof typeof pkgRegex.required
+          const match = pkgRegex.required[key].exec(searchResult)
+          if (match) newPackage[key] = match[1]
+          else console.warn(`Missing ${key}`)
+          return match
+        })
+      ) {
+        console.warn(`Required fields are missing, skipping invalid package`, searchResult)
+        return
+      }
+
+      // Filling optional fields
+      Object.keys(pkgRegex.optional).forEach(prop => {
+        try {
+          const key = prop as keyof typeof pkgRegex.optional
+          const match = pkgRegex.optional[key].exec(searchResult)
+          if (match) newPackage[key] = match[1]
+        } catch (e) {
+          console.error(e)
+        }
+      })
+      setPackageInfo(newPackage)
+    }
+    f()
   }, [])
   const { enqueueSnackbar } = useSnackbar()
+  const { version, maintainer, description, ...rest } = packageInfo
   return (
     <Paper elevation={8} className={classes.root}>
       <Button size="large" startIcon={<ArrowBack />} onClick={() => goBack()}>
@@ -148,7 +231,7 @@ const PackageInfo = ({
           </Paper>
           <Typography variant="h6">Description:</Typography>
           <Paper variant="outlined" className={classes.contentColumn}>
-            <Typography variant="body1">{description}</Typography>
+            <Typography variant="body1">{processDescription(description)}</Typography>
           </Paper>
         </ExpansionPanelDetails>
       </ExpansionPanel>
@@ -161,16 +244,22 @@ const PackageInfo = ({
           <Typography variant="h5">Additional info</Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.grid}>
-          {Object.keys(rest).map(key => (
-            <Fragment key={`${name}@${version}@${key}`}>
-              <Typography style={{ width: 'min-content' }} variant="h6">
-                {key.charAt(0).toUpperCase() + key.slice(1)}:
-              </Typography>
-              <Paper variant="outlined" className={classes.contentColumn}>
-                <Typography variant="body1">{rest[key]}</Typography>
-              </Paper>
-            </Fragment>
-          ))}
+          {Object.keys(rest).length !== 0 &&
+            Object.keys(rest).map(prop => {
+              type PackageOptionalFields = Exclude<Package, typeof pkgRegex.required>
+              const key = prop as keyof PackageOptionalFields
+              const additionalInfo = rest as PackageOptionalFields
+              return (
+                <Fragment key={`${name}@${version}@${key}`}>
+                  <Typography style={{ width: 'min-content' }} variant="h6">
+                    {key.charAt(0).toUpperCase() + key.slice(1)}:
+                  </Typography>
+                  <Paper variant="outlined" className={classes.contentColumn}>
+                    <Typography variant="body1">{additionalInfo[key]}</Typography>
+                  </Paper>
+                </Fragment>
+              )
+            })}
         </ExpansionPanelDetails>
       </ExpansionPanel>
       <ExpansionPanel>
@@ -192,14 +281,14 @@ const PackageInfo = ({
             className={classes.button}
             onClick={() => {
               enqueueSnackbar(
-                queue.find((el: QueueNode) => el.name === name && el.version === version)
+                queue.find((el: QueueNode) => el.name === name)
                   ? `Package ${name}@${version} dequeued`
                   : `Package ${name}@${version} queued for deletion`,
                 {
                   variant: 'error'
                 }
               )
-              uninstall({ name, version })
+              uninstall(name)
               setInstalled(false)
             }}
             size="large"
@@ -214,14 +303,14 @@ const PackageInfo = ({
             size="large"
             onClick={() => {
               enqueueSnackbar(
-                queue.find((el: QueueNode) => el.name === name && el.version === version)
+                queue.find((el: QueueNode) => el.name === name)
                   ? `Package ${name}@${version} dequeued`
                   : `Package ${name}@${version} queued for installation`,
                 {
                   variant: 'success'
                 }
               )
-              install({ name, version })
+              install(name)
               setInstalled(true)
             }}
           >

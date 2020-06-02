@@ -84,7 +84,7 @@ const Queue = ({ queue, swap, remove, setAlert, aptInstall, aptUninstall }: Queu
   const processPackages = useCallback(async () => {
     try {
       for (let i = 0; i < queue.length; i++) {
-        await binding[queue[i].flag](`${queue[i].name}=${queue[i].version}`)
+        await binding[queue[i].flag](queue[i].name)
         setProgress(i)
       }
     } catch (e) {
@@ -103,12 +103,10 @@ const Queue = ({ queue, swap, remove, setAlert, aptInstall, aptUninstall }: Queu
       className={classes.root}
     >
       {queue.map((el: QueueNode, i: number) => (
-        <Grid item container xs={9} key={el.name + el.version}>
-          <Container component={Paper} className={classes.package} key={el.name + el.version}>
+        <Grid item container xs={9} key={el.name}>
+          <Container component={Paper} className={classes.package} key={el.name}>
             <PackageChip flag={el.flag} classes={classes} />
-            <Typography variant="body1">
-              {el.name}@{el.version}
-            </Typography>
+            <Typography variant="body1">{el.name}</Typography>
             <div className={classes.buttons}>
               <IconButton
                 disabled={i === 0}

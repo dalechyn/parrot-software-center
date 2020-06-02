@@ -14,7 +14,7 @@ const Routes = () => {
       <Route exact path="/about">
         About
       </Route>
-      <Route exact path="/search">
+      <Route exact path="/search/:name/:page?">
         <SearchResults />
       </Route>
       <Route exact path="/package">
