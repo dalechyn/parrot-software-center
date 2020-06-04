@@ -32,6 +32,9 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off'
   },
   settings: {
+    react: {
+      version: 'detect'
+    },
     'import/resolver': {
       // See https://github.com/benmosher/eslint-plugin-import/issues/1396#issuecomment-575727774 for line below
       node: {},

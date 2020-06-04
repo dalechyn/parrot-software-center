@@ -21,6 +21,7 @@ import { useSnackbar } from 'notistack'
 import { AptActions, QueueActions } from '../../actions'
 import { QueueNode } from '../../store/reducers/queue'
 import { unwrapResult } from '@reduxjs/toolkit'
+import PackageInfoSkeleton from './skeleton'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -191,7 +192,7 @@ const PackageInfo = ({
   }, [])
   const { enqueueSnackbar } = useSnackbar()
   const { version, maintainer, description, ...rest } = packageInfo
-  return (
+  return packageInfo ? (
     <Paper elevation={8} className={classes.root}>
       <Button size="large" startIcon={<ArrowBack />} onClick={() => goBack()}>
         Go Back
@@ -212,7 +213,7 @@ const PackageInfo = ({
           {version}
         </Typography>
       </Paper>
-      <ExpansionPanel className={classes.panel} defaultExpanded>
+      <ExpansionPanel disabled={!packageInfo} className={classes.panel} defaultExpanded>
         <ExpansionPanelSummary
           expandIcon={<ExpandMore />}
           aria-controls="panel1a-content"
@@ -235,7 +236,7 @@ const PackageInfo = ({
           </Paper>
         </ExpansionPanelDetails>
       </ExpansionPanel>
-      <ExpansionPanel disabled={Object.keys(rest).length === 0}>
+      <ExpansionPanel disabled={!packageInfo && Object.keys(rest).length === 0}>
         <ExpansionPanelSummary
           expandIcon={<ExpandMore />}
           aria-controls="panel1a-content"
@@ -319,6 +320,8 @@ const PackageInfo = ({
         )}
       </ExpansionPanelActions>
     </Paper>
+  ) : (
+    <PackageInfoSkeleton />
   )
 }
 

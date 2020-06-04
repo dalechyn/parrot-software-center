@@ -19,10 +19,6 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(2),
     gridGap: '10px'
   },
-  media: {
-    height: 40,
-    width: 40
-  },
   header: {
     padding: theme.spacing(2),
     display: 'flex',
@@ -46,9 +42,6 @@ const useStyles = makeStyles(theme => ({
   name: {
     marginLeft: theme.spacing(1),
     width: '50vw'
-  },
-  chip: {
-    width: 100
   }
 }))
 
@@ -60,14 +53,14 @@ const SearchSkeleton = () => {
         <CardContent>
           <Paper className={classes.header} elevation={10}>
             <div className={classes.nameHolder}>
-              <Skeleton className={classes.media} variant="circle" />
+              <Skeleton height={40} width={40} variant="circle" />
               <Skeleton className={classes.name} variant="rect" />
             </div>
             <div className={classes.cve}>
-              <Skeleton className={classes.chip} variant="rect" />
-              <Skeleton className={classes.chip} variant="rect" />
-              <Skeleton className={classes.chip} variant="rect" />
-              <Skeleton className={classes.chip} variant="rect" />
+              <Skeleton width={100} variant="rect" />
+              <Skeleton width={100} variant="rect" />
+              <Skeleton width={100} variant="rect" />
+              <Skeleton width={100} variant="rect" />
             </div>
           </Paper>
           <Box className={classes.description}>
