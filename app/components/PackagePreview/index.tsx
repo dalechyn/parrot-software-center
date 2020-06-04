@@ -100,8 +100,7 @@ const PackagePreview = ({
   uninstall,
   queue,
   cveInfo,
-  status,
-  ...rest
+  status
 }: PackagePreviewProps) => {
   const [installedOrQueried, setInstalled] = useState(false)
   const { enqueueSnackbar } = useSnackbar()
@@ -124,7 +123,7 @@ const PackagePreview = ({
               name,
               description,
               imageUrl,
-              rest
+              installed: installedOrQueried
             }
           })
         }

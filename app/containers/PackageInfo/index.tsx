@@ -128,7 +128,6 @@ export type Package = {
 type PackageInfoProps = ConnectedProps<typeof connector> & {
   imageUrl: string
   installed: boolean
-  rest: Package
 }
 
 const PackageInfo = ({

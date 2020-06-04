@@ -11,6 +11,7 @@ import { unwrapResult } from '@reduxjs/toolkit'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { Preview } from '../../actions/apt'
 import { Package } from '../PackageInfo'
+import { replace } from 'connected-react-router'
 
 const componentsInPage = 5
 
@@ -42,7 +43,8 @@ const mapStateToProps = ({
 const mapDispatchToProps = {
   setAlert: AlertActions.set,
   searchPreviews: AptActions.searchPreviews,
-  search: AptActions.search
+  search: AptActions.search,
+  replace
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
@@ -52,7 +54,8 @@ type SearchResultsProps = ConnectedProps<typeof connector> & RouteComponentProps
 const SearchResults = ({
   setAlert,
   searchPreviews,
-  match
+  match,
+  replace
 }: SearchResultsProps & RouteComponentProps<Package & { page: string }>) => {
   const [previews, setPreviews] = useState(Array<Preview>())
   const { name, page: initialPage } = match.params
@@ -82,6 +85,7 @@ const SearchResults = ({
 
   const pageChange = (_: ChangeEvent<unknown>, n: number) => {
     if (n === page) return
+    replace(`/search/${name}/${n}`)
     scroll(n)
   }
   const classes = useStyles()
@@ -89,25 +93,29 @@ const SearchResults = ({
   return (
     <div className={classes.root}>
       <h1>Showing results for {name}</h1>
-      <Pagination
-        className={classes.pagination}
-        count={Math.ceil(previews.length / componentsInPage)}
-        onChange={pageChange}
-        page={page}
-        variant="outlined"
-        shape="rounded"
-      />
+      {previews.length !== 0 && (
+        <Pagination
+          className={classes.pagination}
+          count={Math.ceil(previews.length / componentsInPage)}
+          onChange={pageChange}
+          page={page}
+          variant="outlined"
+          shape="rounded"
+        />
+      )}
       <PackagePreviewList
         previews={previews.slice((page - 1) * componentsInPage, page * componentsInPage)}
       />
-      <Pagination
-        className={classes.pagination}
-        count={Math.ceil(previews.length / componentsInPage)}
-        onChange={pageChange}
-        page={page}
-        variant="outlined"
-        shape="rounded"
-      />
+      {previews.length !== 0 && (
+        <Pagination
+          className={classes.pagination}
+          count={Math.ceil(previews.length / componentsInPage)}
+          onChange={pageChange}
+          page={page}
+          variant="outlined"
+          shape="rounded"
+        />
+      )}
     </div>
   )
 }

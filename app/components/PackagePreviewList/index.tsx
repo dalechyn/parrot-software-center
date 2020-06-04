@@ -43,8 +43,8 @@ const PackagePreviewList = ({ previews }: PackagePreviewListProps) => {
 
   const resourceURL = useMemo(() => new URL('assets/packages/', APIUrl).toString(), [])
 
-  useEffect(() => setPreviewNodes([]), [previews])
   useEffect(() => {
+    setPreviewNodes([])
     const f = async () => {
       setPreviewNodes(
         await Promise.all(
@@ -78,7 +78,7 @@ const PackagePreviewList = ({ previews }: PackagePreviewListProps) => {
       alignItems="center"
       className={classes.grid}
     >
-      {previewNodes && previewNodes.length === 0 ? (
+      {previewNodes.length === 0 ? (
         <>
           <PackagePreviewSkeleton />
           <PackagePreviewSkeleton />
