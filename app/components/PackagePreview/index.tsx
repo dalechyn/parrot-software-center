@@ -69,7 +69,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const mapStateToProps = ({ queue }: RootState) => ({ queue })
+const mapStateToProps = ({ queue: { packages } }: RootState) => ({ packages })
 
 const mapDispatchToProps = {
   push,
@@ -98,7 +98,7 @@ const PackagePreview = ({
   push,
   install,
   uninstall,
-  queue,
+  packages,
   cveInfo,
   status
 }: PackagePreviewProps) => {
@@ -107,7 +107,7 @@ const PackagePreview = ({
   const classes = useStyles()
   useEffect(() => {
     const f = async () => {
-      const foundPackage = queue.find((pkg: QueueNode) => name === pkg.name)
+      const foundPackage = packages.find((pkg: QueueNode) => name === pkg.name)
       if (foundPackage) setInstalled(!!foundPackage.flag)
       else setInstalled(unwrapResult(await status(name)))
     }
@@ -171,7 +171,7 @@ const PackagePreview = ({
           <Button
             onClick={() => {
               enqueueSnackbar(
-                queue.find((el: QueueNode) => el.name === name)
+                packages.find((el: QueueNode) => el.name === name)
                   ? `Package ${name} dequeued`
                   : `Package ${name} queued for deletion`,
                 {
@@ -191,7 +191,7 @@ const PackagePreview = ({
           <Button
             onClick={() => {
               enqueueSnackbar(
-                queue.find((el: QueueNode) => el.name === name)
+                packages.find((el: QueueNode) => el.name === name)
                   ? `Package ${name} dequeued`
                   : `Package ${name} queued for installation`,
                 {

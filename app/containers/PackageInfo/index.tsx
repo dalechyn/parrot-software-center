@@ -78,8 +78,8 @@ const mapStateToProps = ({
   router: {
     location: { state }
   },
-  queue
-}: RootState) => ({ ...state, queue })
+  queue: { packages }
+}: RootState) => ({ ...state, packages })
 
 const mapDispatchToProps = {
   goBack,
@@ -134,7 +134,7 @@ const PackageInfo = ({
   name,
   imageUrl,
   goBack,
-  queue,
+  packages,
   install,
   uninstall,
   search,
@@ -146,7 +146,7 @@ const PackageInfo = ({
   const [packageInfo, setPackageInfo] = useState({} as Package)
   useEffect(() => {
     const f = async () => {
-      const queuePackage = queue.find((pkg: QueueNode) => name === pkg.name)
+      const queuePackage = packages.find((pkg: QueueNode) => name === pkg.name)
       if (queuePackage) setInstalled(!!queuePackage?.flag)
       const searchWrappedResult = await search(name)
       if (AptActions.search.rejected.match(searchWrappedResult)) {
@@ -281,7 +281,7 @@ const PackageInfo = ({
             className={classes.button}
             onClick={() => {
               enqueueSnackbar(
-                queue.find((el: QueueNode) => el.name === name)
+                packages.find((el: QueueNode) => el.name === name)
                   ? `Package ${name}@${version} dequeued`
                   : `Package ${name}@${version} queued for deletion`,
                 {
@@ -303,7 +303,7 @@ const PackageInfo = ({
             size="large"
             onClick={() => {
               enqueueSnackbar(
-                queue.find((el: QueueNode) => el.name === name)
+                packages.find((el: QueueNode) => el.name === name)
                   ? `Package ${name}@${version} dequeued`
                   : `Package ${name}@${version} queued for installation`,
                 {

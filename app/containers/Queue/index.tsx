@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { connect, ConnectedProps } from 'react-redux'
 import {
   Button,
@@ -30,6 +30,9 @@ const useStyles = makeStyles(theme => ({
   },
   buttons: {
     marginLeft: 'auto'
+  },
+  progress: {
+    width: '100vw'
   }
 }))
 
@@ -55,7 +58,10 @@ const PackageChip = ({ flag, classes }: PackageChipProps) => {
   return <Chip className={classes.chip} size="medium" variant="outlined" {...flagMap[flag]} />
 }
 
-const mapStateToProps = ({ queue }: RootState) => ({ queue })
+const mapStateToProps = ({ queue: { packages, globalProgress } }: RootState) => ({
+  packages,
+  globalProgress
+})
 
 const mapDispatchToProps = {
   swap: QueueActions.swap,
@@ -69,9 +75,18 @@ const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type QueueProps = ConnectedProps<typeof connector>
 
-const Queue = ({ queue, swap, remove, setAlert, aptInstall, aptUninstall }: QueueProps) => {
-  const [progress, setProgress] = useState(0)
+const Queue = ({
+  packages,
+  globalProgress,
+  swap,
+  remove,
+  setAlert,
+  aptInstall,
+  aptUninstall
+}: QueueProps) => {
   const classes = useStyles()
+  const length = useMemo(() => (globalProgress !== 0 ? packages.length : 0), [globalProgress])
+  console.log(length)
 
   const binding: Record<string, Function> = useMemo(
     () => ({
@@ -83,69 +98,95 @@ const Queue = ({ queue, swap, remove, setAlert, aptInstall, aptUninstall }: Queu
 
   const processPackages = useCallback(async () => {
     try {
-      for (let i = 0; i < queue.length; i++) {
-        await binding[queue[i].flag](queue[i].name)
-        setProgress(i)
+      for (let i = 0; i < packages.length; i++) {
+        await binding[packages[i].flag](packages[i].name)
       }
     } catch (e) {
       setAlert(`apt: ${e}`)
     }
-  }, [queue, setAlert])
+  }, [packages, setAlert])
 
   return (
-    <Grid
-      container
-      direction="column"
-      justify="space-evenly"
-      alignItems="center"
-      alignContent="stretch"
-      spacing={2}
-      className={classes.root}
-    >
-      {queue.map((el: QueueNode, i: number) => (
-        <Grid item container xs={9} key={el.name}>
-          <Container component={Paper} className={classes.package} key={el.name}>
-            <PackageChip flag={el.flag} classes={classes} />
-            <Typography variant="body1">{el.name}</Typography>
-            <div className={classes.buttons}>
-              <IconButton
-                disabled={i === 0}
-                color="secondary"
-                aria-label="move to up"
-                onClick={() => swap({ first: i, second: i - 1 })}
-              >
-                <ArrowUpward />
-              </IconButton>
-              <IconButton
-                disabled={i === queue.length - 1}
-                color="secondary"
-                aria-label="move to down"
-                onClick={() => swap({ first: i, second: i + 1 })}
-              >
-                <ArrowDownward />
-              </IconButton>
-              <IconButton color="secondary" aria-label="move to down" onClick={() => remove(i)}>
-                <Delete />
-              </IconButton>
-            </div>
-          </Container>
+    <>
+      <Grid
+        container
+        direction="column"
+        justify="space-evenly"
+        alignItems="center"
+        alignContent="stretch"
+        spacing={2}
+        className={classes.root}
+      >
+        {packages.map((el: QueueNode, i: number) => (
+          <Grid item container xs={9} key={el.name}>
+            <Container
+              maxWidth="xl"
+              component={Paper}
+              square
+              className={classes.package}
+              key={el.name}
+            >
+              <PackageChip flag={el.flag} classes={classes} />
+              <Typography variant="body1">{el.name}</Typography>
+              <div className={classes.buttons}>
+                <IconButton
+                  disabled={i === 0 || length !== 0}
+                  color="secondary"
+                  aria-label="move to up"
+                  onClick={() => swap({ first: i, second: i - 1 })}
+                >
+                  <ArrowUpward />
+                </IconButton>
+                <IconButton
+                  disabled={i === packages.length - 1 || length !== 0}
+                  color="secondary"
+                  aria-label="move to down"
+                  onClick={() => swap({ first: i, second: i + 1 })}
+                >
+                  <ArrowDownward />
+                </IconButton>
+                <IconButton
+                  color="secondary"
+                  aria-label="delete"
+                  disabled={length !== 0}
+                  onClick={() => remove(i)}
+                >
+                  <Delete />
+                </IconButton>
+              </div>
+            </Container>
+            {i === 0 && length !== 0 && <LinearProgress className={classes.progress} />}
+          </Grid>
+        ))}
+
+        <Grid item container justify="center" xs={9}>
+          {packages.length !== 0 ? (
+            <Button
+              size="large"
+              color="primary"
+              variant="contained"
+              disabled={globalProgress !== 0}
+              onClick={processPackages}
+            >
+              Process
+            </Button>
+          ) : (
+            <Typography variant="h5">Queue is empty</Typography>
+          )}
         </Grid>
-      ))}
-      {queue.length !== 0 ? (
-        <Button size="large" color="primary" variant="contained" onClick={processPackages}>
-          Process
-        </Button>
-      ) : (
-        <Typography variant="h5">Queue is empty</Typography>
-      )}
-      {progress > 0 && (
-        <LinearProgress
-          variant="buffer"
-          value={((progress - 1) / queue.length) * 100}
-          valueBuffer={(progress / queue.length) * 100}
-        />
-      )}
-    </Grid>
+
+        {globalProgress > 0 && (
+          <Grid item container xs={9}>
+            <LinearProgress
+              className={classes.progress}
+              variant="buffer"
+              value={(globalProgress - 1 / length) * 100}
+              valueBuffer={(globalProgress / length) * 100}
+            />
+          </Grid>
+        )}
+      </Grid>
+    </>
   )
 }
 

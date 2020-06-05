@@ -1,8 +1,10 @@
 import { promisify } from 'util'
 import { exec as _exec } from 'child_process'
 import { createAsyncThunk } from '@reduxjs/toolkit'
+import { exec as _sudoExec } from 'sudo-prompt'
 
 const exec = promisify(_exec)
+const sudoExec = promisify(_sudoExec)
 
 export type Preview = {
   name: string
@@ -12,7 +14,7 @@ export type Preview = {
 export const install = createAsyncThunk('@apt/INSTALL', async (packageName: string, thunkAPI) => {
   console.log('apt install called on ', packageName)
   try {
-    const { stderr } = await exec(`apt install ${packageName}`)
+    const { stderr } = await sudoExec(`apt install -y ${packageName}`, { name: 'pscinstall' })
     if (stderr) {
       return thunkAPI.rejectWithValue(stderr)
     }
@@ -26,7 +28,7 @@ export const uninstall = createAsyncThunk(
   async (packageName: string, thunkAPI) => {
     console.log('apt uninstall called on ', packageName)
     try {
-      const { stderr } = await exec(`apt purge ${packageName}`)
+      const { stderr } = await sudoExec(`apt purge -y ${packageName}`, { name: 'pscuninstall' })
       if (stderr) {
         return thunkAPI.rejectWithValue(stderr)
       }

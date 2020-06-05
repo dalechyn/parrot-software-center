@@ -276,7 +276,8 @@
     "react-router-dom": "^5.2.0",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
-    "source-map-support": "^0.5.16"
+    "source-map-support": "^0.5.16",
+    "sudo-prompt": "^9.2.1"
   },
   "devEngines": {
     "node": ">=7.x",
