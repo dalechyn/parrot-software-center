@@ -20,8 +20,8 @@ import {
 import { grey, orange, red } from '@material-ui/core/colors'
 import dummyPackageImg from '../../assets/package.png'
 import { AptActions, QueueActions } from '../../actions'
-import { QueueNode } from '../../store/reducers/queue'
 import { unwrapResult } from '@reduxjs/toolkit'
+import { QueueNode } from '../../containers/Queue'
 
 const useStyles = makeStyles(theme => ({
   root: {

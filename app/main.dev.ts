@@ -11,6 +11,7 @@
 import path from 'path'
 import { app, BrowserWindow } from 'electron'
 import { autoUpdater } from 'electron-updater'
+import debug from 'electron-debug'
 import log from 'electron-log'
 import MenuBuilder from './menu'
 import { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer'
@@ -30,7 +31,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
-  import('electron-debug')
+  debug()
 }
 
 const installExtensions = async () => {

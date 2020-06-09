@@ -1,4 +1,4 @@
-import { AlertActions } from '../../actions'
+import { AlertActions } from '../actions'
 import { createReducer } from '@reduxjs/toolkit'
 
 export default createReducer('', builder =>

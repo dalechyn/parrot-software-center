@@ -14,7 +14,7 @@ import {
 } from '@material-ui/core'
 import { ArrowUpward, ArrowDownward, Delete } from '@material-ui/icons'
 import { AlertActions, QueueActions, AptActions } from '../../actions'
-import { INSTALL, QueueNode, UNINSTALL } from '../../store/reducers/queue'
+import { INSTALL, UNINSTALL } from '../../reducers/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -35,6 +35,11 @@ const useStyles = makeStyles(theme => ({
     width: '100vw'
   }
 }))
+
+export interface QueueNode {
+  name: string
+  flag: string
+}
 
 const flagMap: Record<string, { label: string; color: PropTypes.Color }> = {
   [INSTALL]: {
@@ -67,43 +72,21 @@ const mapDispatchToProps = {
   swap: QueueActions.swap,
   remove: QueueActions.remove,
   setAlert: AlertActions.set,
-  aptInstall: AptActions.install,
-  aptUninstall: AptActions.uninstall
+  aptProcess: AptActions.process
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type QueueProps = ConnectedProps<typeof connector>
 
-const Queue = ({
-  packages,
-  globalProgress,
-  swap,
-  remove,
-  setAlert,
-  aptInstall,
-  aptUninstall
-}: QueueProps) => {
+const Queue = ({ packages, globalProgress, swap, remove, setAlert, aptProcess }: QueueProps) => {
   const classes = useStyles()
   const length = useMemo(() => (globalProgress !== 0 ? packages.length : 0), [globalProgress])
   console.log(length)
 
-  const binding: Record<string, Function> = useMemo(
-    () => ({
-      [INSTALL]: aptInstall,
-      [UNINSTALL]: aptUninstall
-    }),
-    []
-  )
-
   const processPackages = useCallback(async () => {
-    try {
-      for (let i = 0; i < packages.length; i++) {
-        await binding[packages[i].flag](packages[i].name)
-      }
-    } catch (e) {
-      setAlert(`apt: ${e}`)
-    }
+    const res = await aptProcess(packages)
+    if (AptActions.process.rejected.match(res)) setAlert(`apt: ${res}`)
   }, [packages, setAlert])
 
   return (

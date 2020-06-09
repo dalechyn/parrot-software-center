@@ -1,47 +1,45 @@
-import { promisify } from 'util'
-import { exec as _exec } from 'child_process'
+import { pop } from './queue'
+import { exec } from 'child_process'
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { exec as _sudoExec } from 'sudo-prompt'
+import { promisify } from 'util'
+import { QueueNode } from '../containers/Queue'
 
-const exec = promisify(_exec)
-const sudoExec = promisify(_sudoExec)
+const PSC_FINISHED = '__PSC_FINISHED'
+const prExec = promisify(exec)
 
 export type Preview = {
   name: string
   description: string
 }
 
-export const install = createAsyncThunk('@apt/INSTALL', async (packageName: string, thunkAPI) => {
-  console.log('apt install called on ', packageName)
+export const process = createAsyncThunk('@apt/PROCESS', async (packages: QueueNode[], thunkAPI) => {
+  console.log('apt install called on ', packages)
   try {
-    const { stderr } = await sudoExec(`apt install -y ${packageName}`, { name: 'pscinstall' })
-    if (stderr) {
-      return thunkAPI.rejectWithValue(stderr)
+    const prepared = packages
+      .map(({ flag, name }: QueueNode) => `apt ${flag} -y ${name}; echo ${PSC_FINISHED}`)
+      .join(';')
+    const { stdout, stderr } = exec(`pkexec sh -c "${prepared}"`)
+    if (!stdout || !stderr) return thunkAPI.rejectWithValue(new Error('Failed to host shell'))
+
+    stderr.on('data', chunk => {
+      const line = chunk as string
+      thunkAPI.rejectWithValue(line)
+    })
+
+    for await (const chunk of stdout) {
+      const line = chunk as string
+      console.log(line)
+      if (line.match(PSC_FINISHED)) thunkAPI.dispatch(pop())
     }
   } catch (e) {
     return thunkAPI.rejectWithValue(e)
   }
   return
 })
-export const uninstall = createAsyncThunk(
-  '@apt/UNINSTALL',
-  async (packageName: string, thunkAPI) => {
-    console.log('apt uninstall called on ', packageName)
-    try {
-      const { stderr } = await sudoExec(`apt purge -y ${packageName}`, { name: 'pscuninstall' })
-      if (stderr) {
-        return thunkAPI.rejectWithValue(stderr)
-      }
-    } catch (e) {
-      return thunkAPI.rejectWithValue(e)
-    }
-    return
-  }
-)
 export const status = createAsyncThunk('@apt/STATUS', async (packageName: string) => {
   console.log('dpkg query called on ', packageName)
   try {
-    const { stdout, stderr } = await exec(`dpkg-query -W ${packageName}`)
+    const { stdout, stderr } = await prExec(`dpkg-query -W ${packageName}`)
     return stdout.length !== 0 || stderr.length === 0
   } catch (e) {
     return false
@@ -52,7 +50,7 @@ export const searchPreviews = createAsyncThunk(
   async (packageName: string, thunkAPI) => {
     console.log('searchPreviews called on ', packageName)
     try {
-      const { stdout, stderr } = await exec(`apt-cache search --names-only ${packageName}`)
+      const { stdout, stderr } = await prExec(`apt-cache search --names-only ${packageName}`)
       if (stderr) {
         return thunkAPI.rejectWithValue(stderr)
       }
@@ -72,7 +70,7 @@ export const searchPreviews = createAsyncThunk(
 export const search = createAsyncThunk('@apt/SEARCH', async (packageName: string, thunkAPI) => {
   console.log('search called on ', packageName)
   try {
-    const { stdout, stderr } = await exec(`apt-cache show ${packageName}`)
+    const { stdout, stderr } = await prExec(`apt-cache show ${packageName}`)
     if (stderr) {
       return thunkAPI.rejectWithValue(stderr)
     }

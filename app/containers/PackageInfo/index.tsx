@@ -19,9 +19,9 @@ import dummyPackageImg from '../../assets/package.png'
 import { Img } from 'react-image'
 import { useSnackbar } from 'notistack'
 import { AptActions, QueueActions } from '../../actions'
-import { QueueNode } from '../../store/reducers/queue'
 import { unwrapResult } from '@reduxjs/toolkit'
 import PackageInfoSkeleton from './skeleton'
+import { QueueNode } from '../Queue'
 
 const useStyles = makeStyles(theme => ({
   root: {

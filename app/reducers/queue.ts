@@ -1,13 +1,10 @@
-import { AptActions, QueueActions } from '../../actions'
+import * as QueueActions from '../actions/queue'
+import * as AptActions from '../actions/apt'
 import { createReducer } from '@reduxjs/toolkit'
+import { QueueNode } from '../containers/Queue'
 
-export const INSTALL = 'INSTALL'
-export const UNINSTALL = 'UNINSTALL'
-
-export interface QueueNode {
-  name: string
-  flag: string
-}
+export const INSTALL = 'install'
+export const UNINSTALL = 'purge'
 
 export default createReducer(
   {
@@ -16,8 +13,10 @@ export default createReducer(
     globalProgress: 0,
     isBusy: false
   },
-  builder =>
-    builder
+  builder => {
+    console.log('WTF', AptActions)
+
+    return builder
       .addCase(QueueActions.install, (state, { payload }) => {
         const queue = state.packages.filter(
           ({ name, flag }) => payload !== name || flag !== UNINSTALL
@@ -65,23 +64,18 @@ export default createReducer(
         state.packages = queue
         return state
       })
-      .addCase(AptActions.install.pending, state => {
+      .addCase(AptActions.process.pending, state => {
         state.globalProgress++
         return state
       })
-      .addCase(AptActions.install.fulfilled, state => {
+      .addCase(QueueActions.pop, state => {
         state.currentProgress = 0
         state.packages.shift()
-        if (state.packages.length === 0) state.globalProgress = 0
         return state
       })
-      .addCase(AptActions.uninstall.pending, state => {
-        state.globalProgress++
+      .addCase(AptActions.process.fulfilled, state => {
+        state.globalProgress = 0
         return state
       })
-      .addCase(AptActions.uninstall.fulfilled, state => {
-        state.currentProgress = 0
-        state.packages.shift()
-        if (state.packages.length === 0) state.globalProgress = 0
-      })
+  }
 )
