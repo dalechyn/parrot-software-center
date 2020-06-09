@@ -30,7 +30,7 @@ export default createReducer(
             }
           ]
           return state
-        }
+        } else state.packages = queue
         return state
       })
       .addCase(QueueActions.uninstall, (state, { payload }) => {
@@ -46,7 +46,7 @@ export default createReducer(
             }
           ]
           return state
-        }
+        } else state.packages = queue
         return state
       })
       .addCase(QueueActions.swap, (state, { payload }) => {
