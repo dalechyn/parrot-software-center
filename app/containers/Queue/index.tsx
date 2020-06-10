@@ -82,7 +82,6 @@ type QueueProps = ConnectedProps<typeof connector>
 const Queue = ({ packages, globalProgress, swap, remove, setAlert, aptProcess }: QueueProps) => {
   const classes = useStyles()
   const length = useMemo(() => (globalProgress !== 0 ? packages.length : 0), [globalProgress])
-  console.log(length)
 
   const processPackages = useCallback(async () => {
     const res = await aptProcess(packages)

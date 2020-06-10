@@ -14,8 +14,6 @@ export default createReducer(
     isBusy: false
   },
   builder => {
-    console.log('WTF', AptActions)
-
     return builder
       .addCase(QueueActions.install, (state, { payload }) => {
         const queue = state.packages.filter(

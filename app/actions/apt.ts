@@ -13,7 +13,6 @@ export type Preview = {
 }
 
 export const process = createAsyncThunk('@apt/PROCESS', async (packages: QueueNode[], thunkAPI) => {
-  console.log('apt install called on ', packages)
   try {
     const prepared = packages
       .map(({ flag, name }: QueueNode) => `apt ${flag} -y ${name}; echo ${PSC_FINISHED}`)
@@ -37,7 +36,6 @@ export const process = createAsyncThunk('@apt/PROCESS', async (packages: QueueNo
   return
 })
 export const status = createAsyncThunk('@apt/STATUS', async (packageName: string) => {
-  console.log('dpkg query called on ', packageName)
   try {
     const { stdout, stderr } = await prExec(`dpkg-query -W ${packageName}`)
     return stdout.length !== 0 || stderr.length === 0
@@ -48,7 +46,6 @@ export const status = createAsyncThunk('@apt/STATUS', async (packageName: string
 export const searchPreviews = createAsyncThunk(
   '@apt/SEARCH_PREVIEWS',
   async (packageName: string, thunkAPI) => {
-    console.log('searchPreviews called on ', packageName)
     try {
       const { stdout, stderr } = await prExec(`apt-cache search --names-only ${packageName}`)
       if (stderr) {
@@ -68,7 +65,6 @@ export const searchPreviews = createAsyncThunk(
   }
 )
 export const search = createAsyncThunk('@apt/SEARCH', async (packageName: string, thunkAPI) => {
-  console.log('search called on ', packageName)
   try {
     const { stdout, stderr } = await prExec(`apt-cache show ${packageName}`)
     if (stderr) {
