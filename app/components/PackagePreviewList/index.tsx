@@ -1,4 +1,4 @@
-import { PackagePreview, PackagePreviewSkeleton } from '../index'
+import { PackagePreview } from '../index'
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
 import { AlertActions, AptActions } from '../../actions'
 import { connect, ConnectedProps } from 'react-redux'
@@ -78,17 +78,7 @@ const PackagePreviewList = ({ previews }: PackagePreviewListProps) => {
       alignItems="center"
       className={classes.grid}
     >
-      {previewNodes.length === 0 ? (
-        <>
-          <PackagePreviewSkeleton />
-          <PackagePreviewSkeleton />
-          <PackagePreviewSkeleton />
-          <PackagePreviewSkeleton />
-          <PackagePreviewSkeleton />
-        </>
-      ) : (
-        previewNodes
-      )}
+      {previewNodes}
     </Grid>
   )
 }

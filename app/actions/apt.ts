@@ -30,10 +30,10 @@ export const process = createAsyncThunk('@apt/PROCESS', async (packages: QueueNo
       console.log(line)
       if (line.match(PSC_FINISHED)) thunkAPI.dispatch(pop())
     }
+    return
   } catch (e) {
     return thunkAPI.rejectWithValue(e)
   }
-  return
 })
 export const status = createAsyncThunk('@apt/STATUS', async (packageName: string) => {
   try {
@@ -51,7 +51,8 @@ export const searchPreviews = createAsyncThunk(
       if (stderr) {
         return thunkAPI.rejectWithValue(stderr)
       }
-      return stdout.split('\n').map(str => {
+      const names = stdout.split('\n')
+      return names.slice(0, names.length - 1).map(str => {
         const res = str.split(/ - /)
         const preview: Preview = {
           name: res[0],

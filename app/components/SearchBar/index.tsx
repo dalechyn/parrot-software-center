@@ -43,27 +43,27 @@ const SearchBar = ({ setAlert, clearAlert, push, searchPreviews }: SearchBarProp
 
     debounce(() => {
       const fetchCompletion = async (name: string) => {
-        try {
-          const response = await searchPreviews(name)
-          if (AptActions.searchPreviews.fulfilled.match(response)) {
-            const previews = unwrapResult(response)
-            setOptions(
-              previews
-                .map(preview => preview.name)
-                .sort((a: string, b: string) => leven(a, name) - leven(b, name))
-                .slice(0, 5)
-            )
-          }
-        } catch (e) {
-          setOptions([])
+        setLoading(true)
+        const response = await searchPreviews(name)
+        if (!active) {
+          setLoading(false)
+          return
+        }
+
+        if (AptActions.searchPreviews.fulfilled.match(response)) {
+          setOptions(
+            unwrapResult(response)
+              .map(preview => preview.name)
+              .sort((a: string, b: string) => leven(a, name) - leven(b, name))
+              .slice(0, 5)
+          )
         }
         setLoading(false)
       }
 
       if (value.length > 2) {
-        setLoading(true)
         if (active) fetchCompletion(value)
-      } else setOptions([])
+      }
     }, 1000)()
 
     return () => {

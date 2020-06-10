@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { connect, ConnectedProps } from 'react-redux'
 import {
   Button,
@@ -18,7 +18,8 @@ import { INSTALL, UNINSTALL } from '../../reducers/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
+    width: '100%'
   },
   package: {
     display: 'flex',
@@ -81,9 +82,11 @@ type QueueProps = ConnectedProps<typeof connector>
 
 const Queue = ({ packages, globalProgress, swap, remove, setAlert, aptProcess }: QueueProps) => {
   const classes = useStyles()
-  const length = useMemo(() => (globalProgress !== 0 ? packages.length : 0), [globalProgress])
+  const [processing, setProcessing] = useState(false)
+  const length = useMemo(() => packages.length, [])
 
   const processPackages = useCallback(async () => {
+    setProcessing(true)
     const res = await aptProcess(packages)
     if (AptActions.process.rejected.match(res)) setAlert(`apt: ${res}`)
   }, [packages, setAlert])
@@ -100,7 +103,7 @@ const Queue = ({ packages, globalProgress, swap, remove, setAlert, aptProcess }:
         className={classes.root}
       >
         {packages.map((el: QueueNode, i: number) => (
-          <Grid item container xs={9} key={el.name}>
+          <Grid item container xs={8} key={el.name}>
             <Container
               maxWidth="xl"
               component={Paper}
@@ -112,7 +115,7 @@ const Queue = ({ packages, globalProgress, swap, remove, setAlert, aptProcess }:
               <Typography variant="body1">{el.name}</Typography>
               <div className={classes.buttons}>
                 <IconButton
-                  disabled={i === 0 || length !== 0}
+                  disabled={i === 0 || processing}
                   color="secondary"
                   aria-label="move to up"
                   onClick={() => swap({ first: i, second: i - 1 })}
@@ -120,7 +123,7 @@ const Queue = ({ packages, globalProgress, swap, remove, setAlert, aptProcess }:
                   <ArrowUpward />
                 </IconButton>
                 <IconButton
-                  disabled={i === packages.length - 1 || length !== 0}
+                  disabled={i === packages.length - 1 || processing}
                   color="secondary"
                   aria-label="move to down"
                   onClick={() => swap({ first: i, second: i + 1 })}
@@ -130,18 +133,18 @@ const Queue = ({ packages, globalProgress, swap, remove, setAlert, aptProcess }:
                 <IconButton
                   color="secondary"
                   aria-label="delete"
-                  disabled={length !== 0}
+                  disabled={processing}
                   onClick={() => remove(i)}
                 >
                   <Delete />
                 </IconButton>
               </div>
             </Container>
-            {i === 0 && length !== 0 && <LinearProgress className={classes.progress} />}
+            {i === 0 && processing && <LinearProgress className={classes.progress} />}
           </Grid>
         ))}
 
-        <Grid item container justify="center" xs={9}>
+        <Grid container justify="center" xs={8}>
           {packages.length !== 0 ? (
             <Button
               size="large"
@@ -162,7 +165,7 @@ const Queue = ({ packages, globalProgress, swap, remove, setAlert, aptProcess }:
             <LinearProgress
               className={classes.progress}
               variant="buffer"
-              value={(globalProgress - 1 / length) * 100}
+              value={((globalProgress - 1) / length) * 100}
               valueBuffer={(globalProgress / length) * 100}
             />
           </Grid>

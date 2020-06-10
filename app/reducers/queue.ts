@@ -62,13 +62,14 @@ export default createReducer(
         state.packages = queue
         return state
       })
-      .addCase(AptActions.process.pending, state => {
-        state.globalProgress++
-        return state
-      })
       .addCase(QueueActions.pop, state => {
         state.currentProgress = 0
         state.packages.shift()
+        if (state.packages.length !== 0) state.globalProgress++
+        return state
+      })
+      .addCase(AptActions.process.pending, state => {
+        state.globalProgress++
         return state
       })
       .addCase(AptActions.process.fulfilled, state => {
