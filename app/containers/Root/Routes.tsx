@@ -1,6 +1,6 @@
 import React from 'react'
 import { Switch, Route } from 'react-router-dom'
-import { Home, PackageInfo, SearchResults, Queue } from '../index'
+import { Home, PackageInfo, SearchResults, Queue, Mirrors } from '../index'
 
 const Routes = () => {
   return (
@@ -22,6 +22,9 @@ const Routes = () => {
       </Route>
       <Route exact path="/queue">
         <Queue />
+      </Route>
+      <Route exact path="/mirrors">
+        <Mirrors />
       </Route>
     </Switch>
   )

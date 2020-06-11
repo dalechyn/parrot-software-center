@@ -144,7 +144,7 @@ const Queue = ({ packages, globalProgress, swap, remove, setAlert, aptProcess }:
           </Grid>
         ))}
 
-        <Grid container justify="center" xs={8}>
+        <Grid container justify="center">
           {packages.length !== 0 ? (
             <Button
               size="large"

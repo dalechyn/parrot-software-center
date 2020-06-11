@@ -18,7 +18,8 @@ import {
   Menu as MenuIcon,
   ChevronLeft as DrawerCloseIcon,
   ImportContacts as FeedIcon,
-  Queue as QueueIcon
+  Queue as QueueIcon,
+  Explore as MapIcon
 } from '@material-ui/icons'
 import Alert from '@material-ui/lab/Alert'
 import SearchBar from '../SearchBar'
@@ -91,9 +92,10 @@ const Header = ({ alert, clear }: HeaderProps) => {
         <Button startIcon={<QueueIcon />} size="large" component={Link} to={'/queue'}>
           Queue
         </Button>
+        <Button startIcon={<MapIcon />} size="large" component={Link} to={'/mirrors'}>
+          Mirrors
+        </Button>
       </Drawer>
-      {/* if the error came from GoLang, it is not a JavaScript error object and doesn`t
-      have message prop. I will open an issue on WebView about that */}
       {alert && (
         <Alert severity="error" onClose={() => clear()}>
           {alert}
