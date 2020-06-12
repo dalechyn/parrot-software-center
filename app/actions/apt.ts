@@ -12,6 +12,14 @@ export type Preview = {
   description: string
 }
 
+export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async (_, thunkAPI) => {
+  const { stdout, stderr } = await prExec(
+    'apt-get -s -o Debug::NoLocking=true upgrade | grep ^Inst | cut -c 6-'
+  )
+  if (stderr) return thunkAPI.rejectWithValue(stderr)
+  return stdout.split('\n').length - 1
+})
+
 export const process = createAsyncThunk('@apt/PROCESS', async (packages: QueueNode[], thunkAPI) => {
   try {
     const prepared = packages

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { connect, ConnectedProps } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -23,7 +23,9 @@ import {
 } from '@material-ui/icons'
 import Alert from '@material-ui/lab/Alert'
 import SearchBar from '../SearchBar'
-import { AlertActions } from '../../actions'
+import { AlertActions, AptActions } from '../../actions'
+import { useSnackbar } from 'notistack'
+import { unwrapResult } from '@reduxjs/toolkit'
 
 const useStyles = makeStyles(theme => ({
   drawer: { width: 250 },
@@ -45,17 +47,37 @@ const useStyles = makeStyles(theme => ({
 const mapStateToProps = ({ alert }: RootState) => ({ alert })
 
 const mapDispatchToProps = {
-  clear: AlertActions.clear
+  clear: AlertActions.clear,
+  setAlert: AlertActions.set,
+  checkUpdates: AptActions.checkUpdates
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type HeaderProps = ConnectedProps<typeof connector>
 
-const Header = ({ alert, clear }: HeaderProps) => {
+const Header = ({ alert, clear, checkUpdates, setAlert }: HeaderProps) => {
   const classes = useStyles()
   const [drawerOpen, setDrawer] = useState(false)
+  const { enqueueSnackbar } = useSnackbar()
 
+  useEffect(() => {
+    const f = async () => {
+      const result = await checkUpdates()
+      if (AptActions.checkUpdates.rejected.match(result)) {
+        setAlert('Unable to get updates:' + result.error)
+        return
+      }
+
+      enqueueSnackbar(`${unwrapResult(result)} packages are available for update`, {
+        anchorOrigin: {
+          vertical: 'top',
+          horizontal: 'right'
+        }
+      })
+    }
+    f()
+  }, [])
   const handleDrawerOpen = () => setDrawer(true)
   const handleDrawerClose = () => setDrawer(false)
   return (
