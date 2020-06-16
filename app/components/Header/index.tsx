@@ -108,7 +108,7 @@ const Header = ({ alert, clear, checkUpdates, setAlert }: HeaderProps) => {
           </Button>
         </div>
         <Divider />
-        <Button disabled startIcon={<FeedIcon />} size="large" component={Link} to={'/feed'}>
+        <Button startIcon={<FeedIcon />} size="large" component={Link} to={'/'}>
           Feed
         </Button>
         <Button startIcon={<QueueIcon />} size="large" component={Link} to={'/queue'}>
