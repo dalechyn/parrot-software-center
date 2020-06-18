@@ -65,7 +65,7 @@ const Header = ({ alert, clear, checkUpdates, setAlert }: HeaderProps) => {
     const f = async () => {
       const result = await checkUpdates()
       if (AptActions.checkUpdates.rejected.match(result)) {
-        setAlert('Unable to get updates:' + result.error)
+        setAlert(new Error('Unable to get updates:' + result.error))
         return
       }
 

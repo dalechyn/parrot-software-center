@@ -88,7 +88,7 @@ const Queue = ({ packages, globalProgress, swap, remove, setAlert, aptProcess }:
   const processPackages = useCallback(async () => {
     setProcessing(true)
     const res = await aptProcess(packages)
-    if (AptActions.process.rejected.match(res)) setAlert(`apt: ${res}`)
+    if (AptActions.process.rejected.match(res)) setAlert(new Error(`apt: ${res}`))
   }, [packages, setAlert])
 
   return (

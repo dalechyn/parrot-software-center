@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Grid, makeStyles, Paper } from '@material-ui/core'
+import { Button, Collapse, Grid, makeStyles, Paper } from '@material-ui/core'
 import { connect, ConnectedProps } from 'react-redux'
 import { AptActions, AlertActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
-import { Readable } from 'stream'
 import Terminal from '../../components/Terminal'
 
 const useStyles = makeStyles(theme => ({
   padded: {
     padding: theme.spacing(2)
+  },
+  margin: {
+    marginTop: theme.spacing(2)
   }
 }))
 
@@ -24,7 +26,6 @@ const Home = ({ checkUpdates, setAlert, upgrade }: HomeProps) => {
   const classes = useStyles()
   const [upgrading, setUpgrading] = useState(false)
   const [updates, setUpdates] = useState(0)
-  const [terminalStream, setTerminalStream] = useState(new Readable())
   useEffect(() => {
     const f = async () => {
       try {
@@ -48,22 +49,24 @@ const Home = ({ checkUpdates, setAlert, upgrade }: HomeProps) => {
           <Grid item xs>
             <h2>{updates} updates available! Upgrade now!</h2>
           </Grid>
-          <Button
-            size="large"
-            variant="contained"
-            onClick={async () => {
-              try {
-                const res = unwrapResult(await upgrade())
-                setUpgrading(true)
-                setTerminalStream(res)
-              } catch (e) {
-                setAlert(e)
-              }
-            }}
-          >
+          <Button size="large" variant="contained" onClick={() => setUpgrading(true)}>
             Upgrade
           </Button>
-          {upgrading && <Terminal stdout={terminalStream} width={300} height={300} />}
+          <Grid className={classes.margin} item xs={6}>
+            <Collapse in={upgrading}>
+              {upgrading && (
+                <Terminal
+                  serveStream={async (onValue: (chunk: string) => void, onFinish: () => void) =>
+                    unwrapResult(await upgrade({ onValue, onFinish }))
+                  }
+                  onClose={() => setUpgrading(false)}
+                  initialLine={`# apt-get update && apt-get -y dist-upgrade`}
+                  width={300}
+                  height={300}
+                />
+              )}
+            </Collapse>
+          </Grid>
         </Grid>
       )}
     </Grid>

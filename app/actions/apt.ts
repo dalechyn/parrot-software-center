@@ -3,6 +3,7 @@ import { exec } from 'child_process'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { promisify } from 'util'
 import { QueueNode } from '../containers/Queue'
+import { Readable } from 'stream'
 
 const PSC_FINISHED = '__PSC_FINISHED'
 const prExec = promisify(exec)
@@ -12,18 +13,29 @@ export type Preview = {
   description: string
 }
 
-export const upgrade = createAsyncThunk('@apt/UPGRADE', async () => {
-  // ADDED -s for developing purposes, it will be removed after Terminal component will work right.
-  const { stderr, stdout } = exec('pkexec sh -c "apt-get -s update && apt-get -s -y dist-upgrade"')
-  if (!stdout || !stderr) throw new Error('Failed to host shell')
+const waitStdoe = (stderr: Readable, stdout: Readable) =>
+  Promise.race([
+    new Promise(resolve => stdout.on('close', resolve)),
+    new Promise((_, reject) =>
+      stderr.on('data', chunk => {
+        const line = chunk as string
+        reject(new Error(line))
+      })
+    )
+  ])
 
-  stderr.on('data', chunk => {
-    const line = chunk as string
-    throw new Error(line)
-  })
+export const upgrade = createAsyncThunk(
+  '@apt/UPGRADE',
+  async ({ onValue, onFinish }: { onValue: (chunk: string) => void; onFinish: () => void }) => {
+    const { stderr, stdout } = exec('pkexec sh -c "apt-get update && apt-get -y dist-upgrade"')
+    if (!stdout || !stderr) throw new Error('Failed to host shell')
 
-  return stdout
-})
+    stdout.on('data', onValue)
+
+    await waitStdoe(stderr, stdout)
+    onFinish()
+  }
+)
 
 export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async () => {
   const { stdout, stderr } = await prExec(
@@ -40,17 +52,13 @@ export const process = createAsyncThunk('@apt/PROCESS', async (packages: QueueNo
   const { stdout, stderr } = exec(`pkexec sh -c "${prepared}"`)
   if (!stdout || !stderr) throw new Error('Failed to host shell')
 
-  stderr.on('data', chunk => {
-    const line = chunk as string
-    throw new Error(line)
-  })
-
   for await (const chunk of stdout) {
     const line = chunk as string
     console.log(line)
     if (line.match(PSC_FINISHED)) thunkAPI.dispatch(pop())
   }
-  return
+
+  await waitStdoe(stderr, stdout)
 })
 export const status = createAsyncThunk('@apt/STATUS', async (packageName: string) => {
   try {
