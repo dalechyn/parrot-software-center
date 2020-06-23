@@ -1,11 +1,7 @@
 import { PackagePreview } from '../index'
-import React, { ReactNode, useEffect, useMemo, useState } from 'react'
-import { AlertActions, AptActions } from '../../actions'
-import { connect, ConnectedProps } from 'react-redux'
+import React, { ReactNode, useEffect, useState } from 'react'
 import { Grid, makeStyles } from '@material-ui/core'
 import { Preview } from '../../actions/apt'
-
-const APIUrl = 'http://localhost:8000/'
 
 export interface CVEInfoType {
   critical: number
@@ -18,15 +14,7 @@ const cveAPIInfo = {
   handleResult: (json: CVEInfoType) => json
 }
 
-const mapDispatchToProps = {
-  status: AptActions.status,
-  search: AptActions.search,
-  alert: AlertActions.set
-}
-
-const connector = connect(null, mapDispatchToProps)
-
-type PackagePreviewListProps = ConnectedProps<typeof connector> & {
+type PackagePreviewListProps = {
   previews: Preview[]
 }
 
@@ -40,8 +28,6 @@ const useStyles = makeStyles(theme => ({
 const PackagePreviewList = ({ previews }: PackagePreviewListProps) => {
   const [previewNodes, setPreviewNodes] = useState(Array<ReactNode>())
   const classes = useStyles()
-
-  const resourceURL = useMemo(() => new URL('assets/packages/', APIUrl).toString(), [])
 
   useEffect(() => {
     setPreviewNodes([])
@@ -59,7 +45,7 @@ const PackagePreviewList = ({ previews }: PackagePreviewListProps) => {
                 name={name}
                 description={description}
                 key={`${name}`}
-                imageUrl={`${resourceURL}${name}.png`}
+                imageUrl={`${APIUrl}/assets/packages/${name}.png`}
                 cveInfo={cveInfo}
               />
             )
@@ -83,4 +69,4 @@ const PackagePreviewList = ({ previews }: PackagePreviewListProps) => {
   )
 }
 
-export default connector(PackagePreviewList)
+export default PackagePreviewList

@@ -2,6 +2,7 @@ import { pop } from './queue'
 import { exec } from 'child_process'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { promisify } from 'util'
+import { AlertActions } from '../actions'
 import { QueueNode } from '../containers/Queue'
 import { Readable } from 'stream'
 
@@ -26,39 +27,56 @@ const waitStdoe = (stderr: Readable, stdout: Readable) =>
 
 export const upgrade = createAsyncThunk(
   '@apt/UPGRADE',
-  async ({ onValue, onFinish }: { onValue: (chunk: string) => void; onFinish: () => void }) => {
-    const { stderr, stdout } = exec('pkexec sh -c "apt-get update && apt-get -y dist-upgrade"')
-    if (!stdout || !stderr) throw new Error('Failed to host shell')
+  async (
+    { onValue, onFinish }: { onValue: (chunk: string) => void; onFinish: () => void },
+    thunkAPI
+  ) => {
+    try {
+      const { stderr, stdout } = exec('pkexec sh -c "apt-get update && apt-get -y dist-upgrade"')
+      if (!stdout || !stderr) throw new Error('Failed to host shell')
 
-    stdout.on('data', onValue)
+      stdout.on('data', onValue)
 
-    await waitStdoe(stderr, stdout)
-    onFinish()
+      await waitStdoe(stderr, stdout)
+      onFinish()
+    } catch (e) {
+      thunkAPI.dispatch(AlertActions.set(e))
+      throw e
+    }
   }
 )
 
-export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async () => {
-  const { stdout, stderr } = await prExec(
-    'apt-get -s -o Debug::NoLocking=true upgrade | grep ^Inst | cut -c 6-'
-  )
-  if (stderr) throw new Error(stderr)
-  return stdout.split('\n').length - 1
+export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async (_, thunkAPI) => {
+  try {
+    const { stdout } = await prExec(
+      'apt-get -s -o Debug::NoLocking=true upgrade | grep ^Inst | cut -c 6-'
+    )
+    return stdout.split('\n').length - 1
+  } catch (e) {
+    thunkAPI.dispatch(AlertActions.set(e))
+    throw e
+  }
 })
 
 export const process = createAsyncThunk('@apt/PROCESS', async (packages: QueueNode[], thunkAPI) => {
   const prepared = packages
     .map(({ flag, name }: QueueNode) => `apt ${flag} -y ${name}; echo ${PSC_FINISHED}`)
     .join(';')
-  const { stdout, stderr } = exec(`pkexec sh -c "${prepared}"`)
-  if (!stdout || !stderr) throw new Error('Failed to host shell')
+  try {
+    const { stdout, stderr } = exec(`pkexec sh -c "${prepared}"`)
+    if (!stdout || !stderr) throw new Error('Failed to host shell')
 
-  for await (const chunk of stdout) {
-    const line = chunk as string
-    console.log(line)
-    if (line.match(PSC_FINISHED)) thunkAPI.dispatch(pop())
+    for await (const chunk of stdout) {
+      const line = chunk as string
+      console.log(line)
+      if (line.match(PSC_FINISHED)) thunkAPI.dispatch(pop())
+    }
+
+    await waitStdoe(stderr, stdout)
+  } catch (e) {
+    thunkAPI.dispatch(AlertActions.set(e))
+    throw e
   }
-
-  await waitStdoe(stderr, stdout)
 })
 export const status = createAsyncThunk('@apt/STATUS', async (packageName: string) => {
   try {
@@ -70,26 +88,30 @@ export const status = createAsyncThunk('@apt/STATUS', async (packageName: string
 })
 export const searchPreviews = createAsyncThunk(
   '@apt/SEARCH_PREVIEWS',
-  async (packageName: string) => {
-    const { stdout, stderr } = await prExec(`apt-cache search --names-only ${packageName}`)
-    if (stderr) {
-      throw new Error(stderr)
+  async (packageName: string, thunkAPI) => {
+    try {
+      const { stdout } = await prExec(`apt-cache search --names-only ${packageName}`)
+      const names = stdout.split('\n')
+      return names.slice(0, names.length - 1).map(str => {
+        const res = str.split(/ - /)
+        const preview: Preview = {
+          name: res[0],
+          description: res[1]
+        }
+        return preview
+      })
+    } catch (e) {
+      thunkAPI.dispatch(AlertActions.set(e))
+      throw e
     }
-    const names = stdout.split('\n')
-    return names.slice(0, names.length - 1).map(str => {
-      const res = str.split(/ - /)
-      const preview: Preview = {
-        name: res[0],
-        description: res[1]
-      }
-      return preview
-    })
   }
 )
-export const search = createAsyncThunk('@apt/SEARCH', async (packageName: string) => {
-  const { stdout, stderr } = await prExec(`apt-cache show ${packageName}`)
-  if (stderr) {
-    throw new Error(stderr)
+export const search = createAsyncThunk('@apt/SEARCH', async (packageName: string, thunkAPI) => {
+  try {
+    const { stdout } = await prExec(`apt-cache show ${packageName}`)
+    return stdout
+  } catch (e) {
+    thunkAPI.dispatch(AlertActions.set(e))
+    throw e
   }
-  return stdout
 })

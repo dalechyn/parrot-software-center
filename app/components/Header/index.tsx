@@ -19,7 +19,8 @@ import {
   ChevronLeft as DrawerCloseIcon,
   ImportContacts as FeedIcon,
   Queue as QueueIcon,
-  Explore as MapIcon
+  Explore as MapIcon,
+  VpnKey as LoginIcon
 } from '@material-ui/icons'
 import Alert from '@material-ui/lab/Alert'
 import SearchBar from '../SearchBar'
@@ -48,7 +49,6 @@ const mapStateToProps = ({ alert }: RootState) => ({ alert })
 
 const mapDispatchToProps = {
   clear: AlertActions.clear,
-  setAlert: AlertActions.set,
   checkUpdates: AptActions.checkUpdates
 }
 
@@ -56,7 +56,7 @@ const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type HeaderProps = ConnectedProps<typeof connector>
 
-const Header = ({ alert, clear, checkUpdates, setAlert }: HeaderProps) => {
+const Header = ({ alert, clear, checkUpdates }: HeaderProps) => {
   const classes = useStyles()
   const [drawerOpen, setDrawer] = useState(false)
   const { enqueueSnackbar } = useSnackbar()
@@ -64,10 +64,6 @@ const Header = ({ alert, clear, checkUpdates, setAlert }: HeaderProps) => {
   useEffect(() => {
     const f = async () => {
       const result = await checkUpdates()
-      if (AptActions.checkUpdates.rejected.match(result)) {
-        setAlert(new Error('Unable to get updates:' + result.error))
-        return
-      }
 
       enqueueSnackbar(`${unwrapResult(result)} packages are available for update`, {
         anchorOrigin: {
@@ -116,6 +112,10 @@ const Header = ({ alert, clear, checkUpdates, setAlert }: HeaderProps) => {
         </Button>
         <Button startIcon={<MapIcon />} size="large" component={Link} to={'/mirrors'}>
           Mirrors
+        </Button>
+        <Divider />
+        <Button startIcon={<LoginIcon />} size="large" component={Link} to={'/login'}>
+          Log in
         </Button>
       </Drawer>
       {alert && (
