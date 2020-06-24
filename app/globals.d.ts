@@ -1,8 +1,8 @@
-import rootReducer from './root.reducer'
+import rootReducer from './store/root.reducer'
 
 declare global {
-  export type RootState = ReturnType<typeof rootReducer>
   export const APIUrl = 'http://localhost:8000'
+  export type RootState = ReturnType<typeof rootReducer>
 }
 
 declare module '*.css' {

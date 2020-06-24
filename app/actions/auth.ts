@@ -1,16 +1,21 @@
 import { AlertActions } from '../actions'
-import { createAsyncThunk } from '@reduxjs/toolkit'
+import { createAction, createAsyncThunk } from '@reduxjs/toolkit'
 
 type AuthInfo = {
-  email: string
+  login: string
+  email?: string
   password: string
 }
+export const setToken = createAction<string>('@auth/SET_TOKEN')
 export const login = createAsyncThunk(
   '@auth/LOGIN',
-  async ({ email, password }: AuthInfo, thunkAPI) => {
+  async ({ login, password }: AuthInfo, thunkAPI) => {
     try {
-      const response = await fetch(`${APIUrl}/login`, { body: JSON.stringify({ email, password }) })
-      return await response.json()
+      const response = await fetch(`http://localhost:8000/login`, {
+        method: 'POST',
+        body: JSON.stringify({ login, password })
+      })
+      thunkAPI.dispatch(setToken((await response.json()).token))
     } catch (e) {
       thunkAPI.dispatch(AlertActions.set(e))
       throw e
@@ -19,15 +24,18 @@ export const login = createAsyncThunk(
 )
 export const register = createAsyncThunk(
   '@auth/REGISTER',
-  async ({ email, password }: AuthInfo, thunkAPI) => {
+  async ({ email, login, password }: AuthInfo, thunkAPI) => {
     try {
-      const response = await fetch(`${APIUrl}/register`, {
-        body: JSON.stringify({ email, password })
+      const res = await fetch(`http://localhost:8000/register`, {
+        method: 'POST',
+        body: JSON.stringify({ email, login, password })
       })
-      return await response.json()
+      if (!res.ok)
+        thunkAPI.dispatch(
+          AlertActions.set(new Error('There is already an account with that email or username'))
+        )
     } catch (e) {
       thunkAPI.dispatch(AlertActions.set(e))
-      throw e
     }
   }
 )

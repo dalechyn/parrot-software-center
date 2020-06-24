@@ -24,9 +24,10 @@ import {
 } from '@material-ui/icons'
 import Alert from '@material-ui/lab/Alert'
 import SearchBar from '../SearchBar'
-import { AlertActions, AptActions } from '../../actions'
+import { AlertActions, AptActions, AuthActions } from '../../actions'
 import { useSnackbar } from 'notistack'
 import { unwrapResult } from '@reduxjs/toolkit'
+import AuthDialog from '../AuthDialog'
 
 const useStyles = makeStyles(theme => ({
   drawer: { width: 250 },
@@ -45,10 +46,11 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const mapStateToProps = ({ alert }: RootState) => ({ alert })
+const mapStateToProps = ({ alert, auth: { token } }: RootState) => ({ alert, token })
 
 const mapDispatchToProps = {
   clear: AlertActions.clear,
+  setToken: AuthActions.setToken,
   checkUpdates: AptActions.checkUpdates
 }
 
@@ -56,9 +58,10 @@ const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type HeaderProps = ConnectedProps<typeof connector>
 
-const Header = ({ alert, clear, checkUpdates }: HeaderProps) => {
+const Header = ({ alert, clear, checkUpdates, token, setToken }: HeaderProps) => {
   const classes = useStyles()
   const [drawerOpen, setDrawer] = useState(false)
+  const [authOpened, setOpen] = useState(false)
   const { enqueueSnackbar } = useSnackbar()
 
   useEffect(() => {
@@ -114,9 +117,16 @@ const Header = ({ alert, clear, checkUpdates }: HeaderProps) => {
           Mirrors
         </Button>
         <Divider />
-        <Button startIcon={<LoginIcon />} size="large" component={Link} to={'/login'}>
-          Log in
-        </Button>
+        {token ? (
+          <Button startIcon={<LoginIcon />} onClick={() => setToken('')} size="large">
+            Log out
+          </Button>
+        ) : (
+          <Button startIcon={<LoginIcon />} onClick={() => setOpen(true)} size="large">
+            Log in
+          </Button>
+        )}
+        <AuthDialog open={authOpened} onClose={() => setOpen(false)} />
       </Drawer>
       {alert && (
         <Alert severity="error" onClose={() => clear()}>
