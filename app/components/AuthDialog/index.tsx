@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import {
   Button,
+  CircularProgress,
   TextField,
   Dialog,
   DialogActions,
@@ -11,6 +12,8 @@ import {
 import { useSnackbar } from 'notistack'
 import { AuthActions } from '../../actions'
 import { connect, ConnectedProps } from 'react-redux'
+import { unwrapResult } from '@reduxjs/toolkit'
+import { useForm } from 'react-hook-form'
 
 const mapDispatchToProps = {
   login: AuthActions.login,
@@ -24,6 +27,14 @@ type AuthDialogProps = ConnectedProps<typeof connector> & {
   onClose: () => void
 }
 
+type FormData = {
+  login: string
+  email: string
+  password: string
+}
+
+const emailRegExp = /^(?:(?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*)|(?:".+"))@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+
 const AuthDialog = ({
   open,
   onClose,
@@ -31,82 +42,103 @@ const AuthDialog = ({
   register: registerAction
 }: AuthDialogProps) => {
   const [registered, setRegistered] = useState(true)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [login, setLogin] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const { enqueueSnackbar } = useSnackbar()
+  const { register, handleSubmit, errors, clearError } = useForm<FormData>()
 
   return (
     <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title">
-      <DialogTitle id="form-dialog-title">{registered ? 'Log in' : 'Register'}</DialogTitle>
-      <DialogContent>
-        {!registered && (
+      <form
+        onSubmit={handleSubmit(async ({ login, email, password }) => {
+          try {
+            if (registered) {
+              setLoading(true)
+              const action = await loginAction({ login, password })
+              unwrapResult(action)
+              setLoading(false)
+              enqueueSnackbar('Logged in successfully')
+              onClose()
+            } else {
+              setLoading(true)
+              const action = await registerAction({ email, login, password })
+              unwrapResult(action)
+              setLoading(false)
+              enqueueSnackbar(
+                'Registered successfully, confirm your account in a message we sent to the email'
+              )
+              onClose()
+            }
+          } catch (e) {
+            setError(e.message)
+          }
+        })}
+      >
+        <DialogTitle id="form-dialog-title">{registered ? 'Log in' : 'Register'}</DialogTitle>
+        <DialogContent>
+          {!registered && (
+            <TextField
+              autoFocus
+              margin="dense"
+              name="email"
+              label="Email Address"
+              onChange={() => setError('')}
+              type="email"
+              error={!!(errors.email || error)}
+              helperText={error ? error : errors.email && 'Wrong email format'}
+              inputRef={register({ required: true, pattern: emailRegExp })}
+              fullWidth
+            />
+          )}
           <TextField
             autoFocus
             margin="dense"
-            id="email"
-            label="Email Address"
-            type="email"
-            onChange={({ target: { value } }) => setEmail(value)}
+            name="login"
+            label="Login"
+            type="login"
+            onChange={() => setError('')}
+            error={!!(errors.login || error)}
+            helperText={error ? error : 'Login needs to have 3-20 symbols'}
+            inputRef={register({ required: true, minLength: 3, maxLength: 20 })}
             fullWidth
           />
-        )}
-        <TextField
-          autoFocus
-          margin="dense"
-          id="login"
-          label="Login"
-          type="login"
-          fullWidth
-          onChange={({ target: { value } }) => setLogin(value)}
-        />
-        <TextField
-          autoFocus
-          margin="dense"
-          id="password"
-          label="Password"
-          onChange={({ target: { value } }) => setPassword(value)}
-          type="password"
-          fullWidth
-        />
-        <Link
-          component="button"
-          variant="body2"
-          onClick={() => {
-            setRegistered(!registered)
-          }}
-        >
-          {registered ? 'Not registered? Register now.' : 'Already registered? Login now.'}
-        </Link>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="primary">
-          Cancel
-        </Button>
-        <Button
-          onClick={async () => {
-            if (registered) {
-              const action = await loginAction({ login, password })
-              if (AuthActions.login.fulfilled.match(action)) {
-                enqueueSnackbar('Logged in successfully')
-                onClose()
-              }
-            } else {
-              const action = await registerAction({ email, login, password })
-              if (AuthActions.register.fulfilled.match(action)) {
-                enqueueSnackbar(
-                  'Registered successfully, confirm your account in a message we sent to the email'
-                )
-                onClose()
-              }
-            }
-          }}
-          color="primary"
-        >
-          {registered ? 'Login' : 'Register'}
-        </Button>
-      </DialogActions>
+          <TextField
+            autoFocus
+            margin="dense"
+            name="password"
+            label="Password"
+            type="password"
+            error={!!errors.password}
+            helperText="Password needs to have 6-20 symbols"
+            inputRef={register({ required: true, minLength: 6, maxLength: 20 })}
+            fullWidth
+          />
+          <Link
+            // Commented until https://github.com/mui-org/material-ui/issues/21576 resolved
+            // component="button"
+            variant="body2"
+            onClick={() => {
+              clearError('login')
+              clearError('password')
+              clearError('email')
+              setRegistered(!registered)
+              setError('')
+            }}
+          >
+            {registered ? 'Not registered? Register now.' : 'Already registered? Login now.'}
+          </Link>
+        </DialogContent>
+        <DialogActions>
+          {loading && <CircularProgress />}
+          <Button onClick={onClose} color="primary">
+            Cancel
+          </Button>
+          <Button color="primary" type="submit">
+            {registered ? 'Login' : 'Register'}
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   )
 }
