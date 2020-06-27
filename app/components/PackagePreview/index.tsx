@@ -17,11 +17,12 @@ import {
   Paper,
   Typography
 } from '@material-ui/core'
-import { grey, orange, red } from '@material-ui/core/colors'
+import { amber, grey, orange, red } from '@material-ui/core/colors'
 import dummyPackageImg from '../../assets/package.png'
 import { AptActions, QueueActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
 import { QueueNode } from '../../containers/Queue'
+import { CVEInfoType } from '../PackagePreviewList'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -58,8 +59,11 @@ const useStyles = makeStyles(theme => ({
   cveCritical: {
     background: red[500]
   },
-  cveImportant: {
+  cveHigh: {
     background: orange[500]
+  },
+  cveMedium: {
+    background: amber[500]
   },
   name: {
     paddingLeft: theme.spacing(1)
@@ -84,11 +88,7 @@ type PackagePreviewProps = ConnectedProps<typeof connector> & {
   imageUrl: string
   name: string
   description: string
-  cveInfo: {
-    critical: number
-    important: number
-    low: number
-  }
+  cveInfo: CVEInfoType
 }
 
 const PackagePreview = ({
@@ -143,16 +143,33 @@ const PackagePreview = ({
               </Typography>
             </div>
             <div className={classes.cve}>
-              <Chip label={'This month CVEs:'} />
-              <Chip
-                className={classnames(classes.cveCritical, classes.chipText)}
-                label={`Crnamesitical: ${cveInfo.critical}`}
-              />
-              <Chip
-                className={classnames(classes.cveImportant, classes.chipText)}
-                label={`Important: ${cveInfo.important}`}
-              />
-              <Chip label={`Low: ${cveInfo.low}`} />
+              {(cveInfo.critical != 0 ||
+                cveInfo.high != 0 ||
+                cveInfo.medium != 0 ||
+                cveInfo.low != 0) && (
+                <>
+                  <Chip label={'This month CVEs:'} />
+                  {cveInfo.critical != 0 && (
+                    <Chip
+                      className={classnames(classes.cveCritical, classes.chipText)}
+                      label={`Critical: ${cveInfo.critical}`}
+                    />
+                  )}
+                  {cveInfo.high != 0 && (
+                    <Chip
+                      className={classnames(classes.cveHigh, classes.chipText)}
+                      label={`High: ${cveInfo.high}`}
+                    />
+                  )}
+                  {cveInfo.medium != 0 && (
+                    <Chip
+                      className={classnames(classes.cveMedium, classes.chipText)}
+                      label={`Medium: ${cveInfo.medium}`}
+                    />
+                  )}
+                  {cveInfo.low != 0 && <Chip label={`Low: ${cveInfo.low}`} />}
+                </>
+              )}
             </div>
           </Paper>
           <Typography

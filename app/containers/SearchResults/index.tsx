@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import { connect, ConnectedProps } from 'react-redux'
 
-import { Grid, makeStyles } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core'
 import { Pagination } from '@material-ui/lab'
 import leven from 'leven'
 
@@ -12,7 +12,6 @@ import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { Preview } from '../../actions/apt'
 import { Package } from '../PackageInfo'
 import { replace } from 'connected-react-router'
-import { PackagePreviewSkeleton } from '../../components'
 
 const componentsInPage = 5
 
@@ -63,7 +62,6 @@ const SearchResults = ({
   replace
 }: SearchResultsProps & RouteComponentProps<Package & { page: string }>) => {
   const [previews, setPreviews] = useState(Array<Preview>())
-  const [loaded, setLoaded] = useState(false)
 
   const { name, page: initialPage } = match.params
   const [page, scroll] = useState(initialPage ? parseInt(initialPage) : 1)
@@ -80,7 +78,6 @@ const SearchResults = ({
             setPreviews(
               unwrapResult(response).sort((a, b) => leven(a.name, name) - leven(b.name, name))
             )
-            setLoaded(true)
           } catch (e) {
             setAlert(e)
           }
@@ -106,44 +103,30 @@ const SearchResults = ({
   return (
     <div className={classes.root}>
       <h1>Showing results for {name}</h1>
-      {!loaded ? (
-        <Grid
-          container
-          direction="column"
-          justify="space-evenly"
-          alignItems="center"
-          className={classes.grid}
-        >
-          <PackagePreviewSkeleton />
-          <PackagePreviewSkeleton />
-          <PackagePreviewSkeleton />
-          <PackagePreviewSkeleton />
-          <PackagePreviewSkeleton />
-        </Grid>
-      ) : previews.length === 0 ? (
+      {previews.length === 0 ? (
         <h2>Nothing found...</h2>
       ) : (
-        <Pagination
-          className={classes.pagination}
-          count={Math.ceil(previews.length / componentsInPage)}
-          onChange={pageChange}
-          page={page}
-          variant="outlined"
-          shape="rounded"
-        />
-      )}
-      <PackagePreviewList
-        previews={previews.slice((page - 1) * componentsInPage, page * componentsInPage)}
-      />
-      {previews.length !== 0 && (
-        <Pagination
-          className={classes.pagination}
-          count={Math.ceil(previews.length / componentsInPage)}
-          onChange={pageChange}
-          page={page}
-          variant="outlined"
-          shape="rounded"
-        />
+        <>
+          <Pagination
+            className={classes.pagination}
+            count={Math.ceil(previews.length / componentsInPage)}
+            onChange={pageChange}
+            page={page}
+            variant="outlined"
+            shape="rounded"
+          />
+          <PackagePreviewList
+            previews={previews.slice((page - 1) * componentsInPage, page * componentsInPage)}
+          />
+          <Pagination
+            className={classes.pagination}
+            count={Math.ceil(previews.length / componentsInPage)}
+            onChange={pageChange}
+            page={page}
+            variant="outlined"
+            shape="rounded"
+          />
+        </>
       )}
     </div>
   )
