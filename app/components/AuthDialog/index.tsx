@@ -115,8 +115,8 @@ const AuthDialog = ({
             fullWidth
           />
           <Link
-            // Commented until https://github.com/mui-org/material-ui/issues/21576 resolved
-            // component="button"
+            component="button"
+            type="button"
             variant="body2"
             onClick={() => {
               clearError('login')
