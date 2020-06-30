@@ -51,8 +51,8 @@
     ]
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.develar.ElectronReact",
+    "productName": "ParrotSoftwareCenter",
+    "appId": "org.parrotlinux.PSC",
     "files": [
       "dist/",
       "node_modules/",
