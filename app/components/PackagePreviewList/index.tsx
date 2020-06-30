@@ -2,6 +2,7 @@ import { PackagePreview, PackagePreviewSkeleton } from '../index'
 import React, { ReactNode, useEffect, useState } from 'react'
 import { Grid, makeStyles } from '@material-ui/core'
 import { Preview } from '../../actions/apt'
+import { connect, ConnectedProps } from 'react-redux'
 
 const APIUrl = 'http://localhost:8000'
 
@@ -41,7 +42,10 @@ const redhatCVEEndpoint: CVEEndpoint = {
   }
 }
 
-type PackagePreviewListProps = {
+const mapStateToProps = ({ settings: { loadCVEs } }: RootState) => ({ loadCVEs })
+
+const connector = connect(mapStateToProps)
+type PackagePreviewListProps = ConnectedProps<typeof connector> & {
   previews: Preview[]
 }
 
@@ -52,7 +56,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const PackagePreviewList = ({ previews }: PackagePreviewListProps) => {
+const PackagePreviewList = ({ previews, loadCVEs }: PackagePreviewListProps) => {
   const [loaded, setLoaded] = useState(false)
   const [previewNodes, setPreviewNodes] = useState(Array<ReactNode>())
   const classes = useStyles()
@@ -66,7 +70,16 @@ const PackagePreviewList = ({ previews }: PackagePreviewListProps) => {
       setPreviewNodes(
         await Promise.all(
           previews.map(async ({ name, description }) => {
-            console.log(`${redhatCVEEndpoint.api}package=${name}&after=${monthAgo.toISOString()}`)
+            if (!loadCVEs)
+              return (
+                <PackagePreview
+                  name={name}
+                  description={description}
+                  key={name}
+                  imageUrl={`${APIUrl}/assets/packages/${name}.png`}
+                />
+              )
+
             const cveInfo = await redhatCVEEndpoint.handleResponse(
               await fetch(
                 `${redhatCVEEndpoint.api}package=${name}&after=${monthAgo.toISOString()}`,
@@ -119,4 +132,4 @@ const PackagePreviewList = ({ previews }: PackagePreviewListProps) => {
   )
 }
 
-export default PackagePreviewList
+export default connector(PackagePreviewList)

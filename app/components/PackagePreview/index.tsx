@@ -88,7 +88,7 @@ type PackagePreviewProps = ConnectedProps<typeof connector> & {
   imageUrl: string
   name: string
   description: string
-  cveInfo: CVEInfoType
+  cveInfo?: CVEInfoType
 }
 
 const PackagePreview = ({
@@ -142,35 +142,37 @@ const PackagePreview = ({
                 {name}
               </Typography>
             </div>
-            <div className={classes.cve}>
-              {(cveInfo.critical != 0 ||
-                cveInfo.high != 0 ||
-                cveInfo.medium != 0 ||
-                cveInfo.low != 0) && (
-                <>
-                  <Chip label={'This month CVEs:'} />
-                  {cveInfo.critical != 0 && (
-                    <Chip
-                      className={classnames(classes.cveCritical, classes.chipText)}
-                      label={`Critical: ${cveInfo.critical}`}
-                    />
-                  )}
-                  {cveInfo.high != 0 && (
-                    <Chip
-                      className={classnames(classes.cveHigh, classes.chipText)}
-                      label={`High: ${cveInfo.high}`}
-                    />
-                  )}
-                  {cveInfo.medium != 0 && (
-                    <Chip
-                      className={classnames(classes.cveMedium, classes.chipText)}
-                      label={`Medium: ${cveInfo.medium}`}
-                    />
-                  )}
-                  {cveInfo.low != 0 && <Chip label={`Low: ${cveInfo.low}`} />}
-                </>
-              )}
-            </div>
+            {cveInfo && (
+              <div className={classes.cve}>
+                {(cveInfo.critical != 0 ||
+                  cveInfo.high != 0 ||
+                  cveInfo.medium != 0 ||
+                  cveInfo.low != 0) && (
+                  <>
+                    <Chip label={'This month CVEs:'} />
+                    {cveInfo.critical != 0 && (
+                      <Chip
+                        className={classnames(classes.cveCritical, classes.chipText)}
+                        label={`Critical: ${cveInfo.critical}`}
+                      />
+                    )}
+                    {cveInfo.high != 0 && (
+                      <Chip
+                        className={classnames(classes.cveHigh, classes.chipText)}
+                        label={`High: ${cveInfo.high}`}
+                      />
+                    )}
+                    {cveInfo.medium != 0 && (
+                      <Chip
+                        className={classnames(classes.cveMedium, classes.chipText)}
+                        label={`Medium: ${cveInfo.medium}`}
+                      />
+                    )}
+                    {cveInfo.low != 0 && <Chip label={`Low: ${cveInfo.low}`} />}
+                  </>
+                )}
+              </div>
+            )}
           </Paper>
           <Typography
             className={classes.description}

@@ -23,7 +23,6 @@ const mapDispatchToProps = {
 const connector = connect(null, mapDispatchToProps)
 
 type AuthDialogProps = ConnectedProps<typeof connector> & {
-  open: boolean
   onClose: () => void
 }
 
@@ -35,12 +34,7 @@ type FormData = {
 
 const emailRegExp = /^(?:(?:[^<>()\[\]\\.,;:\s@"]+(?:\.[^<>()\[\]\\.,;:\s@"]+)*)|(?:".+"))@(?:(?:\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(?:(?:[a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
-const AuthDialog = ({
-  open,
-  onClose,
-  login: loginAction,
-  register: registerAction
-}: AuthDialogProps) => {
+const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: AuthDialogProps) => {
   const [registered, setRegistered] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -49,7 +43,7 @@ const AuthDialog = ({
   const { register, handleSubmit, errors, clearError } = useForm<FormData>()
 
   return (
-    <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title">
+    <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">
       <form
         onSubmit={handleSubmit(async ({ login, email, password }) => {
           try {

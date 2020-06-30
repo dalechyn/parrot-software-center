@@ -20,7 +20,8 @@ import {
   ImportContacts as FeedIcon,
   Queue as QueueIcon,
   Explore as MapIcon,
-  VpnKey as LoginIcon
+  VpnKey as LoginIcon,
+  Settings as SettingsIcon
 } from '@material-ui/icons'
 import Alert from '@material-ui/lab/Alert'
 import SearchBar from '../SearchBar'
@@ -28,6 +29,7 @@ import { AlertActions, AptActions, AuthActions } from '../../actions'
 import { useSnackbar } from 'notistack'
 import { unwrapResult } from '@reduxjs/toolkit'
 import AuthDialog from '../AuthDialog'
+import SettingsDialog from '../SettingsDialog'
 
 const useStyles = makeStyles(theme => ({
   drawer: { width: 250 },
@@ -61,7 +63,8 @@ type HeaderProps = ConnectedProps<typeof connector>
 const Header = ({ alert, clear, checkUpdates, token, setToken }: HeaderProps) => {
   const classes = useStyles()
   const [drawerOpen, setDrawer] = useState(false)
-  const [authOpened, setOpen] = useState(false)
+  const [authOpened, setAuthOpened] = useState(false)
+  const [settingsOpened, setSettingsOpened] = useState(false)
   const { enqueueSnackbar } = useSnackbar()
 
   useEffect(() => {
@@ -116,17 +119,21 @@ const Header = ({ alert, clear, checkUpdates, token, setToken }: HeaderProps) =>
         <Button startIcon={<MapIcon />} size="large" component={Link} to={'/mirrors'}>
           Mirrors
         </Button>
+        <Button startIcon={<SettingsIcon />} onClick={() => setSettingsOpened(true)} size="large">
+          Settings
+        </Button>
         <Divider />
         {token ? (
           <Button startIcon={<LoginIcon />} onClick={() => setToken('')} size="large">
             Log out
           </Button>
         ) : (
-          <Button startIcon={<LoginIcon />} onClick={() => setOpen(true)} size="large">
+          <Button startIcon={<LoginIcon />} onClick={() => setAuthOpened(true)} size="large">
             Log in
           </Button>
         )}
-        <AuthDialog open={authOpened} onClose={() => setOpen(false)} />
+        {authOpened && <AuthDialog onClose={() => setAuthOpened(false)} />}
+        {settingsOpened && <SettingsDialog onClose={() => setSettingsOpened(false)} />}
       </Drawer>
       {alert && (
         <Alert severity="error" onClose={() => clear()}>

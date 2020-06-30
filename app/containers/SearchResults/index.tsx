@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import { connect, ConnectedProps } from 'react-redux'
 
-import { makeStyles } from '@material-ui/core'
+import { CircularProgress, makeStyles } from '@material-ui/core'
 import { Pagination } from '@material-ui/lab'
 import leven from 'leven'
 
@@ -61,6 +61,7 @@ const SearchResults = ({
   match,
   replace
 }: SearchResultsProps & RouteComponentProps<Package & { page: string }>) => {
+  const [loading, setLoading] = useState(false)
   const [previews, setPreviews] = useState(Array<Preview>())
 
   const { name, page: initialPage } = match.params
@@ -70,21 +71,20 @@ const SearchResults = ({
   useEffect(() => {
     if (!name) return
     let active = true
+    scroll(1)
     const f = async () => {
+      if (!active) return
+      setLoading(true)
       try {
-        const response = await searchPreviews(name)
-        if (active && AptActions.searchPreviews.fulfilled.match(response)) {
-          try {
-            setPreviews(
-              unwrapResult(response).sort((a, b) => leven(a.name, name) - leven(b.name, name))
-            )
-          } catch (e) {
-            setAlert(e)
-          }
-        }
+        setPreviews(
+          unwrapResult(await searchPreviews(name)).sort(
+            (a, b) => leven(a.name, name) - leven(b.name, name)
+          )
+        )
       } catch (e) {
         setAlert(e)
       }
+      setLoading(false)
     }
 
     f()
@@ -102,30 +102,36 @@ const SearchResults = ({
 
   return (
     <div className={classes.root}>
-      <h1>Showing results for {name}</h1>
-      {previews.length === 0 ? (
-        <h2>Nothing found...</h2>
+      {loading ? (
+        <CircularProgress className={classes.progress} />
       ) : (
         <>
-          <Pagination
-            className={classes.pagination}
-            count={Math.ceil(previews.length / componentsInPage)}
-            onChange={pageChange}
-            page={page}
-            variant="outlined"
-            shape="rounded"
-          />
-          <PackagePreviewList
-            previews={previews.slice((page - 1) * componentsInPage, page * componentsInPage)}
-          />
-          <Pagination
-            className={classes.pagination}
-            count={Math.ceil(previews.length / componentsInPage)}
-            onChange={pageChange}
-            page={page}
-            variant="outlined"
-            shape="rounded"
-          />
+          <h1>Showing results for {name}</h1>
+          {previews.length === 0 ? (
+            <h2>Nothing found...</h2>
+          ) : (
+            <>
+              <Pagination
+                className={classes.pagination}
+                count={Math.ceil(previews.length / componentsInPage)}
+                onChange={pageChange}
+                page={page}
+                variant="outlined"
+                shape="rounded"
+              />
+              <PackagePreviewList
+                previews={previews.slice((page - 1) * componentsInPage, page * componentsInPage)}
+              />
+              <Pagination
+                className={classes.pagination}
+                count={Math.ceil(previews.length / componentsInPage)}
+                onChange={pageChange}
+                page={page}
+                variant="outlined"
+                shape="rounded"
+              />
+            </>
+          )}
         </>
       )}
     </div>

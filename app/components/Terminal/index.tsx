@@ -11,6 +11,7 @@ const useStyles = makeStyles(theme => ({
   },
   list: {
     overflow: 'auto',
+    minWidth: 500,
     maxHeight: 500
   },
   top: {
