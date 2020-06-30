@@ -62,6 +62,7 @@ const SearchResults = ({
   replace
 }: SearchResultsProps & RouteComponentProps<Package & { page: string }>) => {
   const [loading, setLoading] = useState(false)
+  const [fulfilled, setFulfilled] = useState(false)
   const [previews, setPreviews] = useState(Array<Preview>())
 
   const { name, page: initialPage } = match.params
@@ -85,6 +86,7 @@ const SearchResults = ({
         setAlert(e)
       }
       setLoading(false)
+      setFulfilled(true)
     }
 
     f()
@@ -107,7 +109,7 @@ const SearchResults = ({
       ) : (
         <>
           <h1>Showing results for {name}</h1>
-          {previews.length === 0 ? (
+          {fulfilled && previews.length === 0 ? (
             <h2>Nothing found...</h2>
           ) : (
             <>

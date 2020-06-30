@@ -111,7 +111,7 @@ const Header = ({ alert, clear, checkUpdates, token, setToken }: HeaderProps) =>
         </div>
         <Divider />
         <Button startIcon={<FeedIcon />} size="large" component={Link} to={'/'}>
-          Feed
+          Home
         </Button>
         <Button startIcon={<QueueIcon />} size="large" component={Link} to={'/queue'}>
           Queue

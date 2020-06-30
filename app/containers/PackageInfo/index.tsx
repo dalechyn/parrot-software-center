@@ -126,6 +126,7 @@ export type Package = {
   [K in keyof (typeof pkgRegex.required & Partial<typeof pkgRegex.optional>)]: string
 }
 type PackageInfoProps = ConnectedProps<typeof connector> & {
+  name: string
   imageUrl: string
   installed: boolean
 }

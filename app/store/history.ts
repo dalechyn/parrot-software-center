@@ -1,4 +1,4 @@
-import { createBrowserHistory, LocationState } from 'history'
+import { createHashHistory, LocationState } from 'history'
 import { Package } from '../containers/PackageInfo'
 
 export type MyLocationState = LocationState & {
@@ -8,4 +8,4 @@ export type MyLocationState = LocationState & {
   rest: Package
 } & Package
 
-export default createBrowserHistory<MyLocationState>()
+export default createHashHistory<MyLocationState>()
