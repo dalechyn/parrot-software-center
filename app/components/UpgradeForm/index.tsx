@@ -55,7 +55,9 @@ const UpgradeForm = ({ checkUpdates, upgrade, setAlert }: UpgradeFormProps) => {
       ) : (
         <>
           <Grid item xs>
-            <h2>{updates ? 'updates available! Upgrade now!' : 'Your system is up to date'} </h2>
+            <h2>
+              {updates ? `${updates} updates available! Upgrade now!` : 'Your system is up to date'}{' '}
+            </h2>
           </Grid>
           {updates ? (
             <Button size="large" variant="contained" onClick={() => setUpgrading(true)}>
