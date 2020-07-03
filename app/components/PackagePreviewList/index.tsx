@@ -27,7 +27,6 @@ const redhatCVEEndpoint: CVEEndpoint = {
     let critical = 0
 
     const json = await res.json()
-    console.log(json)
 
     if (Array.isArray(json))
       // eslint-disable-next-line @typescript-eslint/camelcase

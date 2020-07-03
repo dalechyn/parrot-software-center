@@ -4,6 +4,7 @@ import { createReducer } from '@reduxjs/toolkit'
 
 export interface Settings {
   loadCVEs: boolean
+  darkTheme: boolean
 }
 
 const HOME = process.env.HOME
@@ -13,7 +14,10 @@ let initialSettings: Settings
 try {
   initialSettings = JSON.parse(fs.readFileSync(`${PSCDir}/settings.json`, 'utf-8'))
 } catch {
-  initialSettings = { loadCVEs: true }
+  initialSettings = {
+    loadCVEs: true,
+    darkTheme: false
+  }
 }
 
 const saveSettings = async (settings: Settings) => {
@@ -32,10 +36,10 @@ const saveSettings = async (settings: Settings) => {
 }
 
 export default createReducer<Settings>(initialSettings, builder =>
-  builder.addCase(SettingsActions.save, (state, { payload: { loadCVEs } }) => {
+  builder.addCase(SettingsActions.save, (state, { payload }) => {
     const settings = {
       ...state,
-      loadCVEs
+      ...payload
     }
     if (!HOME) console.warn(`HOME is not defined, settings won't save`)
     else saveSettings(settings)

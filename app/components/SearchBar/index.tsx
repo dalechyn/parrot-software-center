@@ -50,14 +50,12 @@ const SearchBar = ({ setAlert, clearAlert, push, searchPreviews }: SearchBarProp
           return
         }
 
-        if (AptActions.searchPreviews.fulfilled.match(response)) {
-          setOptions(
-            unwrapResult(response)
-              .map(preview => preview.name)
-              .sort((a: string, b: string) => leven(a, name) - leven(b, name))
-              .slice(0, 5)
-          )
-        }
+        setOptions(
+          unwrapResult(response)
+            .map(preview => preview.name)
+            .sort((a: string, b: string) => leven(a, name) - leven(b, name))
+            .slice(0, 5)
+        )
         setLoading(false)
       }
 

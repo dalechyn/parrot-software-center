@@ -1,8 +1,15 @@
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import { connect, ConnectedProps } from 'react-redux'
 
-import { CircularProgress, makeStyles } from '@material-ui/core'
+import {
+  CircularProgress,
+  InputAdornment,
+  makeStyles,
+  TextField,
+  Typography
+} from '@material-ui/core'
 import { Pagination } from '@material-ui/lab'
+import { Search } from '@material-ui/icons'
 import leven from 'leven'
 
 import PackagePreviewList from '../../components/PackagePreviewList'
@@ -65,7 +72,8 @@ const SearchResults = ({
   const [fulfilled, setFulfilled] = useState(false)
   const [previews, setPreviews] = useState(Array<Preview>())
 
-  const { name, page: initialPage } = match.params
+  const { name: initialName, page: initialPage } = match.params
+  const [name, setName] = useState(initialName)
   const [page, scroll] = useState(initialPage ? parseInt(initialPage) : 1)
 
   // Initial package names fetching effect
@@ -93,7 +101,7 @@ const SearchResults = ({
     return () => {
       active = false
     }
-  }, [name, setAlert])
+  }, [])
 
   const pageChange = (_: ChangeEvent<unknown>, n: number) => {
     if (n === page) return
@@ -108,9 +116,47 @@ const SearchResults = ({
         <CircularProgress className={classes.progress} />
       ) : (
         <>
-          <h1>Showing results for {name}</h1>
+          <TextField
+            label="Search a package"
+            variant="outlined"
+            size="small"
+            color="primary"
+            value={name}
+            onChange={({ target: { value } }) => {
+              console.log(value)
+              setName(value)
+            }}
+            onKeyPress={({ key }) => {
+              const f = async () => {
+                setLoading(true)
+                try {
+                  const previews = unwrapResult(await searchPreviews(name)).sort(
+                    (a, b) => leven(a.name, name) - leven(b.name, name)
+                  )
+                  setPreviews(previews)
+                } catch (e) {
+                  setAlert(e)
+                }
+                setLoading(false)
+                setFulfilled(true)
+              }
+
+              if (name.length > 2 && key == 'Enter') {
+                scroll(1)
+                f()
+              }
+            }}
+            InputProps={{
+              style: { borderRadius: 45 },
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              )
+            }}
+          />
           {fulfilled && previews.length === 0 ? (
-            <h2>Nothing found...</h2>
+            <Typography variant="h6">Nothing found...</Typography>
           ) : (
             <>
               <Pagination

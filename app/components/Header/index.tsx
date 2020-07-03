@@ -12,7 +12,8 @@ import {
   IconButton,
   Toolbar,
   Typography,
-  makeStyles
+  makeStyles,
+  Collapse
 } from '@material-ui/core'
 import {
   Menu as MenuIcon,
@@ -48,7 +49,13 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const mapStateToProps = ({ alert, auth: { token } }: RootState) => ({ alert, token })
+const mapStateToProps = ({
+  alert,
+  auth: { token },
+  router: {
+    location: { pathname }
+  }
+}: RootState) => ({ alert, token, pathname })
 
 const mapDispatchToProps = {
   clear: AlertActions.clear,
@@ -60,7 +67,7 @@ const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type HeaderProps = ConnectedProps<typeof connector>
 
-const Header = ({ alert, clear, checkUpdates, token, setToken }: HeaderProps) => {
+const Header = ({ alert, clear, checkUpdates, token, setToken, pathname }: HeaderProps) => {
   const classes = useStyles()
   const [drawerOpen, setDrawer] = useState(false)
   const [authOpened, setAuthOpened] = useState(false)
@@ -99,7 +106,9 @@ const Header = ({ alert, clear, checkUpdates, token, setToken }: HeaderProps) =>
           <Box className={classes.leftContent}>
             <Typography variant="h6">ParrotOS Software Center</Typography>
           </Box>
-          <SearchBar />
+          <Collapse in={!pathname.includes('search')}>
+            <SearchBar />
+          </Collapse>
         </Toolbar>
         <Divider />
       </AppBar>

@@ -106,12 +106,9 @@ const PackagePreview = ({
   const { enqueueSnackbar } = useSnackbar()
   const classes = useStyles()
   useEffect(() => {
-    const f = async () => {
-      const foundPackage = packages.find((pkg: QueueNode) => name === pkg.name)
-      if (foundPackage) setInstalled(!!foundPackage.flag)
-      else setInstalled(unwrapResult(await status(name)))
-    }
-    f()
+    const foundPackage = packages.find((pkg: QueueNode) => name === pkg.name)
+    if (foundPackage) setInstalled(!!foundPackage.flag)
+    else (async () => setInstalled(unwrapResult(await status(name))))()
   }, [])
   return (
     <Card className={classes.root}>

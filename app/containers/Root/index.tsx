@@ -1,18 +1,21 @@
 import React, { useMemo } from 'react'
-import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 import { hot } from 'react-hot-loader/root'
 import history from '../../store/history'
-import store from '../../store'
 import Routes from './Routes'
 import { Header } from '../../components'
-import { createMuiTheme, CssBaseline, ThemeProvider, useMediaQuery } from '@material-ui/core'
+import { createMuiTheme, CssBaseline, ThemeProvider } from '@material-ui/core'
 import { SnackbarProvider } from 'notistack'
+import { connect, ConnectedProps } from 'react-redux'
 import { blue } from '@material-ui/core/colors'
 
-const Root = () => {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
+const mapStateToProps = ({ settings: { darkTheme } }: RootState) => ({ darkTheme })
 
+const connector = connect(mapStateToProps)
+
+type RootProps = ConnectedProps<typeof connector>
+
+const Root = ({ darkTheme }: RootProps) => {
   const theme = useMemo(
     () =>
       createMuiTheme({
@@ -21,30 +24,26 @@ const Root = () => {
           secondary: {
             main: blue[50]
           },
-          type: /*prefersDarkMode ?*/ 'dark' /* : 'light'*/
+
+          type: darkTheme ? 'dark' : 'light'
         },
         typography: {
           fontFamily: 'Hack'
         }
       }),
-    [prefersDarkMode]
+    [darkTheme]
   )
-
   return (
-    <Provider store={store}>
+    <SnackbarProvider maxSnack={3}>
       <ThemeProvider theme={theme}>
-        <SnackbarProvider maxSnack={3}>
-          <CssBaseline />
-          <Provider store={store}>
-            <ConnectedRouter history={history}>
-              <Header />
-              <Routes />
-            </ConnectedRouter>
-          </Provider>
-        </SnackbarProvider>
+        <CssBaseline />
+        <ConnectedRouter history={history}>
+          <Header />
+          <Routes />
+        </ConnectedRouter>
       </ThemeProvider>
-    </Provider>
+    </SnackbarProvider>
   )
 }
 
-export default hot(Root)
+export default connector(hot(Root))

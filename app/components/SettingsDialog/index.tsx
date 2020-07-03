@@ -1,7 +1,7 @@
 import React from 'react'
 import {
   Button,
-  Checkbox,
+  Switch,
   Dialog,
   DialogActions,
   DialogContent,
@@ -11,8 +11,8 @@ import {
 import { SettingsActions } from '../../actions'
 import { connect, ConnectedProps } from 'react-redux'
 import { Controller, useForm } from 'react-hook-form'
-import { Settings } from '../../reducers/settings'
 import { useSnackbar } from 'notistack'
+import { Settings } from '../../reducers/settings'
 
 const mapStateToProps = ({ settings }: RootState) => ({ settings })
 
@@ -32,9 +32,9 @@ const SettingsDialog = ({ onClose, save, settings }: SettingsDialogProps) => {
   return (
     <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">
       <form
-        onSubmit={handleSubmit(settings => {
+        onSubmit={handleSubmit(data => {
           enqueueSnackbar('Settings saved!', { variant: 'success' })
-          save(settings)
+          save(data)
         })}
       >
         <DialogTitle id="form-dialog-title">Settings</DialogTitle>
@@ -42,14 +42,28 @@ const SettingsDialog = ({ onClose, save, settings }: SettingsDialogProps) => {
           <FormControlLabel
             control={
               <Controller
-                as={<Checkbox />}
+                as={<Switch />}
                 control={control}
                 checked={settings.loadCVEs}
                 name="loadCVEs"
+                color="primary"
               />
             }
             color="primary"
             label="Load CVE Data (disabling may speed up the search)"
+          />
+          <FormControlLabel
+            control={
+              <Controller
+                as={<Switch />}
+                control={control}
+                checked={settings.darkTheme}
+                name="darkTheme"
+                color="primary"
+              />
+            }
+            color="primary"
+            label="Use Dark Theme"
           />
         </DialogContent>
         <DialogActions>
