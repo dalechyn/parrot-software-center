@@ -1,15 +1,8 @@
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import { connect, ConnectedProps } from 'react-redux'
 
-import {
-  CircularProgress,
-  InputAdornment,
-  makeStyles,
-  TextField,
-  Typography
-} from '@material-ui/core'
+import { Grid, makeStyles, Typography } from '@material-ui/core'
 import { Pagination } from '@material-ui/lab'
-import { Search } from '@material-ui/icons'
 import leven from 'leven'
 
 import PackagePreviewList from '../../components/PackagePreviewList'
@@ -19,6 +12,7 @@ import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { Preview } from '../../actions/apt'
 import { Package } from '../PackageInfo'
 import { replace } from 'connected-react-router'
+import SearchField from '../../components/SearchField'
 
 const componentsInPage = 5
 
@@ -69,34 +63,30 @@ const SearchResults = ({
   replace
 }: SearchResultsProps & RouteComponentProps<Package & { page: string }>) => {
   const [loading, setLoading] = useState(false)
-  const [fulfilled, setFulfilled] = useState(false)
   const [previews, setPreviews] = useState(Array<Preview>())
 
   const { name: initialName, page: initialPage } = match.params
-  const [name, setName] = useState(initialName)
   const [page, scroll] = useState(initialPage ? parseInt(initialPage) : 1)
 
   // Initial package names fetching effect
   useEffect(() => {
-    if (!name) return
     let active = true
-    scroll(1)
+    if (page !== 1) scroll(1)
     const f = async () => {
       if (!active) return
-      setLoading(true)
       try {
         setPreviews(
-          unwrapResult(await searchPreviews(name)).sort(
-            (a, b) => leven(a.name, name) - leven(b.name, name)
+          unwrapResult(await searchPreviews(initialName)).sort(
+            (a, b) => leven(a.name, initialName) - leven(b.name, initialName)
           )
         )
       } catch (e) {
         setAlert(e)
       }
       setLoading(false)
-      setFulfilled(true)
     }
 
+    setLoading(true)
     f()
     return () => {
       active = false
@@ -105,30 +95,20 @@ const SearchResults = ({
 
   const pageChange = (_: ChangeEvent<unknown>, n: number) => {
     if (n === page) return
-    replace(`/search/${name}/${n}`)
+    replace(`/search/${initialName}/${n}`)
     scroll(n)
   }
   const classes = useStyles()
 
   return (
-    <div className={classes.root}>
-      {loading ? (
-        <CircularProgress className={classes.progress} />
-      ) : (
-        <>
-          <TextField
-            label="Search a package"
-            variant="outlined"
-            size="small"
-            color="primary"
-            value={name}
-            onChange={({ target: { value } }) => {
-              console.log(value)
-              setName(value)
-            }}
-            onKeyPress={({ key }) => {
+    <section className={classes.root}>
+      <Grid container justify="center">
+        <Grid item xs={6}>
+          <SearchField
+            query={initialName}
+            onEnter={name => {
               const f = async () => {
-                setLoading(true)
+                // TimedOut error should be handled here
                 try {
                   const previews = unwrapResult(await searchPreviews(name)).sort(
                     (a, b) => leven(a.name, name) - leven(b.name, name)
@@ -138,51 +118,44 @@ const SearchResults = ({
                   setAlert(e)
                 }
                 setLoading(false)
-                setFulfilled(true)
               }
 
-              if (name.length > 2 && key == 'Enter') {
-                scroll(1)
+              if (name.length > 2) {
+                if (page !== 1) scroll(1)
+                replace(`/search/${name}/1`)
+                setLoading(true)
                 f()
               }
             }}
-            InputProps={{
-              style: { borderRadius: 45 },
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              )
-            }}
           />
-          {fulfilled && previews.length === 0 ? (
-            <Typography variant="h6">Nothing found...</Typography>
-          ) : (
-            <>
-              <Pagination
-                className={classes.pagination}
-                count={Math.ceil(previews.length / componentsInPage)}
-                onChange={pageChange}
-                page={page}
-                variant="outlined"
-                shape="rounded"
-              />
-              <PackagePreviewList
-                previews={previews.slice((page - 1) * componentsInPage, page * componentsInPage)}
-              />
-              <Pagination
-                className={classes.pagination}
-                count={Math.ceil(previews.length / componentsInPage)}
-                onChange={pageChange}
-                page={page}
-                variant="outlined"
-                shape="rounded"
-              />
-            </>
-          )}
+        </Grid>
+      </Grid>
+      {!loading && previews.length === 0 ? (
+        <Typography variant="h6">Nothing found...</Typography>
+      ) : (
+        <>
+          <Pagination
+            className={classes.pagination}
+            count={Math.ceil(previews.length / componentsInPage)}
+            onChange={pageChange}
+            page={page}
+            variant="outlined"
+            shape="rounded"
+          />
+          <PackagePreviewList
+            previews={previews.slice((page - 1) * componentsInPage, page * componentsInPage)}
+          />
+          <Pagination
+            className={classes.pagination}
+            count={Math.ceil(previews.length / componentsInPage)}
+            onChange={pageChange}
+            page={page}
+            variant="outlined"
+            shape="rounded"
+          />
         </>
       )}
-    </div>
+    </section>
   )
 }
 

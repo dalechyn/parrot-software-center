@@ -11,10 +11,6 @@ import leven from 'leven'
 import { AlertActions, AptActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
 
-export const delayPromise = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-
-const requestTimeout = 5000
-
 const styles = {
   root: {
     width: 300
@@ -32,7 +28,7 @@ const connector = connect(null, mapDispatchToProps)
 
 type SearchBarProps = ConnectedProps<typeof connector>
 
-const SearchBar = ({ setAlert, clearAlert, push, searchPreviews }: SearchBarProps) => {
+const SearchBar = ({ clearAlert, push, searchPreviews }: SearchBarProps) => {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState(Array<string>())
@@ -79,20 +75,12 @@ const SearchBar = ({ setAlert, clearAlert, push, searchPreviews }: SearchBarProp
   const handleCancel = () => {
     setValue('')
   }
-  const handleRequestSearch = async () => {
+  const handleRequestSearch = () => {
     if (value === '') return
     clearAlert()
-    try {
-      await Promise.race([
-        delayPromise(requestTimeout),
-        (async () => {
-          push(`/search/${value}`)
-          clearAlert()
-        })()
-      ])
-    } catch (e) {
-      setAlert(e)
-    }
+    const scoped = value
+    setValue('')
+    push(`/search/${scoped}`)
   }
   const handleKeyUp = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter') {
@@ -112,6 +100,7 @@ const SearchBar = ({ setAlert, clearAlert, push, searchPreviews }: SearchBarProp
       onClose={() => setOpen(false)}
       options={options}
       loading={loading}
+      inputValue={value}
       onInputChange={handleChange}
       renderInput={params => (
         <TextField
