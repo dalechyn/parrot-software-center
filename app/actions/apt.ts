@@ -49,9 +49,10 @@ export const upgrade = createAsyncThunk(
 export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async (_, thunkAPI) => {
   try {
     const { stdout } = await prExec(
-      'apt-get -s -o Debug::NoLocking=true upgrade | grep ^Inst | cut -c 6-'
+      "apt-get -s -o Debug::NoLocking=true upgrade | grep ^Inst | cut -c 6- | egrep -o '^[a-z0-9.+-]+'"
     )
-    return stdout.split('\n').length - 1
+    const res = stdout.split('\n')
+    return res.splice(0, res.length - 1)
   } catch (e) {
     thunkAPI.dispatch(AlertActions.set(e))
     throw e

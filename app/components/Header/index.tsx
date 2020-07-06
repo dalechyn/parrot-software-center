@@ -78,7 +78,7 @@ const Header = ({ alert, clear, checkUpdates, token, setToken, pathname }: Heade
     const f = async () => {
       const result = await checkUpdates()
 
-      enqueueSnackbar(`${unwrapResult(result)} packages are available for update`, {
+      enqueueSnackbar(`${unwrapResult(result).length} packages are available for update`, {
         anchorOrigin: {
           vertical: 'top',
           horizontal: 'right'

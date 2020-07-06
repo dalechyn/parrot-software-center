@@ -1,4 +1,14 @@
-import { Button, CircularProgress, Collapse, Grid, makeStyles, Paper } from '@material-ui/core'
+import {
+  Button,
+  CircularProgress,
+  Collapse,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  makeStyles,
+  Paper
+} from '@material-ui/core'
 import Terminal from '../Terminal'
 import { unwrapResult } from '@reduxjs/toolkit'
 import React, { useEffect, useState } from 'react'
@@ -29,7 +39,7 @@ const UpgradeForm = ({ checkUpdates, upgrade, setAlert }: UpgradeFormProps) => {
   const classes = useStyles()
   const [loading, setLoading] = useState(false)
   const [upgrading, setUpgrading] = useState(false)
-  const [updates, setUpdates] = useState(0)
+  const [updates, setUpdates] = useState(Array<string>())
   useEffect(() => {
     const f = async () => {
       try {
@@ -56,13 +66,24 @@ const UpgradeForm = ({ checkUpdates, upgrade, setAlert }: UpgradeFormProps) => {
         <>
           <Grid item xs>
             <h2>
-              {updates ? `${updates} updates available! Upgrade now!` : 'Your system is up to date'}{' '}
+              {updates
+                ? `${updates.length} updates available! Upgrade now!`
+                : 'Your system is up to date'}
             </h2>
           </Grid>
           {updates ? (
-            <Button size="large" variant="contained" onClick={() => setUpgrading(true)}>
-              Upgrade
-            </Button>
+            <>
+              <List style={{ maxHeight: 300, overflow: 'auto' }}>
+                {updates.map((el, i) => (
+                  <ListItem key={i}>
+                    <ListItemText primary={el} />
+                  </ListItem>
+                ))}
+              </List>
+              <Button size="large" variant="contained" onClick={() => setUpgrading(true)}>
+                Upgrade
+              </Button>
+            </>
           ) : (
             <SuccessIcon color="primary" fontSize="large" />
           )}
