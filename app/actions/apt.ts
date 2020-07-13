@@ -25,32 +25,9 @@ const waitStdoe = (stderr: Readable, stdout: Readable) =>
     )
   ])
 
-export const upgrade = createAsyncThunk(
-  '@apt/UPGRADE',
-  async (
-    { onValue, onFinish }: { onValue: (chunk: string) => void; onFinish: () => void },
-    thunkAPI
-  ) => {
-    try {
-      const { stderr, stdout } = exec('pkexec sh -c "apt-get update && apt-get -y dist-upgrade"')
-      if (!stdout || !stderr) throw new Error('Failed to host shell')
-
-      stdout.on('data', onValue)
-
-      await waitStdoe(stderr, stdout)
-      onFinish()
-    } catch (e) {
-      thunkAPI.dispatch(AlertActions.set(e))
-      throw e
-    }
-  }
-)
-
 export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async (_, thunkAPI) => {
   try {
-    const { stdout } = await prExec(
-      "apt-get -s -o Debug::NoLocking=true upgrade | grep ^Inst | cut -c 6- | egrep -o '^[a-z0-9.+-]+'"
-    )
+    const { stdout } = await prExec("apt list --upgradable | egrep -o '^[a-z0-9.+-]+'")
     const res = stdout.split('\n')
     return res.splice(0, res.length - 1)
   } catch (e) {
@@ -87,6 +64,21 @@ export const status = createAsyncThunk('@apt/STATUS', async (packageName: string
     return false
   }
 })
+export const checkUpgradable = createAsyncThunk(
+  '@apt/CHECK_UPGRADABLE',
+  async (packageName: string) => {
+    try {
+      const { stdout } = await prExec(
+        `apt-cache policy ${packageName} | egrep "(Installed|Candidate)" | cut -c 14-`
+      )
+      const [current, candidate] = stdout.split('\n').slice(0, 2)
+      return current !== candidate
+    } catch (e) {
+      return false
+    }
+  }
+)
+
 export const searchPreviews = createAsyncThunk(
   '@apt/SEARCH_PREVIEWS',
   async (packageName: string, thunkAPI) => {

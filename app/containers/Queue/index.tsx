@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { connect, ConnectedProps } from 'react-redux'
 import {
   Button,
@@ -14,7 +14,7 @@ import {
 } from '@material-ui/core'
 import { ArrowUpward, ArrowDownward, Delete } from '@material-ui/icons'
 import { AlertActions, QueueActions, AptActions } from '../../actions'
-import { INSTALL, UNINSTALL } from '../../reducers/queue'
+import { INSTALL, UNINSTALL, UPGRADE } from '../../reducers/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -50,6 +50,10 @@ const flagMap: Record<string, { label: string; color: PropTypes.Color }> = {
   [UNINSTALL]: {
     label: 'Uninstall',
     color: 'secondary'
+  },
+  [UPGRADE]: {
+    label: 'Upgrade',
+    color: 'primary'
   }
 }
 
@@ -83,7 +87,10 @@ type QueueProps = ConnectedProps<typeof connector>
 const Queue = ({ packages, globalProgress, swap, remove, setAlert, aptProcess }: QueueProps) => {
   const classes = useStyles()
   const [processing, setProcessing] = useState(false)
-  const length = useMemo(() => packages.length, [])
+  const [length, setLength] = useState(packages.length)
+  useEffect(() => {
+    if (!processing) setLength(packages.length)
+  }, [packages])
 
   const processPackages = useCallback(async () => {
     setProcessing(true)
@@ -92,86 +99,84 @@ const Queue = ({ packages, globalProgress, swap, remove, setAlert, aptProcess }:
   }, [packages, setAlert])
 
   return (
-    <>
-      <Grid
-        container
-        direction="column"
-        justify="space-evenly"
-        alignItems="center"
-        alignContent="stretch"
-        spacing={2}
-        className={classes.root}
-      >
-        {packages.map((el: QueueNode, i: number) => (
-          <Grid item container xs={8} key={el.name}>
-            <Container
-              maxWidth="xl"
-              component={Paper}
-              square
-              className={classes.package}
-              key={el.name}
-            >
-              <PackageChip flag={el.flag} classes={classes} />
-              <Typography variant="body1">{el.name}</Typography>
-              <div className={classes.buttons}>
-                <IconButton
-                  disabled={i === 0 || processing}
-                  color="secondary"
-                  aria-label="move to up"
-                  onClick={() => swap({ first: i, second: i - 1 })}
-                >
-                  <ArrowUpward />
-                </IconButton>
-                <IconButton
-                  disabled={i === packages.length - 1 || processing}
-                  color="secondary"
-                  aria-label="move to down"
-                  onClick={() => swap({ first: i, second: i + 1 })}
-                >
-                  <ArrowDownward />
-                </IconButton>
-                <IconButton
-                  color="secondary"
-                  aria-label="delete"
-                  disabled={processing}
-                  onClick={() => remove(i)}
-                >
-                  <Delete />
-                </IconButton>
-              </div>
-            </Container>
-            {i === 0 && processing && <LinearProgress className={classes.progress} />}
-          </Grid>
-        ))}
-
-        <Grid container justify="center">
-          {packages.length !== 0 ? (
-            <Button
-              size="large"
-              color="primary"
-              variant="contained"
-              disabled={globalProgress !== 0}
-              onClick={processPackages}
-            >
-              Process
-            </Button>
-          ) : (
-            <Typography variant="h5">Queue is empty</Typography>
-          )}
+    <Grid
+      container
+      direction="column"
+      justify="space-evenly"
+      alignItems="center"
+      alignContent="stretch"
+      spacing={2}
+      className={classes.root}
+    >
+      {packages.map((el: QueueNode, i: number) => (
+        <Grid item container xs={8} key={el.name}>
+          <Container
+            maxWidth="xl"
+            component={Paper}
+            square
+            className={classes.package}
+            key={el.name}
+          >
+            <PackageChip flag={el.flag} classes={classes} />
+            <Typography variant="body1">{el.name}</Typography>
+            <div className={classes.buttons}>
+              <IconButton
+                disabled={i === 0 || processing}
+                color="secondary"
+                aria-label="move to up"
+                onClick={() => swap({ first: i, second: i - 1 })}
+              >
+                <ArrowUpward />
+              </IconButton>
+              <IconButton
+                disabled={i === packages.length - 1 || processing}
+                color="secondary"
+                aria-label="move to down"
+                onClick={() => swap({ first: i, second: i + 1 })}
+              >
+                <ArrowDownward />
+              </IconButton>
+              <IconButton
+                color="secondary"
+                aria-label="delete"
+                disabled={processing}
+                onClick={() => remove(i)}
+              >
+                <Delete />
+              </IconButton>
+            </div>
+          </Container>
+          {i === 0 && processing && <LinearProgress className={classes.progress} />}
         </Grid>
+      ))}
 
-        {globalProgress > 0 && (
-          <Grid item container xs={9}>
-            <LinearProgress
-              className={classes.progress}
-              variant="buffer"
-              value={((globalProgress - 1) / length) * 100}
-              valueBuffer={(globalProgress / length) * 100}
-            />
-          </Grid>
+      <Grid container justify="center">
+        {packages.length !== 0 ? (
+          <Button
+            size="large"
+            color="primary"
+            variant="contained"
+            disabled={globalProgress !== 0}
+            onClick={processPackages}
+          >
+            Process
+          </Button>
+        ) : (
+          <Typography variant="h5">Queue is empty</Typography>
         )}
       </Grid>
-    </>
+
+      {globalProgress > 0 && (
+        <Grid item container xs={9}>
+          <LinearProgress
+            className={classes.progress}
+            variant="buffer"
+            value={((globalProgress - 1) / length) * 100}
+            valueBuffer={(globalProgress / length) * 100}
+          />
+        </Grid>
+      )}
+    </Grid>
   )
 }
 

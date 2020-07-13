@@ -5,6 +5,7 @@ import { createReducer } from '@reduxjs/toolkit'
 export interface Settings {
   loadCVEs: boolean
   darkTheme: boolean
+  APIUrl: string
 }
 
 const HOME = process.env.HOME
@@ -16,7 +17,8 @@ try {
 } catch {
   initialSettings = {
     loadCVEs: true,
-    darkTheme: false
+    darkTheme: false,
+    APIUrl: process.env.NODE_ENV === 'development' ? 'http://localhost:8000/' : ''
   }
 }
 

@@ -4,6 +4,7 @@ import { createReducer } from '@reduxjs/toolkit'
 import { QueueNode } from '../containers/Queue'
 
 export const INSTALL = 'install'
+export const UPGRADE = '--only-upgrade install'
 export const UNINSTALL = 'purge'
 
 export default createReducer(
@@ -11,13 +12,14 @@ export default createReducer(
     packages: Array<QueueNode>(),
     currentProgress: 0,
     globalProgress: 0,
-    isBusy: false
+    isBusy: false,
+    upgradeProgress: 0
   },
   builder => {
     return builder
       .addCase(QueueActions.install, (state, { payload }) => {
         const queue = state.packages.filter(
-          ({ name, flag }) => payload !== name || flag !== UNINSTALL
+          ({ name, flag }) => !(payload === name && flag === INSTALL)
         )
         if (queue.length === state.packages.length) {
           state.packages = [
@@ -33,7 +35,7 @@ export default createReducer(
       })
       .addCase(QueueActions.uninstall, (state, { payload }) => {
         const queue = state.packages.filter(
-          ({ name, flag }) => payload !== name || flag !== INSTALL
+          ({ name, flag }) => !(payload === name && flag === UNINSTALL)
         )
         if (queue.length === state.packages.length) {
           state.packages = [
@@ -45,6 +47,22 @@ export default createReducer(
           ]
           return state
         } else state.packages = queue
+        return state
+      })
+      .addCase(QueueActions.upgrade, (state, { payload }) => {
+        state.packages = [
+          ...state.packages,
+          {
+            name: payload,
+            flag: UPGRADE
+          }
+        ]
+        return state
+      })
+      .addCase(QueueActions.dontUpgrade, (state, { payload }) => {
+        state.packages = state.packages.filter(
+          ({ name, flag }) => !(payload === name && flag === UPGRADE)
+        )
         return state
       })
       .addCase(QueueActions.swap, (state, { payload }) => {
@@ -70,10 +88,12 @@ export default createReducer(
       })
       .addCase(AptActions.process.pending, state => {
         state.globalProgress++
+        state.isBusy = true
         return state
       })
       .addCase(AptActions.process.fulfilled, state => {
         state.globalProgress = 0
+        state.isBusy = false
         return state
       })
   }

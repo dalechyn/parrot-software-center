@@ -23,6 +23,8 @@ import { AptActions, QueueActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
 import { QueueNode } from '../../containers/Queue'
 import { CVEInfoType } from '../PackagePreviewList'
+import { dontUpgrade } from '../../actions/queue'
+import { INSTALL, UPGRADE } from '../../reducers/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -79,7 +81,9 @@ const mapDispatchToProps = {
   push,
   install: QueueActions.install,
   uninstall: QueueActions.uninstall,
-  status: AptActions.status
+  upgrade: QueueActions.upgrade,
+  status: AptActions.status,
+  checkUpgradable: AptActions.checkUpgradable
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
@@ -98,17 +102,30 @@ const PackagePreview = ({
   push,
   install,
   uninstall,
+  upgrade,
   packages,
   cveInfo,
-  status
+  status,
+  checkUpgradable
 }: PackagePreviewProps) => {
   const [installedOrQueried, setInstalled] = useState(false)
+  const [upgradable, setUpgradable] = useState(false)
+  const [queriedUpgrade, setQueriedUpgrade] = useState(upgradable)
   const { enqueueSnackbar } = useSnackbar()
   const classes = useStyles()
+
   useEffect(() => {
     const foundPackage = packages.find((pkg: QueueNode) => name === pkg.name)
-    if (foundPackage) setInstalled(!!foundPackage.flag)
-    else (async () => setInstalled(unwrapResult(await status(name))))()
+    if (foundPackage?.flag === UPGRADE) {
+      setUpgradable(true)
+      setQueriedUpgrade(true)
+    } else if (foundPackage?.flag === INSTALL) setInstalled(foundPackage.flag === INSTALL)
+    else
+      (async () => {
+        const installed = unwrapResult(await status(name))
+        setInstalled(installed)
+        if (installed) setUpgradable(unwrapResult(await checkUpgradable(name)))
+      })()
   }, [])
   return (
     <Card className={classes.root}>
@@ -120,7 +137,8 @@ const PackagePreview = ({
               name,
               description,
               imageUrl,
-              installed: installedOrQueried
+              installed: installedOrQueried,
+              upgradable: queriedUpgrade || upgradable
             }
           })
         }
@@ -183,6 +201,39 @@ const PackagePreview = ({
         </CardContent>
       </CardActionArea>
       <CardActions className={classes.buttons}>
+        {upgradable &&
+          (queriedUpgrade ? (
+            <Button
+              onClick={() => {
+                enqueueSnackbar(`Package ${name} dequeued`, {
+                  variant: 'error'
+                })
+                dontUpgrade(name)
+                setQueriedUpgrade(false)
+              }}
+              variant="outlined"
+              size="medium"
+              color="secondary"
+            >
+              Cancel Upgrade
+            </Button>
+          ) : (
+            <Button
+              onClick={() => {
+                enqueueSnackbar(`Package ${name} queued for upgrade`, {
+                  variant: 'info'
+                })
+                upgrade(name)
+                setQueriedUpgrade(true)
+              }}
+              variant="outlined"
+              size="medium"
+              color="secondary"
+            >
+              Upgrade
+            </Button>
+          ))}
+
         {installedOrQueried ? (
           <Button
             onClick={() => {

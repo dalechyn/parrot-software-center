@@ -1,20 +1,19 @@
 import {
   Button,
   CircularProgress,
-  Collapse,
   Grid,
   List,
   ListItem,
-  ListItemText,
   makeStyles,
   Paper
 } from '@material-ui/core'
-import Terminal from '../Terminal'
 import { unwrapResult } from '@reduxjs/toolkit'
 import React, { useEffect, useState } from 'react'
-import { AlertActions, AptActions } from '../../actions'
+import { AlertActions, AptActions, QueueActions } from '../../actions'
 import { connect, ConnectedProps } from 'react-redux'
 import { CheckCircleOutline as SuccessIcon } from '@material-ui/icons'
+import PackagePreview from '../PackagePreview'
+import { Preview } from '../../actions/apt'
 
 const useStyles = makeStyles(theme => ({
   padded: {
@@ -25,26 +24,41 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
+const mapStateToProps = ({ settings: { APIUrl }, queue: { upgradeProgress } }: RootState) => ({
+  APIUrl,
+  upgradeProgress
+})
+
 const mapDispatchToProps = {
-  upgrade: AptActions.upgrade,
+  upgrade: QueueActions.upgrade,
   checkUpdates: AptActions.checkUpdates,
+  searchPreviews: AptActions.searchPreviews,
   setAlert: AlertActions.set
 }
 
-const connector = connect(null, mapDispatchToProps)
+const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type UpgradeFormProps = ConnectedProps<typeof connector>
 
-const UpgradeForm = ({ checkUpdates, upgrade, setAlert }: UpgradeFormProps) => {
+const UpgradeForm = ({
+  checkUpdates,
+  searchPreviews,
+  setAlert,
+  APIUrl,
+  upgrade
+}: UpgradeFormProps) => {
   const classes = useStyles()
   const [loading, setLoading] = useState(false)
-  const [upgrading, setUpgrading] = useState(false)
-  const [updates, setUpdates] = useState(Array<string>())
+  const [previews, setPreviews] = useState(Array<Preview>())
+
   useEffect(() => {
     const f = async () => {
       try {
         setLoading(true)
-        setUpdates(unwrapResult(await checkUpdates()))
+        const updates = unwrapResult(await checkUpdates())
+        setPreviews(
+          await Promise.all(updates.map(async name => unwrapResult(await searchPreviews(name))[0]))
+        )
       } catch (e) {
         setAlert(e)
       }
@@ -66,21 +80,34 @@ const UpgradeForm = ({ checkUpdates, upgrade, setAlert }: UpgradeFormProps) => {
         <>
           <Grid item xs>
             <h2>
-              {updates
-                ? `${updates.length} updates available! Upgrade now!`
+              {previews
+                ? `${previews.length} updates available! Upgrade now!`
                 : 'Your system is up to date'}
             </h2>
           </Grid>
-          {updates ? (
+          {previews ? (
             <>
-              <List style={{ maxHeight: 300, overflow: 'auto' }}>
-                {updates.map((el, i) => (
-                  <ListItem key={i}>
-                    <ListItemText primary={el} />
-                  </ListItem>
-                ))}
-              </List>
-              <Button size="large" variant="contained" onClick={() => setUpgrading(true)}>
+              <Paper elevation={10}>
+                <List style={{ maxHeight: 600, overflow: 'auto' }}>
+                  {previews.map(({ name, description }, i) => (
+                    <ListItem key={i}>
+                      <PackagePreview
+                        name={name}
+                        description={description}
+                        imageUrl={`${APIUrl}/assets/packages/${name}.png`}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+              <Button
+                size="large"
+                variant="contained"
+                style={{ marginTop: '1rem' }}
+                onClick={() => {
+                  previews.map(({ name }) => upgrade(name))
+                }}
+              >
                 Upgrade
               </Button>
             </>
@@ -88,22 +115,6 @@ const UpgradeForm = ({ checkUpdates, upgrade, setAlert }: UpgradeFormProps) => {
             <SuccessIcon color="primary" fontSize="large" />
           )}
         </>
-      )}
-
-      {upgrading && (
-        <Grid className={classes.margin} item xs={6}>
-          <Collapse in={upgrading}>
-            <Terminal
-              serveStream={async (onValue: (chunk: string) => void, onFinish: () => void) =>
-                unwrapResult(await upgrade({ onValue, onFinish }))
-              }
-              onClose={() => setUpgrading(false)}
-              initialLine={`# apt-get update && apt-get -y dist-upgrade`}
-              width={500}
-              height={500}
-            />
-          </Collapse>
-        </Grid>
       )}
     </Grid>
   )

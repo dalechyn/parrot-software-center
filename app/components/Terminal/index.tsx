@@ -1,17 +1,15 @@
 import React, { useEffect, ReactNode, useState } from 'react'
 import { AlertActions } from '../../actions'
-import { Button, Grid, makeStyles } from '@material-ui/core'
+import { Button, Grid, makeStyles, Typography } from '@material-ui/core'
 import { connect, ConnectedProps } from 'react-redux'
 import { grey } from '@material-ui/core/colors'
 
 const useStyles = makeStyles(theme => ({
   root: {
-    padding: theme.spacing(2),
-    background: grey[900]
+    padding: theme.spacing(2)
   },
   list: {
     overflow: 'auto',
-    minWidth: 500,
     maxHeight: 500
   },
   top: {
@@ -26,7 +24,7 @@ const mapDispatchToProps = { setAlert: AlertActions.set }
 const connector = connect(null, mapDispatchToProps)
 
 type TerminalProps = ConnectedProps<typeof connector> & {
-  width: string | number
+  width?: string | number
   height: string | number
   initialLine?: string
   serveStream: (onValue: (chunk: string) => void, onFinish: () => void) => Promise<void>
@@ -45,9 +43,9 @@ const Terminal = ({ serveStream, setAlert, initialLine, onClose }: TerminalProps
           (chunk: string) => {
             lines.push(
               <>
-                <p style={{ whiteSpace: 'pre-wrap' }} key={lines.length}>
+                <Typography style={{ whiteSpace: 'pre-wrap' }} key={lines.length}>
                   {chunk}
-                </p>
+                </Typography>
                 <br key={lines.length + 'br'} />
               </>
             )

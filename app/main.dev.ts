@@ -11,7 +11,8 @@
 import path from 'path'
 import { app, BrowserWindow } from 'electron'
 import { autoUpdater } from 'electron-updater'
-import debug from 'electron-debug'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const debug = require('electron-debug')
 import log from 'electron-log'
 import { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer'
 

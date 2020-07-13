@@ -4,8 +4,6 @@ import { Grid, makeStyles } from '@material-ui/core'
 import { Preview } from '../../actions/apt'
 import { connect, ConnectedProps } from 'react-redux'
 
-const APIUrl = 'http://localhost:8000'
-
 export interface CVEInfoType {
   low: number
   medium: number
@@ -41,7 +39,7 @@ const redhatCVEEndpoint: CVEEndpoint = {
   }
 }
 
-const mapStateToProps = ({ settings: { loadCVEs } }: RootState) => ({ loadCVEs })
+const mapStateToProps = ({ settings: { loadCVEs, APIUrl } }: RootState) => ({ loadCVEs, APIUrl })
 
 const connector = connect(mapStateToProps)
 type PackagePreviewListProps = ConnectedProps<typeof connector> & {
@@ -55,7 +53,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const PackagePreviewList = ({ previews, loadCVEs }: PackagePreviewListProps) => {
+const PackagePreviewList = ({ previews, loadCVEs, APIUrl }: PackagePreviewListProps) => {
   const [loaded, setLoaded] = useState(false)
   const [previewNodes, setPreviewNodes] = useState(Array<ReactNode>())
   const classes = useStyles()

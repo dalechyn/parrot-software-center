@@ -22,6 +22,7 @@ import { AptActions, QueueActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
 import PackageInfoSkeleton from './skeleton'
 import { QueueNode } from '../Queue'
+import { INSTALL, UPGRADE } from '../../reducers/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -85,6 +86,8 @@ const mapDispatchToProps = {
   goBack,
   install: QueueActions.install,
   uninstall: QueueActions.uninstall,
+  dontUpgrade: QueueActions.dontUpgrade,
+  upgrade: QueueActions.upgrade,
   search: AptActions.search
 }
 
@@ -129,6 +132,7 @@ type PackageInfoProps = ConnectedProps<typeof connector> & {
   name: string
   imageUrl: string
   installed: boolean
+  upgradable: boolean
 }
 
 const PackageInfo = ({
@@ -139,16 +143,21 @@ const PackageInfo = ({
   install,
   uninstall,
   search,
-  installed
+  installed,
+  upgradable,
+  dontUpgrade,
+  upgrade
 }: PackageInfoProps) => {
   if (!name) return null
   const classes = useStyles()
   const [installedOrQueried, setInstalled] = useState(installed)
+  const [queried, setQueriedUpgrade] = useState(false)
   const [packageInfo, setPackageInfo] = useState({} as Package)
   useEffect(() => {
     const f = async () => {
       const queuePackage = packages.find((pkg: QueueNode) => name === pkg.name)
-      if (queuePackage) setInstalled(!!queuePackage?.flag)
+      if (queuePackage?.flag === UPGRADE) setQueriedUpgrade(true)
+      else if (queuePackage?.flag === INSTALL) setInstalled(queuePackage.flag === INSTALL)
       const searchWrappedResult = await search(name)
       if (AptActions.search.rejected.match(searchWrappedResult)) {
         alert(searchWrappedResult.error.message)
@@ -276,6 +285,39 @@ const PackageInfo = ({
         </ExpansionPanelDetails>
       </ExpansionPanel>
       <ExpansionPanelActions>
+        {upgradable &&
+          (queried ? (
+            <Button
+              variant="outlined"
+              className={classes.button}
+              onClick={() => {
+                enqueueSnackbar(`Package ${name}@${version} dequeued`, {
+                  variant: 'error'
+                })
+                dontUpgrade(name)
+                setQueriedUpgrade(false)
+              }}
+              size="large"
+            >
+              Cancel upgrade
+            </Button>
+          ) : (
+            <Button
+              variant="outlined"
+              color="primary"
+              className={classes.button}
+              size="large"
+              onClick={() => {
+                enqueueSnackbar(`Package ${name}@${version} queued for upgrade`, {
+                  variant: 'success'
+                })
+                upgrade(name)
+                setQueriedUpgrade(true)
+              }}
+            >
+              Upgrade
+            </Button>
+          ))}
         {installedOrQueried ? (
           <Button
             variant="outlined"
