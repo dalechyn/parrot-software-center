@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { connect, ConnectedProps } from 'react-redux'
 import {
   Button,
@@ -68,9 +68,11 @@ const PackageChip = ({ flag, classes }: PackageChipProps) => {
   return <Chip className={classes.chip} size="medium" variant="outlined" {...flagMap[flag]} />
 }
 
-const mapStateToProps = ({ queue: { packages, globalProgress } }: RootState) => ({
+const mapStateToProps = ({ queue: { packages, globalProgress, isBusy, length } }: RootState) => ({
   packages,
-  globalProgress
+  globalProgress,
+  isBusy,
+  length
 })
 
 const mapDispatchToProps = {
@@ -84,13 +86,18 @@ const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type QueueProps = ConnectedProps<typeof connector>
 
-const Queue = ({ packages, globalProgress, swap, remove, setAlert, aptProcess }: QueueProps) => {
+const Queue = ({
+  packages,
+  globalProgress,
+  swap,
+  remove,
+  setAlert,
+  aptProcess,
+  isBusy,
+  length
+}: QueueProps) => {
   const classes = useStyles()
-  const [processing, setProcessing] = useState(false)
-  const [length, setLength] = useState(packages.length)
-  useEffect(() => {
-    if (!processing) setLength(packages.length)
-  }, [packages])
+  const [processing, setProcessing] = useState(isBusy)
 
   const processPackages = useCallback(async () => {
     setProcessing(true)

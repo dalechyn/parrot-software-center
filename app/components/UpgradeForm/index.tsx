@@ -14,6 +14,9 @@ import { connect, ConnectedProps } from 'react-redux'
 import { CheckCircleOutline as SuccessIcon } from '@material-ui/icons'
 import PackagePreview from '../PackagePreview'
 import { Preview } from '../../actions/apt'
+import { push } from 'connected-react-router'
+import { withRouter } from 'react-router'
+import { RouteComponentProps } from 'react-router-dom'
 
 const useStyles = makeStyles(theme => ({
   padded: {
@@ -24,28 +27,29 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const mapStateToProps = ({ settings: { APIUrl }, queue: { upgradeProgress } }: RootState) => ({
-  APIUrl,
-  upgradeProgress
+const mapStateToProps = ({ settings: { APIUrl } }: RootState) => ({
+  APIUrl
 })
 
 const mapDispatchToProps = {
   upgrade: QueueActions.upgrade,
   checkUpdates: AptActions.checkUpdates,
   searchPreviews: AptActions.searchPreviews,
-  setAlert: AlertActions.set
+  setAlert: AlertActions.set,
+  push
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
 
-type UpgradeFormProps = ConnectedProps<typeof connector>
+type UpgradeFormProps = ConnectedProps<typeof connector> & RouteComponentProps
 
 const UpgradeForm = ({
   checkUpdates,
   searchPreviews,
   setAlert,
   APIUrl,
-  upgrade
+  upgrade,
+  push
 }: UpgradeFormProps) => {
   const classes = useStyles()
   const [loading, setLoading] = useState(false)
@@ -106,6 +110,7 @@ const UpgradeForm = ({
                 style={{ marginTop: '1rem' }}
                 onClick={() => {
                   previews.map(({ name }) => upgrade(name))
+                  push('/queue')
                 }}
               >
                 Upgrade
@@ -120,4 +125,4 @@ const UpgradeForm = ({
   )
 }
 
-export default connector(UpgradeForm)
+export default connector(withRouter(UpgradeForm))

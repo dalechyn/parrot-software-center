@@ -5,6 +5,7 @@ import { promisify } from 'util'
 import { AlertActions } from '../actions'
 import { QueueNode } from '../containers/Queue'
 import { Readable } from 'stream'
+import leven from 'leven'
 
 const PSC_FINISHED = '__PSC_FINISHED'
 const prExec = promisify(exec)
@@ -85,14 +86,19 @@ export const searchPreviews = createAsyncThunk(
     try {
       const { stdout } = await prExec(`apt-cache search --names-only ${packageName}`)
       const names = stdout.split('\n')
-      return names.slice(0, names.length - 1).map(str => {
-        const res = str.split(/ - /)
-        const preview: Preview = {
-          name: res[0],
-          description: res[1]
-        }
-        return preview
-      })
+      // additional sorting is needed because search
+      // doesn't guarantee that queried package will be first in the list
+      return names
+        .slice(0, names.length - 1)
+        .map(str => {
+          const res = str.split(/ - /)
+          const preview: Preview = {
+            name: res[0],
+            description: res[1]
+          }
+          return preview
+        })
+        .sort((a, b) => leven(a.name, packageName) - leven(b.name, packageName))
     } catch (e) {
       thunkAPI.dispatch(AlertActions.set(e))
       throw e

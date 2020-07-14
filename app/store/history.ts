@@ -4,6 +4,7 @@ import { Package } from '../containers/PackageInfo'
 export type MyLocationState = LocationState & {
   page: number
   installed: boolean
+  upgradable: boolean
   imageUrl: string
   rest: Package
 } & Package

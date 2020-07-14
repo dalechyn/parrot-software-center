@@ -12,8 +12,8 @@ export default createReducer(
     packages: Array<QueueNode>(),
     currentProgress: 0,
     globalProgress: 0,
-    isBusy: false,
-    upgradeProgress: 0
+    length: 0,
+    isBusy: false
   },
   builder => {
     return builder
@@ -29,8 +29,11 @@ export default createReducer(
               flag: INSTALL
             }
           ]
+          state.length++
           return state
-        } else state.packages = queue
+        }
+        state.packages = queue
+        state.length--
         return state
       })
       .addCase(QueueActions.uninstall, (state, { payload }) => {
@@ -45,8 +48,11 @@ export default createReducer(
               flag: UNINSTALL
             }
           ]
+          state.length++
           return state
-        } else state.packages = queue
+        }
+        state.packages = queue
+        state.length--
         return state
       })
       .addCase(QueueActions.upgrade, (state, { payload }) => {
@@ -57,12 +63,14 @@ export default createReducer(
             flag: UPGRADE
           }
         ]
+        state.length++
         return state
       })
       .addCase(QueueActions.dontUpgrade, (state, { payload }) => {
         state.packages = state.packages.filter(
           ({ name, flag }) => !(payload === name && flag === UPGRADE)
         )
+        state.length--
         return state
       })
       .addCase(QueueActions.swap, (state, { payload }) => {
@@ -77,6 +85,7 @@ export default createReducer(
       .addCase(QueueActions.remove, (state, { payload }) => {
         const queue = [...state.packages]
         queue.splice(payload, 1)
+        state.length--
         state.packages = queue
         return state
       })
@@ -84,16 +93,23 @@ export default createReducer(
         state.currentProgress = 0
         state.packages.shift()
         if (state.packages.length !== 0) state.globalProgress++
+        else {
+          state.globalProgress = 0
+          state.isBusy = false
+          state.length = 0
+        }
         return state
       })
       .addCase(AptActions.process.pending, state => {
         state.globalProgress++
+        state.length = state.packages.length
         state.isBusy = true
         return state
       })
       .addCase(AptActions.process.fulfilled, state => {
         state.globalProgress = 0
         state.isBusy = false
+        state.length = 0
         return state
       })
   }
