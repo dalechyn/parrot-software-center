@@ -26,14 +26,13 @@ const waitStdoe = (stderr: Readable, stdout: Readable) =>
     )
   ])
 
-export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async (_, thunkAPI) => {
+export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async () => {
   try {
     const { stdout } = await prExec("apt list --upgradable | egrep -o '^[a-z0-9.+-]+'")
     const res = stdout.split('\n')
     return res.splice(0, res.length - 1)
   } catch (e) {
-    thunkAPI.dispatch(AlertActions.set(e))
-    throw e
+    return []
   }
 })
 

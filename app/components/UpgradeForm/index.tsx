@@ -43,14 +43,7 @@ const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type UpgradeFormProps = ConnectedProps<typeof connector> & RouteComponentProps
 
-const UpgradeForm = ({
-  checkUpdates,
-  searchPreviews,
-  setAlert,
-  APIUrl,
-  upgrade,
-  push
-}: UpgradeFormProps) => {
+const UpgradeForm = ({ checkUpdates, searchPreviews, APIUrl, upgrade, push }: UpgradeFormProps) => {
   const classes = useStyles()
   const [loading, setLoading] = useState(false)
   const [previews, setPreviews] = useState(Array<Preview>())
@@ -64,7 +57,7 @@ const UpgradeForm = ({
           await Promise.all(updates.map(async name => unwrapResult(await searchPreviews(name))[0]))
         )
       } catch (e) {
-        setAlert(e)
+        setPreviews([])
       }
       setLoading(false)
     }
@@ -84,12 +77,12 @@ const UpgradeForm = ({
         <>
           <Grid item xs>
             <h2>
-              {previews
+              {previews.length !== 0
                 ? `${previews.length} updates available! Upgrade now!`
                 : 'Your system is up to date'}
             </h2>
           </Grid>
-          {previews ? (
+          {previews.length !== 0 ? (
             <>
               <Paper elevation={10}>
                 <List style={{ maxHeight: 600, overflow: 'auto' }}>
