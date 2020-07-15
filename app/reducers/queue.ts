@@ -19,7 +19,7 @@ export default createReducer(
     return builder
       .addCase(QueueActions.install, (state, { payload }) => {
         const queue = state.packages.filter(
-          ({ name, flag }) => !(payload === name && flag === INSTALL)
+          ({ name, flag }) => !(payload === name && flag === UNINSTALL)
         )
         if (queue.length === state.packages.length) {
           state.packages = [
@@ -38,7 +38,7 @@ export default createReducer(
       })
       .addCase(QueueActions.uninstall, (state, { payload }) => {
         const queue = state.packages.filter(
-          ({ name, flag }) => !(payload === name && flag === UNINSTALL)
+          ({ name, flag }) => !(payload === name && flag === INSTALL)
         )
         if (queue.length === state.packages.length) {
           state.packages = [

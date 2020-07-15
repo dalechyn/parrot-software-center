@@ -23,7 +23,6 @@ import { AptActions, QueueActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
 import { QueueNode } from '../../containers/Queue'
 import { CVEInfoType } from '../PackagePreviewList'
-import { dontUpgrade } from '../../actions/queue'
 import { INSTALL, UPGRADE } from '../../reducers/queue'
 
 const useStyles = makeStyles(theme => ({
@@ -55,7 +54,7 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(1),
     marginLeft: 'auto'
   },
-  buttons: {
+  buttonsHolder: {
     justifyContent: 'flex-end'
   },
   cveCritical: {
@@ -72,6 +71,18 @@ const useStyles = makeStyles(theme => ({
   },
   chipText: {
     color: grey[900]
+  },
+  install: {
+    color: '#2196f3',
+    borderColor: '#2196f3'
+  },
+  uninstall: {
+    color: '#f44336',
+    borderColor: '#f44336'
+  },
+  upgrade: {
+    color: '#4caf50',
+    borderColor: '#4caf50'
   }
 }))
 
@@ -82,6 +93,7 @@ const mapDispatchToProps = {
   install: QueueActions.install,
   uninstall: QueueActions.uninstall,
   upgrade: QueueActions.upgrade,
+  dontUpgrade: QueueActions.dontUpgrade,
   status: AptActions.status,
   checkUpgradable: AptActions.checkUpgradable
 }
@@ -103,6 +115,7 @@ const PackagePreview = ({
   install,
   uninstall,
   upgrade,
+  dontUpgrade,
   packages,
   cveInfo,
   status,
@@ -200,10 +213,11 @@ const PackagePreview = ({
           </Typography>
         </CardContent>
       </CardActionArea>
-      <CardActions className={classes.buttons}>
+      <CardActions className={classes.buttonsHolder}>
         {upgradable &&
           (queriedUpgrade ? (
             <Button
+              classes={{ outlined: classes.uninstall }}
               onClick={() => {
                 enqueueSnackbar(`Package ${name} dequeued`, {
                   variant: 'error'
@@ -213,12 +227,12 @@ const PackagePreview = ({
               }}
               variant="outlined"
               size="medium"
-              color="secondary"
             >
               Cancel Upgrade
             </Button>
           ) : (
             <Button
+              classes={{ outlined: classes.upgrade }}
               onClick={() => {
                 enqueueSnackbar(`Package ${name} queued for upgrade`, {
                   variant: 'info'
@@ -228,7 +242,6 @@ const PackagePreview = ({
               }}
               variant="outlined"
               size="medium"
-              color="secondary"
             >
               Upgrade
             </Button>
@@ -236,6 +249,7 @@ const PackagePreview = ({
 
         {installedOrQueried ? (
           <Button
+            classes={{ outlined: classes.uninstall }}
             onClick={() => {
               enqueueSnackbar(
                 packages.find((el: QueueNode) => el.name === name)
@@ -250,12 +264,12 @@ const PackagePreview = ({
             }}
             variant="outlined"
             size="medium"
-            color="secondary"
           >
             Uninstall
           </Button>
         ) : (
           <Button
+            classes={{ outlined: classes.install }}
             onClick={() => {
               enqueueSnackbar(
                 packages.find((el: QueueNode) => el.name === name)
@@ -270,7 +284,6 @@ const PackagePreview = ({
             }}
             variant="outlined"
             size="medium"
-            color="primary"
           >
             Install
           </Button>

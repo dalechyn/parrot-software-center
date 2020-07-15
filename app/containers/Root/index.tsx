@@ -34,15 +34,15 @@ const Root = ({ darkTheme }: RootProps) => {
     [darkTheme]
   )
   return (
-    <SnackbarProvider maxSnack={3}>
-      <ThemeProvider theme={theme}>
+    <ThemeProvider theme={theme}>
+      <SnackbarProvider maxSnack={3}>
         <CssBaseline />
         <ConnectedRouter history={history}>
           <Header />
           <Routes />
         </ConnectedRouter>
-      </ThemeProvider>
-    </SnackbarProvider>
+      </SnackbarProvider>
+    </ThemeProvider>
   )
 }
 

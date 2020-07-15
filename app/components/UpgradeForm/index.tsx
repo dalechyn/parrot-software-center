@@ -27,8 +27,9 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const mapStateToProps = ({ settings: { APIUrl } }: RootState) => ({
-  APIUrl
+const mapStateToProps = ({ queue: { packages }, settings: { APIUrl } }: RootState) => ({
+  APIUrl,
+  packages
 })
 
 const mapDispatchToProps = {
@@ -43,7 +44,14 @@ const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type UpgradeFormProps = ConnectedProps<typeof connector> & RouteComponentProps
 
-const UpgradeForm = ({ checkUpdates, searchPreviews, APIUrl, upgrade, push }: UpgradeFormProps) => {
+const UpgradeForm = ({
+  checkUpdates,
+  searchPreviews,
+  APIUrl,
+  upgrade,
+  push,
+  packages
+}: UpgradeFormProps) => {
   const classes = useStyles()
   const [loading, setLoading] = useState(false)
   const [previews, setPreviews] = useState(Array<Preview>())
@@ -86,15 +94,19 @@ const UpgradeForm = ({ checkUpdates, searchPreviews, APIUrl, upgrade, push }: Up
             <>
               <Paper elevation={10}>
                 <List style={{ maxHeight: 600, overflow: 'auto' }}>
-                  {previews.map(({ name, description }, i) => (
-                    <ListItem key={i}>
-                      <PackagePreview
-                        name={name}
-                        description={description}
-                        imageUrl={`${APIUrl}/assets/packages/${name}.png`}
-                      />
-                    </ListItem>
-                  ))}
+                  {previews
+                    .filter(({ name }) =>
+                      packages.every(({ name: packageName }) => packageName !== name)
+                    )
+                    .map(({ name, description }) => (
+                      <ListItem key={name}>
+                        <PackagePreview
+                          name={name}
+                          description={description}
+                          imageUrl={`${APIUrl}/assets/packages/${name}.png`}
+                        />
+                      </ListItem>
+                    ))}
                 </List>
               </Paper>
               <Button
