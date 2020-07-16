@@ -83,8 +83,6 @@
     },
     "linux": {
       "target": [
-        "deb",
-        "rpm",
         "AppImage"
       ],
       "category": "Development"
@@ -92,6 +90,12 @@
     "directories": {
       "buildResources": "resources",
       "output": "release"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "h0tw4t3r",
+      "repo": "parrot-software-center",
+      "private": false
     }
   },
   "repository": {
