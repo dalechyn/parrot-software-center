@@ -13,11 +13,14 @@ import {
   Paper,
   Typography
 } from '@material-ui/core'
+import Carousel from '@brainhubeu/react-carousel'
+import '!style-loader!css-loader!@brainhubeu/react-carousel/lib/style.css'
 import { ArrowBack, ExpandMore } from '@material-ui/icons'
 import { blue, green } from '@material-ui/core/colors'
 import dummyPackageImg from '../../assets/package.png'
 import { Img } from 'react-image'
 import { useSnackbar } from 'notistack'
+import cls from 'classnames'
 import { AptActions, QueueActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
 import PackageInfoSkeleton from './skeleton'
@@ -62,6 +65,18 @@ const useStyles = makeStyles(theme => ({
   button: {
     marginTop: theme.spacing(3),
     marginLeft: 'auto'
+  },
+  install: {
+    color: '#2196f3',
+    borderColor: '#2196f3'
+  },
+  uninstall: {
+    color: '#f44336',
+    borderColor: '#f44336'
+  },
+  upgrade: {
+    color: '#4caf50',
+    borderColor: '#4caf50'
   }
 }))
 
@@ -79,8 +94,9 @@ const mapStateToProps = ({
   router: {
     location: { state }
   },
+  settings: { APIUrl },
   queue: { packages }
-}: RootState) => ({ ...state, packages })
+}: RootState) => ({ ...state, APIUrl, packages })
 
 const mapDispatchToProps = {
   goBack,
@@ -146,13 +162,15 @@ const PackageInfo = ({
   installed,
   upgradable,
   dontUpgrade,
-  upgrade
+  upgrade,
+  APIUrl
 }: PackageInfoProps) => {
   if (!name) return null
   const classes = useStyles()
   const [installedOrQueried, setInstalled] = useState(installed)
   const [queried, setQueriedUpgrade] = useState(false)
   const [packageInfo, setPackageInfo] = useState({} as Package)
+  const [screenshots, setScreenshots] = useState(0)
   useEffect(() => {
     const f = async () => {
       const queuePackage = packages.find((pkg: QueueNode) => name === pkg.name)
@@ -195,6 +213,8 @@ const PackageInfo = ({
           console.error(e)
         }
       })
+
+      setScreenshots(await (await fetch(`${APIUrl}/assets/screenshots/${name}/info`)).json())
       setPackageInfo(newPackage)
     }
     f()
@@ -223,11 +243,7 @@ const PackageInfo = ({
         </Typography>
       </Paper>
       <ExpansionPanel disabled={!packageInfo} className={classes.panel} defaultExpanded>
-        <ExpansionPanelSummary
-          expandIcon={<ExpandMore />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
+        <ExpansionPanelSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
           <Typography variant="h5">General info</Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.grid}>
@@ -246,11 +262,7 @@ const PackageInfo = ({
         </ExpansionPanelDetails>
       </ExpansionPanel>
       <ExpansionPanel disabled={!packageInfo && Object.keys(rest).length === 0}>
-        <ExpansionPanelSummary
-          expandIcon={<ExpandMore />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
+        <ExpansionPanelSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
           <Typography variant="h5">Additional info</Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.grid}>
@@ -272,16 +284,20 @@ const PackageInfo = ({
             })}
         </ExpansionPanelDetails>
       </ExpansionPanel>
-      <ExpansionPanel>
-        <ExpansionPanelSummary
-          expandIcon={<ExpandMore />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
+      <ExpansionPanel disabled={screenshots === 0}>
+        <ExpansionPanelSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
           <Typography variant="h5">Screenshots</Typography>
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.grid}>
-          Screenshots should be here!
+        <ExpansionPanelDetails>
+          <Carousel autoPlay={6000} infinite dots clickToChange>
+            {Array.from({ length: screenshots }, (_, k) => (
+              <img
+                key={`${name}-screen-${k}`}
+                src={`${APIUrl}/assets/screenshots/${name}/${k}.png`}
+                alt="screenshot"
+              />
+            ))}
+          </Carousel>
         </ExpansionPanelDetails>
       </ExpansionPanel>
       <ExpansionPanelActions>
@@ -289,7 +305,7 @@ const PackageInfo = ({
           (queried ? (
             <Button
               variant="outlined"
-              className={classes.button}
+              className={cls(classes.button, classes.uninstall)}
               onClick={() => {
                 enqueueSnackbar(`Package ${name}@${version} dequeued`, {
                   variant: 'error'
@@ -305,7 +321,7 @@ const PackageInfo = ({
             <Button
               variant="outlined"
               color="primary"
-              className={classes.button}
+              className={cls(classes.button, classes.upgrade)}
               size="large"
               onClick={() => {
                 enqueueSnackbar(`Package ${name}@${version} queued for upgrade`, {
@@ -321,7 +337,7 @@ const PackageInfo = ({
         {installedOrQueried ? (
           <Button
             variant="outlined"
-            className={classes.button}
+            className={cls(classes.button, classes.uninstall)}
             onClick={() => {
               enqueueSnackbar(
                 packages.find((el: QueueNode) => el.name === name)
@@ -342,7 +358,7 @@ const PackageInfo = ({
           <Button
             variant="outlined"
             color="primary"
-            className={classes.button}
+            className={cls(classes.button, classes.install)}
             size="large"
             onClick={() => {
               enqueueSnackbar(
