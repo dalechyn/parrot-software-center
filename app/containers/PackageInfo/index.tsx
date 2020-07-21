@@ -13,8 +13,7 @@ import {
   Paper,
   Typography
 } from '@material-ui/core'
-import Carousel from '@brainhubeu/react-carousel'
-import '!style-loader!css-loader!@brainhubeu/react-carousel/lib/style.css'
+import Slider from 'react-slick'
 import { ArrowBack, ExpandMore } from '@material-ui/icons'
 import { blue, green } from '@material-ui/core/colors'
 import dummyPackageImg from '../../assets/package.png'
@@ -289,15 +288,13 @@ const PackageInfo = ({
           <Typography variant="h5">Screenshots</Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
-          <Carousel autoPlay={6000} infinite dots clickToChange>
+          <Slider dots={false} infinite={false} slidesToScroll={1} variableWidth arrows>
             {Array.from({ length: screenshots }, (_, k) => (
-              <img
-                key={`${name}-screen-${k}`}
-                src={`${APIUrl}/assets/screenshots/${name}/${k}.png`}
-                alt="screenshot"
-              />
+              <div key={`${name}-screen-${k}`}>
+                <img src={`${APIUrl}/assets/screenshots/${name}/${k}.png`} alt="screenshot" />
+              </div>
             ))}
-          </Carousel>
+          </Slider>
         </ExpansionPanelDetails>
       </ExpansionPanel>
       <ExpansionPanelActions>
