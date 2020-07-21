@@ -50,7 +50,7 @@
     ]
   },
   "build": {
-    "productName": "ParrotSoftwareCenter",
+    "productName": "Parrot Software Center",
     "appId": "org.parrotlinux.PSC",
     "files": [
       "dist/",
@@ -265,7 +265,6 @@
     "react-hook-form": "^5.7.2",
     "react-hot-loader": "^4.12.19",
     "react-image": "^4.0.0",
-    "react-material-ui-carousel": "^1.7.1",
     "react-redux": "^7.1.3",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
