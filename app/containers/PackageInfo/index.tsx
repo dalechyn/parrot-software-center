@@ -4,6 +4,7 @@ import { connect, ConnectedProps } from 'react-redux'
 import { goBack } from 'connected-react-router'
 
 import {
+  Box,
   Button,
   ExpansionPanel,
   ExpansionPanelActions,
@@ -287,14 +288,20 @@ const PackageInfo = ({
         <ExpansionPanelSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
           <Typography variant="h5">Screenshots</Typography>
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
-          <Slider dots={false} infinite={false} slidesToScroll={1} variableWidth arrows>
-            {Array.from({ length: screenshots }, (_, k) => (
-              <div key={`${name}-screen-${k}`}>
-                <img src={`${APIUrl}/assets/screenshots/${name}/${k}.png`} alt="screenshot" />
-              </div>
-            ))}
-          </Slider>
+        <ExpansionPanelDetails style={{ justifyContent: 'center' }}>
+          <Box width="90%">
+            <Slider>
+              {Array.from({ length: screenshots }, (_, k) => (
+                <div key={`${name}-screen-${k}`}>
+                  <img
+                    style={{ margin: 'auto' }}
+                    src={`${APIUrl}/assets/screenshots/${name}/${k}.png`}
+                    alt="screenshot"
+                  />
+                </div>
+              ))}
+            </Slider>
+          </Box>
         </ExpansionPanelDetails>
       </ExpansionPanel>
       <ExpansionPanelActions>

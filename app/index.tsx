@@ -3,6 +3,7 @@ import { render } from 'react-dom'
 import { AppContainer as ReactHotAppContainer } from 'react-hot-loader'
 import { Provider } from 'react-redux'
 import store from './store'
+import './app.global.css'
 
 const AppContainer = process.env.PLAIN_HMR ? Fragment : ReactHotAppContainer
 
