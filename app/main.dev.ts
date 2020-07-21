@@ -49,8 +49,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    minWidth: 1024,
+    minHeight: 728,
     webPreferences:
       (process.env.NODE_ENV === 'development' || process.env.E2E_BUILD === 'true') &&
       process.env.ERB_SECURE !== 'true'
@@ -82,6 +82,8 @@ const createWindow = async () => {
     mainWindow = null
   })
 
+  mainWindow.setMenu(null)
+
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();
@@ -106,3 +108,4 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) createWindow()
 })
+app.allowRendererProcessReuse = true

@@ -14,9 +14,5 @@
     "postinstall": "yarn electron-rebuild"
   },
   "license": "MIT",
-  "dependencies": {
-    "@types/react-slick": "^0.23.4",
-    "react-slick": "^0.27.0",
-    "slick-carousel": "^1.8.1"
-  }
+  "dependencies": {}
 }
