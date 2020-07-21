@@ -9,8 +9,7 @@ import {
   Paper,
   Typography,
   makeStyles,
-  Grid,
-  PropTypes
+  Grid
 } from '@material-ui/core'
 import { ArrowUpward, ArrowDownward, Delete } from '@material-ui/icons'
 import { AlertActions, QueueActions, AptActions } from '../../actions'
@@ -42,7 +41,7 @@ export interface QueueNode {
   flag: string
 }
 
-const flagMap: Record<string, { label: string; color: PropTypes.Color }> = {
+const flagMap: Record<string, Partial<typeof Chip>> = {
   [INSTALL]: {
     label: 'Install',
     color: 'primary'
