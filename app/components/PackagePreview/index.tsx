@@ -13,6 +13,7 @@ import {
   CardActions,
   CardContent,
   Chip,
+  CircularProgress,
   makeStyles,
   Paper,
   Typography
@@ -86,7 +87,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const mapStateToProps = ({ queue: { packages } }: RootState) => ({ packages })
+const mapStateToProps = ({ queue: { packages, isBusy } }: RootState) => ({ packages, isBusy })
 
 const mapDispatchToProps = {
   push,
@@ -119,25 +120,34 @@ const PackagePreview = ({
   packages,
   cveInfo,
   status,
-  checkUpgradable
+  checkUpgradable,
+  isBusy
 }: PackagePreviewProps) => {
+  const [loading, setLoading] = useState(true)
   const [installedOrQueried, setInstalled] = useState(false)
   const [upgradable, setUpgradable] = useState(false)
   const [queriedUpgrade, setQueriedUpgrade] = useState(upgradable)
+  const [isQueued, setQueued] = useState(false)
   const { enqueueSnackbar } = useSnackbar()
   const classes = useStyles()
 
   useEffect(() => {
     const foundPackage = packages.find((pkg: QueueNode) => name === pkg.name)
-    if (foundPackage?.flag === UPGRADE) {
-      setUpgradable(true)
-      setQueriedUpgrade(true)
-    } else if (foundPackage?.flag === INSTALL) setInstalled(foundPackage.flag === INSTALL)
-    else
+    if (foundPackage) {
+      setQueued(true)
+      if (foundPackage.flag === UPGRADE) {
+        setUpgradable(true)
+        setQueriedUpgrade(true)
+      } else if (foundPackage.flag === INSTALL) {
+        setInstalled(foundPackage.flag === INSTALL)
+      }
+      setLoading(false)
+    } else
       (async () => {
         const installed = unwrapResult(await status(name))
         setInstalled(installed)
         if (installed) setUpgradable(unwrapResult(await checkUpgradable(name)))
+        setLoading(false)
       })()
   }, [])
   return (
@@ -214,10 +224,12 @@ const PackagePreview = ({
         </CardContent>
       </CardActionArea>
       <CardActions className={classes.buttonsHolder}>
+        {loading && <CircularProgress disableShrink />}
         {upgradable &&
           (queriedUpgrade ? (
             <Button
               classes={{ outlined: classes.uninstall }}
+              disabled={isQueued && isBusy}
               onClick={() => {
                 enqueueSnackbar(`Package ${name} dequeued`, {
                   variant: 'error'
@@ -233,6 +245,7 @@ const PackagePreview = ({
           ) : (
             <Button
               classes={{ outlined: classes.upgrade }}
+              disabled={isQueued && isBusy}
               onClick={() => {
                 enqueueSnackbar(`Package ${name} queued for upgrade`, {
                   variant: 'info'
@@ -247,47 +260,50 @@ const PackagePreview = ({
             </Button>
           ))}
 
-        {installedOrQueried ? (
-          <Button
-            classes={{ outlined: classes.uninstall }}
-            onClick={() => {
-              enqueueSnackbar(
-                packages.find((el: QueueNode) => el.name === name)
-                  ? `Package ${name} dequeued`
-                  : `Package ${name} queued for deletion`,
-                {
-                  variant: 'error'
-                }
-              )
-              uninstall(name)
-              setInstalled(false)
-            }}
-            variant="outlined"
-            size="medium"
-          >
-            Uninstall
-          </Button>
-        ) : (
-          <Button
-            classes={{ outlined: classes.install }}
-            onClick={() => {
-              enqueueSnackbar(
-                packages.find((el: QueueNode) => el.name === name)
-                  ? `Package ${name} dequeued`
-                  : `Package ${name} queued for installation`,
-                {
-                  variant: 'success'
-                }
-              )
-              install(name)
-              setInstalled(true)
-            }}
-            variant="outlined"
-            size="medium"
-          >
-            Install
-          </Button>
-        )}
+        {!loading &&
+          (installedOrQueried ? (
+            <Button
+              classes={{ outlined: classes.uninstall }}
+              disabled={isQueued && isBusy}
+              onClick={() => {
+                enqueueSnackbar(
+                  packages.find((el: QueueNode) => el.name === name)
+                    ? `Package ${name} dequeued`
+                    : `Package ${name} queued for deletion`,
+                  {
+                    variant: 'error'
+                  }
+                )
+                uninstall(name)
+                setInstalled(false)
+              }}
+              variant="outlined"
+              size="medium"
+            >
+              Uninstall
+            </Button>
+          ) : (
+            <Button
+              classes={{ outlined: classes.install }}
+              disabled={isQueued && isBusy}
+              onClick={() => {
+                enqueueSnackbar(
+                  packages.find((el: QueueNode) => el.name === name)
+                    ? `Package ${name} dequeued`
+                    : `Package ${name} queued for installation`,
+                  {
+                    variant: 'success'
+                  }
+                )
+                install(name)
+                setInstalled(true)
+              }}
+              variant="outlined"
+              size="medium"
+            >
+              Install
+            </Button>
+          ))}
       </CardActions>
     </Card>
   )
