@@ -39,7 +39,7 @@ const redhatCVEEndpoint: CVEEndpoint = {
   }
 }
 
-const mapStateToProps = ({ settings: { loadCVEs, APIUrl } }: RootState) => ({ loadCVEs, APIUrl })
+const mapStateToProps = ({ settings: { loadCVEs } }: RootState) => ({ loadCVEs })
 
 const connector = connect(mapStateToProps)
 type PackagePreviewListProps = ConnectedProps<typeof connector> & {
@@ -53,7 +53,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const PackagePreviewList = ({ previews, loadCVEs, APIUrl }: PackagePreviewListProps) => {
+const PackagePreviewList = ({ previews, loadCVEs }: PackagePreviewListProps) => {
   const [loaded, setLoaded] = useState(false)
   const [previewNodes, setPreviewNodes] = useState(Array<ReactNode>())
   const classes = useStyles()
@@ -68,14 +68,7 @@ const PackagePreviewList = ({ previews, loadCVEs, APIUrl }: PackagePreviewListPr
         await Promise.all(
           previews.map(async ({ name, description }) => {
             if (!loadCVEs)
-              return (
-                <PackagePreview
-                  name={name}
-                  description={description}
-                  key={name}
-                  imageUrl={`${APIUrl}/assets/packages/${name}.png`}
-                />
-              )
+              return <PackagePreview name={name} description={description} key={name} />
 
             const cveInfo = await redhatCVEEndpoint.handleResponse(
               await fetch(
@@ -86,13 +79,7 @@ const PackagePreviewList = ({ previews, loadCVEs, APIUrl }: PackagePreviewListPr
               )
             )
             return (
-              <PackagePreview
-                name={name}
-                description={description}
-                key={name}
-                imageUrl={`${APIUrl}/assets/packages/${name}.png`}
-                cveInfo={cveInfo}
-              />
+              <PackagePreview name={name} description={description} key={name} cveInfo={cveInfo} />
             )
           })
         )

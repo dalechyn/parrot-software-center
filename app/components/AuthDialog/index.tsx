@@ -111,7 +111,7 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
           <Link
             component="button"
             type="button"
-            variant="body2"
+            variant="body1"
             onClick={() => {
               clearError('login')
               clearError('password')

@@ -1,11 +1,11 @@
 import { combineReducers } from 'redux'
 import { connectRouter } from 'connected-react-router'
-import history, { MyLocationState } from './history'
+import history from './history'
 
 import { alert, auth, queue, settings } from '../reducers'
 
 const rootReducer = combineReducers({
-  router: connectRouter<MyLocationState>(history),
+  router: connectRouter(history),
   alert,
   auth,
   queue,

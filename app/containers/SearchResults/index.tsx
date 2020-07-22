@@ -54,14 +54,10 @@ const mapDispatchToProps = {
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
 
-type SearchResultsProps = ConnectedProps<typeof connector> & RouteComponentProps
+type SearchResultsProps = ConnectedProps<typeof connector> &
+  RouteComponentProps<Package & { page: string }>
 
-const SearchResults = ({
-  setAlert,
-  searchPreviews,
-  match,
-  replace
-}: SearchResultsProps & RouteComponentProps<Package & { page: string }>) => {
+const SearchResults = ({ setAlert, searchPreviews, match, replace }: SearchResultsProps) => {
   const [loading, setLoading] = useState(false)
   const [previews, setPreviews] = useState(Array<Preview>())
 

@@ -27,8 +27,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const mapStateToProps = ({ queue: { packages }, settings: { APIUrl } }: RootState) => ({
-  APIUrl,
+const mapStateToProps = ({ queue: { packages } }: RootState) => ({
   packages
 })
 
@@ -47,19 +46,17 @@ type UpgradeFormProps = ConnectedProps<typeof connector> & RouteComponentProps
 const UpgradeForm = ({
   checkUpdates,
   searchPreviews,
-  APIUrl,
   upgrade,
   push,
   packages
 }: UpgradeFormProps) => {
   const classes = useStyles()
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [previews, setPreviews] = useState(Array<Preview>())
 
   useEffect(() => {
     const f = async () => {
       try {
-        setLoading(true)
         const updates = unwrapResult(await checkUpdates())
         setPreviews(
           await Promise.all(updates.map(async name => unwrapResult(await searchPreviews(name))[0]))
@@ -100,11 +97,7 @@ const UpgradeForm = ({
                     )
                     .map(({ name, description }) => (
                       <ListItem key={name}>
-                        <PackagePreview
-                          name={name}
-                          description={description}
-                          imageUrl={`${APIUrl}/assets/packages/${name}.png`}
-                        />
+                        <PackagePreview name={name} description={description} />
                       </ListItem>
                     ))}
                 </List>

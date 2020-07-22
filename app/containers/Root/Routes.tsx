@@ -17,7 +17,7 @@ const Routes = () => {
       <Route exact path="/search/:name/:page?">
         <SearchResults />
       </Route>
-      <Route exact path="/package">
+      <Route exact path="/package/:name">
         <PackageInfo />
       </Route>
       <Route exact path="/queue">

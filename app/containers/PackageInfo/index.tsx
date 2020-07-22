@@ -1,17 +1,19 @@
 import React, { Fragment, useEffect, useState } from 'react'
 
 import { connect, ConnectedProps } from 'react-redux'
-import { goBack } from 'connected-react-router'
+import { goBack, push } from 'connected-react-router'
 
 import {
   Box,
   Button,
+  CircularProgress,
   ExpansionPanel,
   ExpansionPanelActions,
   ExpansionPanelDetails,
   ExpansionPanelSummary,
   makeStyles,
   Paper,
+  Link,
   Typography
 } from '@material-ui/core'
 import Slider from 'react-slick'
@@ -25,7 +27,8 @@ import { AptActions, QueueActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
 import PackageInfoSkeleton from './skeleton'
 import { QueueNode } from '../Queue'
-import { INSTALL } from '../../reducers/queue'
+import { INSTALL, UPGRADE } from '../../reducers/queue'
+import { RouteComponentProps, withRouter } from 'react-router-dom'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -100,11 +103,14 @@ const mapStateToProps = ({
 
 const mapDispatchToProps = {
   goBack,
+  push,
   install: QueueActions.install,
   uninstall: QueueActions.uninstall,
   dontUpgrade: QueueActions.dontUpgrade,
   upgrade: QueueActions.upgrade,
-  search: AptActions.search
+  search: AptActions.search,
+  status: AptActions.status,
+  checkUpgradable: AptActions.checkUpgradable
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
@@ -144,39 +150,56 @@ const pkgRegex = {
 export type Package = {
   [K in keyof (typeof pkgRegex.required & Partial<typeof pkgRegex.optional>)]: string
 }
-type PackageInfoProps = ConnectedProps<typeof connector> & {
-  name: string
-  imageUrl: string
-  installed: boolean
-  upgradable: boolean
-}
+type PackageInfoProps = ConnectedProps<typeof connector> & RouteComponentProps<{ name: string }>
 
 const PackageInfo = ({
-  name,
-  imageUrl,
   goBack,
   packages,
   install,
   uninstall,
   search,
-  installed,
-  upgradable,
   dontUpgrade,
+  push,
   upgrade,
+  match,
   APIUrl,
+  status,
+  checkUpgradable,
   isBusy
 }: PackageInfoProps) => {
-  if (!name) return null
   const classes = useStyles()
-  const [installedOrQueried, setInstalled] = useState(installed)
-  const [queued, setQueued] = useState(false)
+
+  const { name } = match.params
+  const [loading, setLoading] = useState(true)
+  const [installedOrQueried, setInstalled] = useState(false)
+  const [upgradable, setUpgradable] = useState(false)
+  const [queuedUpgrade, setQueuedUpgrade] = useState(false)
   const [packageInfo, setPackageInfo] = useState({} as Package)
   const [screenshots, setScreenshots] = useState(0)
+
   useEffect(() => {
+    setPackageInfo({} as Package)
+    const foundPackage = packages.find((pkg: QueueNode) => name === pkg.name)
+    if (foundPackage) {
+      setQueuedUpgrade(true)
+      if (foundPackage.flag === UPGRADE) {
+        setUpgradable(true)
+        setQueuedUpgrade(true)
+      } else if (foundPackage.flag === INSTALL) {
+        setInstalled(true)
+      }
+      setLoading(false)
+    } else
+      (async () => {
+        const installed = unwrapResult(await status(name))
+        setInstalled(installed)
+        if (installed) setUpgradable(unwrapResult(await checkUpgradable(name)))
+        setLoading(false)
+      })()
     const f = async () => {
       const queuePackage = packages.find((pkg: QueueNode) => name === pkg.name)
       if (queuePackage) {
-        setQueued(true)
+        setQueuedUpgrade(true)
         if (queuePackage.flag === INSTALL) setInstalled(true)
       }
       const searchWrappedResult = await search(name)
@@ -217,13 +240,28 @@ const PackageInfo = ({
         }
       })
 
-      setScreenshots(await (await fetch(`${APIUrl}/assets/screenshots/${name}/info`)).json())
+      try {
+        setScreenshots(await (await fetch(`${APIUrl}/assets/screenshots/${name}/info`)).json())
+      } catch (e) {}
       setPackageInfo(newPackage)
     }
     f()
-  }, [])
+  }, [name])
   const { enqueueSnackbar } = useSnackbar()
-  const { version, maintainer, description, ...rest } = packageInfo
+  const {
+    version,
+    maintainer,
+    description,
+    name: _,
+    depends,
+    recommends,
+    replaces,
+    breaks,
+    suggests,
+    conflicts,
+    provides,
+    ...rest
+  } = packageInfo
   return packageInfo ? (
     <Paper elevation={8} className={classes.root}>
       <Button size="large" startIcon={<ArrowBack />} onClick={() => goBack()}>
@@ -232,7 +270,7 @@ const PackageInfo = ({
       <Paper className={classes.nameContainer} elevation={10}>
         <Img
           className={classes.media}
-          src={imageUrl}
+          src={`${APIUrl}/assets/packages/${name}`}
           unloader={
             <img className={classes.media} src={dummyPackageImg} alt={'No Package Found'} />
           }
@@ -269,6 +307,188 @@ const PackageInfo = ({
           <Typography variant="h5">Additional info</Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.grid}>
+          {depends && (
+            <>
+              <Typography variant="h6">Depends:</Typography>
+              <Paper variant="outlined" className={classes.contentColumn}>
+                <Typography variant="body1">
+                  {depends.split(', ').map((d, i, dependsSplitted) => {
+                    const [depName, ...rest] = d.split(' ')
+                    return (
+                      <>
+                        <Link
+                          component="button"
+                          variant="body1"
+                          key={`${name}-dep-${d}`}
+                          onClick={() => push(`/package/${depName}`)}
+                        >
+                          {depName}
+                        </Link>
+                        {' ' + rest.join('')}
+                        {i !== dependsSplitted.length - 1 && ', '}
+                      </>
+                    )
+                  })}
+                </Typography>
+              </Paper>
+            </>
+          )}
+          {breaks && (
+            <>
+              <Typography variant="h6">Breaks:</Typography>
+              <Paper variant="outlined" className={classes.contentColumn}>
+                <Typography variant="body1">
+                  {breaks.split(', ').map((b, i, breaksSplitted) => {
+                    const [breakName, ...rest] = b.split(' ')
+                    return (
+                      <>
+                        <Link
+                          component="button"
+                          variant="body1"
+                          key={`${name}-breaks-${b}`}
+                          onClick={() => push(`/package/${breakName}`)}
+                        >
+                          {breakName}
+                        </Link>
+                        {' ' + rest.join('')}
+                        {i !== breaksSplitted.length - 1 && ', '}
+                      </>
+                    )
+                  })}
+                </Typography>
+              </Paper>
+            </>
+          )}
+          {recommends && (
+            <>
+              <Typography variant="h6">Recommends:</Typography>
+              <Paper variant="outlined" className={classes.contentColumn}>
+                <Typography variant="body1">
+                  {recommends.split(', ').map((b, i, recommendsSplitted) => {
+                    const [recommendName, ...rest] = b.split(' ')
+                    return (
+                      <>
+                        <Link
+                          component="button"
+                          variant="body1"
+                          key={`${name}-recommends-${b}`}
+                          onClick={() => push(`/package/${recommendName}`)}
+                        >
+                          {recommendName}
+                        </Link>
+                        {' ' + rest.join('')}
+                        {i !== recommendsSplitted.length - 1 && ', '}
+                      </>
+                    )
+                  })}
+                </Typography>
+              </Paper>
+            </>
+          )}
+          {conflicts && (
+            <>
+              <Typography variant="h6">Conflicts:</Typography>
+              <Paper variant="outlined" className={classes.contentColumn}>
+                <Typography variant="body1">
+                  {conflicts.split(', ').map((b, i, conflictsSplitted) => {
+                    const [conflictName, ...rest] = b.split(' ')
+                    return (
+                      <>
+                        <Link
+                          component="button"
+                          variant="body1"
+                          key={`${name}-conflicts-${b}`}
+                          onClick={() => push(`/package/${conflictName}`)}
+                        >
+                          {conflictName}
+                        </Link>
+                        {' ' + rest.join('')}
+                        {i !== conflictsSplitted.length - 1 && ', '}
+                      </>
+                    )
+                  })}
+                </Typography>
+              </Paper>
+            </>
+          )}
+          {suggests && (
+            <>
+              <Typography variant="h6">Suggests:</Typography>
+              <Paper variant="outlined" className={classes.contentColumn}>
+                <Typography variant="body1">
+                  {suggests.split(', ').map((b, i, suggestsSplitted) => {
+                    const [suggestedName, ...rest] = b.split(' ')
+                    return (
+                      <>
+                        <Link
+                          component="button"
+                          variant="body1"
+                          key={`${name}-suggests-${b}`}
+                          onClick={() => push(`/package/${suggestedName}`)}
+                        >
+                          {suggestedName}
+                        </Link>
+                        {' ' + rest.join('')}
+                        {i !== suggestsSplitted.length - 1 && ', '}
+                      </>
+                    )
+                  })}
+                </Typography>
+              </Paper>
+            </>
+          )}
+          {replaces && (
+            <>
+              <Typography variant="h6">Replaces:</Typography>
+              <Paper variant="outlined" className={classes.contentColumn}>
+                <Typography variant="body1">
+                  {replaces.split(', ').map((b, i, replacesSplitted) => {
+                    const [replaceName, ...rest] = b.split(' ')
+                    return (
+                      <>
+                        <Link
+                          component="button"
+                          variant="body1"
+                          key={`${name}-replaces-${b}`}
+                          onClick={() => push(`/package/${replaceName}`)}
+                        >
+                          {replaceName}
+                        </Link>
+                        {' ' + rest.join('')}
+                        {i !== replacesSplitted.length - 1 && ', '}
+                      </>
+                    )
+                  })}
+                </Typography>
+              </Paper>
+            </>
+          )}
+          {provides && (
+            <>
+              <Typography variant="h6">Provides:</Typography>
+              <Paper variant="outlined" className={classes.contentColumn}>
+                <Typography variant="body1">
+                  {provides.split(', ').map((b, i) => {
+                    const [provideName, ...rest] = b.split(' ')
+                    return (
+                      <>
+                        <Link
+                          component="button"
+                          variant="body1"
+                          key={`${name}-provides-${b}`}
+                          onClick={() => push(`/package/${provideName}`)}
+                        >
+                          {provideName}
+                        </Link>
+                        {' ' + rest.join('')}
+                        {i !== provides?.length - 1 && ', '}
+                      </>
+                    )
+                  })}
+                </Typography>
+              </Paper>
+            </>
+          )}
           {Object.keys(rest).length !== 0 &&
             Object.keys(rest).map(prop => {
               type PackageOptionalFields = Exclude<Package, typeof pkgRegex.required>
@@ -308,18 +528,19 @@ const PackageInfo = ({
         </ExpansionPanelDetails>
       </ExpansionPanel>
       <ExpansionPanelActions>
+        {loading && <CircularProgress disableShrink />}
         {upgradable &&
-          (queued ? (
+          (queuedUpgrade ? (
             <Button
               variant="outlined"
-              disabled={queued && isBusy}
+              disabled={queuedUpgrade && isBusy}
               className={cls(classes.button, classes.uninstall)}
               onClick={() => {
                 enqueueSnackbar(`Package ${name}@${version} dequeued`, {
                   variant: 'error'
                 })
                 dontUpgrade(name)
-                setQueued(false)
+                setQueuedUpgrade(false)
               }}
               size="large"
             >
@@ -328,7 +549,7 @@ const PackageInfo = ({
           ) : (
             <Button
               variant="outlined"
-              disabled={queued && isBusy}
+              disabled={queuedUpgrade && isBusy}
               color="primary"
               className={cls(classes.button, classes.upgrade)}
               size="large"
@@ -337,7 +558,7 @@ const PackageInfo = ({
                   variant: 'info'
                 })
                 upgrade(name)
-                setQueued(true)
+                setQueuedUpgrade(true)
               }}
             >
               Upgrade
@@ -346,7 +567,7 @@ const PackageInfo = ({
         {installedOrQueried ? (
           <Button
             variant="outlined"
-            disabled={queued && isBusy}
+            disabled={queuedUpgrade && isBusy}
             className={cls(classes.button, classes.uninstall)}
             onClick={() => {
               enqueueSnackbar(
@@ -367,7 +588,7 @@ const PackageInfo = ({
         ) : (
           <Button
             variant="outlined"
-            disabled={queued && isBusy}
+            disabled={queuedUpgrade && isBusy}
             color="primary"
             className={cls(classes.button, classes.install)}
             size="large"
@@ -394,4 +615,4 @@ const PackageInfo = ({
   )
 }
 
-export default connector(PackageInfo)
+export default connector(withRouter(PackageInfo))

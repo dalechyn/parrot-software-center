@@ -87,7 +87,11 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const mapStateToProps = ({ queue: { packages, isBusy } }: RootState) => ({ packages, isBusy })
+const mapStateToProps = ({ queue: { packages, isBusy }, settings: { APIUrl } }: RootState) => ({
+  packages,
+  isBusy,
+  APIUrl
+})
 
 const mapDispatchToProps = {
   push,
@@ -102,14 +106,12 @@ const mapDispatchToProps = {
 const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type PackagePreviewProps = ConnectedProps<typeof connector> & {
-  imageUrl: string
   name: string
   description: string
   cveInfo?: CVEInfoType
 }
 
 const PackagePreview = ({
-  imageUrl,
   name,
   description,
   push,
@@ -121,15 +123,17 @@ const PackagePreview = ({
   cveInfo,
   status,
   checkUpgradable,
-  isBusy
+  isBusy,
+  APIUrl
 }: PackagePreviewProps) => {
+  const classes = useStyles()
+
   const [loading, setLoading] = useState(true)
   const [installedOrQueried, setInstalled] = useState(false)
   const [upgradable, setUpgradable] = useState(false)
-  const [queriedUpgrade, setQueriedUpgrade] = useState(upgradable)
+  const [queuedUpgrade, setQueuedUpgrade] = useState(upgradable)
   const [isQueued, setQueued] = useState(false)
   const { enqueueSnackbar } = useSnackbar()
-  const classes = useStyles()
 
   useEffect(() => {
     const foundPackage = packages.find((pkg: QueueNode) => name === pkg.name)
@@ -137,9 +141,9 @@ const PackagePreview = ({
       setQueued(true)
       if (foundPackage.flag === UPGRADE) {
         setUpgradable(true)
-        setQueriedUpgrade(true)
+        setQueuedUpgrade(true)
       } else if (foundPackage.flag === INSTALL) {
-        setInstalled(foundPackage.flag === INSTALL)
+        setInstalled(true)
       }
       setLoading(false)
     } else
@@ -152,26 +156,13 @@ const PackagePreview = ({
   }, [])
   return (
     <Card className={classes.root}>
-      <CardActionArea
-        onClick={() =>
-          push({
-            pathname: '/package',
-            state: {
-              name,
-              description,
-              imageUrl,
-              installed: installedOrQueried,
-              upgradable: queriedUpgrade || upgradable
-            }
-          })
-        }
-      >
+      <CardActionArea onClick={() => push(`/package/${name}`)}>
         <CardContent>
           <Paper className={classes.header} elevation={10}>
             <div className={classes.nameHolder}>
               <Img
                 className={classes.media}
-                src={imageUrl}
+                src={`${APIUrl}/assets/packages/${name}`}
                 unloader={
                   <img className={classes.media} src={dummyPackageImg} alt={'No Package Found'} />
                 }
@@ -226,7 +217,7 @@ const PackagePreview = ({
       <CardActions className={classes.buttonsHolder}>
         {loading && <CircularProgress disableShrink />}
         {upgradable &&
-          (queriedUpgrade ? (
+          (queuedUpgrade ? (
             <Button
               classes={{ outlined: classes.uninstall }}
               disabled={isQueued && isBusy}
@@ -235,7 +226,7 @@ const PackagePreview = ({
                   variant: 'error'
                 })
                 dontUpgrade(name)
-                setQueriedUpgrade(false)
+                setQueuedUpgrade(false)
               }}
               variant="outlined"
               size="medium"
@@ -251,7 +242,7 @@ const PackagePreview = ({
                   variant: 'info'
                 })
                 upgrade(name)
-                setQueriedUpgrade(true)
+                setQueuedUpgrade(true)
               }}
               variant="outlined"
               size="medium"
