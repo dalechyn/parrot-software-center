@@ -25,6 +25,7 @@ import { unwrapResult } from '@reduxjs/toolkit'
 import { QueueNode } from '../../containers/Queue'
 import { CVEInfoType } from '../PackagePreviewList'
 import { INSTALL, UPGRADE } from '../../reducers/queue'
+import { Rating } from '@material-ui/lab'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -128,6 +129,7 @@ const PackagePreview = ({
 }: PackagePreviewProps) => {
   const classes = useStyles()
 
+  const [rating, setRating] = useState(-1)
   const [loading, setLoading] = useState(true)
   const [installedOrQueried, setInstalled] = useState(false)
   const [upgradable, setUpgradable] = useState(false)
@@ -153,6 +155,11 @@ const PackagePreview = ({
         if (installed) setUpgradable(unwrapResult(await checkUpgradable(name)))
         setLoading(false)
       })()
+    ;(async () => {
+      const response = await fetch(`${APIUrl}/ratings/${name}`)
+      if (response.status !== 204) setRating((await response.json()).rating)
+      else setRating(0)
+    })()
   }, [])
   return (
     <Card className={classes.root}>
@@ -170,6 +177,11 @@ const PackagePreview = ({
               <Typography className={classes.name} variant="h5">
                 {name}
               </Typography>
+              {rating === -1 ? (
+                <CircularProgress style={{ marginLeft: 'auto' }} />
+              ) : (
+                <Rating readOnly value={rating} style={{ marginLeft: 'auto' }} />
+              )}
             </div>
             {cveInfo && (
               <div className={classes.cve}>
