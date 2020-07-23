@@ -468,7 +468,7 @@ const PackageInfo = ({
               <Typography variant="h6">Provides:</Typography>
               <Paper variant="outlined" className={classes.contentColumn}>
                 <Typography variant="body1">
-                  {provides.split(', ').map((b, i) => {
+                  {provides.split(', ').map((b, i, providesSplitted) => {
                     const [provideName, ...rest] = b.split(' ')
                     return (
                       <>
@@ -481,7 +481,7 @@ const PackageInfo = ({
                           {provideName}
                         </Link>
                         {' ' + rest.join('')}
-                        {i !== provides?.length - 1 && ', '}
+                        {i !== providesSplitted?.length - 1 && ', '}
                       </>
                     )
                   })}
