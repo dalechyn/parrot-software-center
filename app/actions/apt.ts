@@ -113,3 +113,13 @@ export const search = createAsyncThunk('@apt/SEARCH', async (packageName: string
     throw e
   }
 })
+
+export const rate = createAsyncThunk<
+  Response,
+  { token: string; commentary: string; rating: number },
+  { state: RootState }
+>('@apt/RATE', async ({ token, commentary, rating }, { getState }) =>
+  fetch(`${getState().settings.APIUrl}/rate`, {
+    body: JSON.stringify({ token, commentary, rating })
+  })
+)

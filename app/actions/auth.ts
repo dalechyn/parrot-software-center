@@ -6,10 +6,10 @@ type AuthInfo = {
   password: string
 }
 export const setToken = createAction<string>('@auth/SET_TOKEN')
-export const login = createAsyncThunk(
+export const login = createAsyncThunk<void, AuthInfo, { state: RootState }>(
   '@auth/LOGIN',
-  async ({ login, password }: AuthInfo, thunkAPI) => {
-    const res = await fetch(`http://localhost:8000/login`, {
+  async ({ login, password }, { dispatch, getState }) => {
+    const res = await fetch(`${getState().settings.APIUrl}/login`, {
       method: 'POST',
       body: JSON.stringify({ login, password })
     })
@@ -17,13 +17,13 @@ export const login = createAsyncThunk(
       throw new Error(
         `There is already an account with that email or username, or it doesn't exist`
       )
-    thunkAPI.dispatch(setToken((await res.json()).token))
+    dispatch(setToken((await res.json()).token))
   }
 )
-export const register = createAsyncThunk(
+export const register = createAsyncThunk<void, AuthInfo, { state: RootState }>(
   '@auth/REGISTER',
-  async ({ email, login, password }: AuthInfo) => {
-    const res = await fetch(`http://localhost:8000/register`, {
+  async ({ email, login, password }, { getState }) => {
+    const res = await fetch(`${getState().settings.APIUrl}/register`, {
       method: 'POST',
       body: JSON.stringify({ email, login, password })
     })
