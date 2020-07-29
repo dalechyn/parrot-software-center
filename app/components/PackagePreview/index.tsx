@@ -49,8 +49,8 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center'
   },
   cve: {
-    display: 'inline-grid',
-    gridTemplateColumns: 'auto auto auto auto',
+    display: 'grid',
+    gridAutoFlow: 'column',
     alignItems: 'center',
     gridGap: theme.spacing(1),
     paddingTop: theme.spacing(1),
@@ -101,7 +101,8 @@ const mapDispatchToProps = {
   upgrade: QueueActions.upgrade,
   dontUpgrade: QueueActions.dontUpgrade,
   status: AptActions.status,
-  checkUpgradable: AptActions.checkUpgradable
+  checkUpgradable: AptActions.checkUpgradable,
+  getRatings: AptActions.getRatings
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
@@ -125,6 +126,7 @@ const PackagePreview = ({
   status,
   checkUpgradable,
   isBusy,
+  getRatings,
   APIUrl
 }: PackagePreviewProps) => {
   const classes = useStyles()
@@ -153,13 +155,15 @@ const PackagePreview = ({
         const installed = unwrapResult(await status(name))
         setInstalled(installed)
         if (installed) setUpgradable(unwrapResult(await checkUpgradable(name)))
+
+        try {
+          const res = unwrapResult(await getRatings(name))
+          setRating(res)
+        } catch {
+          setRating(0)
+        }
         setLoading(false)
       })()
-    ;(async () => {
-      const response = await fetch(`${APIUrl}/ratings/${name}`)
-      if (response.status !== 204) setRating((await response.json()).rating)
-      else setRating(0)
-    })()
   }, [])
   return (
     <Card className={classes.root}>

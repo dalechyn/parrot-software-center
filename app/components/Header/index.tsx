@@ -59,7 +59,7 @@ const mapStateToProps = ({
 
 const mapDispatchToProps = {
   clear: AlertActions.clear,
-  setToken: AuthActions.setToken,
+  setUserInfo: AuthActions.setUserInfo,
   checkUpdates: AptActions.checkUpdates
 }
 
@@ -67,7 +67,7 @@ const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type HeaderProps = ConnectedProps<typeof connector>
 
-const Header = ({ alert, clear, checkUpdates, token, setToken, pathname }: HeaderProps) => {
+const Header = ({ alert, clear, checkUpdates, token, setUserInfo, pathname }: HeaderProps) => {
   const classes = useStyles()
   const [drawerOpen, setDrawer] = useState(false)
   const [authOpened, setAuthOpened] = useState(false)
@@ -133,7 +133,11 @@ const Header = ({ alert, clear, checkUpdates, token, setToken, pathname }: Heade
         </Button>
         <Divider />
         {token ? (
-          <Button startIcon={<LoginIcon />} onClick={() => setToken('')} size="large">
+          <Button
+            startIcon={<LoginIcon />}
+            onClick={() => setUserInfo({ login: '', token: '' })}
+            size="large"
+          >
             Log out
           </Button>
         ) : (

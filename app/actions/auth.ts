@@ -5,7 +5,13 @@ type AuthInfo = {
   email?: string
   password: string
 }
-export const setToken = createAction<string>('@auth/SET_TOKEN')
+
+type UserInfo = {
+  login: string
+  token: string
+}
+
+export const setUserInfo = createAction<UserInfo>('@auth/SET_USER_INFO')
 export const login = createAsyncThunk<void, AuthInfo, { state: RootState }>(
   '@auth/LOGIN',
   async ({ login, password }, { dispatch, getState }) => {
@@ -17,7 +23,7 @@ export const login = createAsyncThunk<void, AuthInfo, { state: RootState }>(
       throw new Error(
         `There is already an account with that email or username, or it doesn't exist`
       )
-    dispatch(setToken((await res.json()).token))
+    dispatch(setUserInfo({ token: (await res.json()).token, login }))
   }
 )
 export const register = createAsyncThunk<void, AuthInfo, { state: RootState }>(

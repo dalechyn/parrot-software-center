@@ -115,11 +115,21 @@ export const search = createAsyncThunk('@apt/SEARCH', async (packageName: string
 })
 
 export const rate = createAsyncThunk<
-  Response,
-  { token: string; commentary: string; rating: number },
+  void,
+  { name: string; token: string; commentary: string; rating: number },
   { state: RootState }
->('@apt/RATE', async ({ token, commentary, rating }, { getState }) =>
-  fetch(`${getState().settings.APIUrl}/rate`, {
-    body: JSON.stringify({ token, commentary, rating })
+>('@apt/RATE', async (rateInfo, { getState }) => {
+  await fetch(`${getState().settings.APIUrl}/rate`, {
+    method: 'PUT',
+    body: JSON.stringify(rateInfo)
   })
+})
+
+export const getRatings = createAsyncThunk<number, string, { state: RootState }>(
+  '@apt/GET_RATINGS',
+  async (name, { getState }) => {
+    const response = await fetch(`${getState().settings.APIUrl}/ratings/${name}`)
+    if (response.status === 204) throw new Error('No content')
+    return (await response.json()).rating
+  }
 )

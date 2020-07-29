@@ -113,6 +113,7 @@ const mapDispatchToProps = {
   upgrade: QueueActions.upgrade,
   search: AptActions.search,
   status: AptActions.status,
+  getRatings: AptActions.getRatings,
   checkUpgradable: AptActions.checkUpgradable
 }
 
@@ -169,7 +170,8 @@ const PackageInfo = ({
   status,
   checkUpgradable,
   isBusy,
-  token
+  token,
+  getRatings
 }: PackageInfoProps) => {
   const classes = useStyles()
 
@@ -259,12 +261,14 @@ const PackageInfo = ({
 
       try {
         setScreenshots(await (await fetch(`${APIUrl}/assets/screenshots/${name}/info`)).json())
-        ;(async () => {
-          const response = await fetch(`${APIUrl}/ratings/${name}`)
-          if (response.status !== 204) setRating((await response.json()).rating)
-          else setRating(0)
-        })()
       } catch (e) {}
+      try {
+        const res = unwrapResult(await getRatings(name))
+        setRating(res)
+      } catch {
+        setRating(0)
+      }
+
       setPackageInfo(newPackage)
     }
     f()
@@ -635,7 +639,9 @@ const PackageInfo = ({
         </ExpansionPanelActions>
       </Paper>
       {authOpened && <AuthDialog onClose={() => setAuthOpened(false)} />}
-      {ratingOpened && <RatingDialog onClose={() => setRatingOpened(false)} rating={rating} />}
+      {ratingOpened && (
+        <RatingDialog name={name} onClose={() => setRatingOpened(false)} rating={rating} />
+      )}
     </>
   ) : (
     <PackageInfoSkeleton />

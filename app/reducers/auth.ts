@@ -1,8 +1,6 @@
 import { AuthActions } from '../actions'
 import { createReducer } from '@reduxjs/toolkit'
 
-export default createReducer({ token: '' }, builder =>
-  builder.addCase(AuthActions.setToken, (_state, action) => ({
-    token: action.payload
-  }))
+export default createReducer({ token: '', login: '' }, builder =>
+  builder.addCase(AuthActions.setUserInfo, (_state, { payload }) => payload)
 )

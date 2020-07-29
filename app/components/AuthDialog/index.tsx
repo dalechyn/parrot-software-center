@@ -51,14 +51,12 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
               setLoading(true)
               const action = await loginAction({ login, password })
               unwrapResult(action)
-              setLoading(false)
               enqueueSnackbar('Logged in successfully')
               onClose()
             } else {
               setLoading(true)
               const action = await registerAction({ email, login, password })
               unwrapResult(action)
-              setLoading(false)
               enqueueSnackbar(
                 'Registered successfully, confirm your account in a message we sent to the email'
               )
@@ -67,6 +65,7 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
           } catch (e) {
             setError(e.message)
           }
+          setLoading(false)
         })}
       >
         <DialogTitle id="form-dialog-title">{registered ? 'Log in' : 'Register'}</DialogTitle>
