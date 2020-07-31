@@ -15,6 +15,12 @@ export type Preview = {
   description: string
 }
 
+export type Review = {
+  author: string
+  rating: number
+  commentary: string
+}
+
 const waitStdoe = (stderr: Readable, stdout: Readable) =>
   Promise.race([
     new Promise(resolve => stdout.on('close', resolve)),
@@ -131,5 +137,14 @@ export const getRatings = createAsyncThunk<number, string, { state: RootState }>
     const response = await fetch(`${getState().settings.APIUrl}/ratings/${name}`)
     if (response.status === 204) throw new Error('No content')
     return (await response.json()).rating
+  }
+)
+
+export const getReviews = createAsyncThunk<Review[], string, { state: RootState }>(
+  '@apt/GET_REVIEWS',
+  async (name, { getState }) => {
+    const response = await fetch(`${getState().settings.APIUrl}/reviews/${name}`)
+    if (response.status === 204) throw new Error('No content')
+    return await response.json()
   }
 )

@@ -30,7 +30,8 @@ import PackageInfoSkeleton from './skeleton'
 import { QueueNode } from '../Queue'
 import { INSTALL, UPGRADE } from '../../reducers/queue'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
-import { AuthDialog, RatingDialog } from '../../components'
+import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
+import { Review } from '../../actions/apt'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -114,6 +115,7 @@ const mapDispatchToProps = {
   search: AptActions.search,
   status: AptActions.status,
   getRatings: AptActions.getRatings,
+  getReviews: AptActions.getReviews,
   checkUpgradable: AptActions.checkUpgradable
 }
 
@@ -171,12 +173,14 @@ const PackageInfo = ({
   checkUpgradable,
   isBusy,
   token,
-  getRatings
+  getRatings,
+  getReviews
 }: PackageInfoProps) => {
   const classes = useStyles()
 
   const { name } = match.params
   const [rating, setRating] = useState(-1)
+  const [reviews, setReviews] = useState(Array<Review>())
   const [loading, setLoading] = useState(true)
   const [installedOrQueried, setInstalled] = useState(false)
   const [upgradable, setUpgradable] = useState(false)
@@ -261,6 +265,9 @@ const PackageInfo = ({
 
       try {
         setScreenshots(await (await fetch(`${APIUrl}/assets/screenshots/${name}/info`)).json())
+      } catch (e) {}
+      try {
+        setReviews(unwrapResult(await getReviews(name)))
       } catch (e) {}
       try {
         const res = unwrapResult(await getRatings(name))
@@ -553,6 +560,21 @@ const PackageInfo = ({
                 ))}
               </Slider>
             </Box>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+        <ExpansionPanel disabled={reviews.length === 0}>
+          <ExpansionPanelSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
+            <Typography variant="h5">Reviews</Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails style={{ justifyContent: 'center' }}>
+            {reviews.map(({ author, rating, commentary }, k) => (
+              <ReviewRating
+                key={`${name}-review-${k}`}
+                author={author}
+                rating={rating}
+                commentary={commentary}
+              />
+            ))}
           </ExpansionPanelDetails>
         </ExpansionPanel>
         <ExpansionPanelActions>
