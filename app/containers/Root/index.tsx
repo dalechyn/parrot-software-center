@@ -22,7 +22,7 @@ const Root = ({ darkTheme }: RootProps) => {
         palette: {
           primary: blue,
           secondary: {
-            main: blue[50]
+            main: blue[300]
           },
 
           type: darkTheme ? 'dark' : 'light'

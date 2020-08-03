@@ -605,7 +605,7 @@ const PackageInfo = ({
                 size="large"
                 onClick={() => {
                   enqueueSnackbar(`Package ${name}@${version} queued for upgrade`, {
-                    variant: 'info'
+                    variant: 'success'
                   })
                   upgrade(name)
                   setQueuedUpgrade(true)
@@ -648,7 +648,7 @@ const PackageInfo = ({
                     ? `Package ${name}@${version} dequeued`
                     : `Package ${name}@${version} queued for installation`,
                   {
-                    variant: 'success'
+                    variant: 'info'
                   }
                 )
                 install(name)

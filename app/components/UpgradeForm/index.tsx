@@ -40,7 +40,11 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
   useEffect(() => {
     const f = async () => {
       try {
-        setUpdates(unwrapResult(await checkUpdates()))
+        setUpdates(
+          unwrapResult(await checkUpdates()).filter(name =>
+            packages.every(({ name: packageName }) => packageName !== name)
+          )
+        )
       } catch (e) {
         setUpdates([])
       }
@@ -70,23 +74,21 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
           {updates.length !== 0 ? (
             <>
               <Paper style={{ padding: '1rem' }} elevation={10}>
-                {updates
-                  .filter(name => packages.every(({ name: packageName }) => packageName !== name))
-                  .map((upgradableName, i, dependsSplitted) => {
-                    return (
-                      <>
-                        <Link
-                          component="button"
-                          key={`${name}-upgradable-link-${upgradableName}`}
-                          variant="body1"
-                          onClick={() => push(`/package/${upgradableName}`)}
-                        >
-                          {upgradableName}
-                        </Link>
-                        {i !== dependsSplitted.length - 1 && ', '}
-                      </>
-                    )
-                  })}
+                {updates.map((upgradableName, i, dependsSplitted) => {
+                  return (
+                    <>
+                      <Link
+                        component="button"
+                        key={`${name}-upgradable-link-${upgradableName}`}
+                        variant="body1"
+                        onClick={() => push(`/package/${upgradableName}`)}
+                      >
+                        {upgradableName}
+                      </Link>
+                      {i !== dependsSplitted.length - 1 && ', '}
+                    </>
+                  )
+                })}
               </Paper>
               <Button
                 size="large"

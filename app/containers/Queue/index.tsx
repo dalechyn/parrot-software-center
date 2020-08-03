@@ -3,13 +3,15 @@ import { connect, ConnectedProps } from 'react-redux'
 import {
   Button,
   Container,
+  List,
   Chip,
   IconButton,
   LinearProgress,
   Paper,
   Typography,
   makeStyles,
-  Grid
+  Grid,
+  ListItem
 } from '@material-ui/core'
 import { ArrowUpward, ArrowDownward, Delete } from '@material-ui/icons'
 import { AlertActions, QueueActions, AptActions } from '../../actions'
@@ -17,8 +19,7 @@ import { INSTALL, UNINSTALL, UPGRADE } from '../../reducers/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
-    padding: theme.spacing(2),
-    width: '100%'
+    padding: theme.spacing(2)
   },
   package: {
     display: 'flex',
@@ -43,15 +44,15 @@ export interface QueueNode {
 
 const flagMap: Record<string, Partial<typeof Chip>> = {
   [INSTALL]: {
-    label: 'Install',
+    label: 'Install +',
     color: 'primary'
   },
   [UNINSTALL]: {
-    label: 'Uninstall',
+    label: 'Uninstall -',
     color: 'secondary'
   },
   [UPGRADE]: {
-    label: 'Upgrade',
+    label: 'Upgrade ↑',
     color: 'primary'
   }
 }
@@ -64,7 +65,7 @@ type PackageChipProps = {
 }
 
 const PackageChip = ({ flag, classes }: PackageChipProps) => {
-  return <Chip className={classes.chip} size="medium" variant="outlined" {...flagMap[flag]} />
+  return <Chip className={classes.chip} size="medium" {...flagMap[flag]} />
 }
 
 const mapStateToProps = ({ queue: { packages, globalProgress, isBusy, length } }: RootState) => ({
@@ -114,49 +115,56 @@ const Queue = ({
       spacing={2}
       className={classes.root}
     >
-      {packages.map((el: QueueNode, i: number) => (
-        <Grid item container xs={8} key={el.name}>
-          <Container
-            maxWidth="xl"
-            component={Paper}
-            square
-            className={classes.package}
-            key={el.name}
-          >
-            <PackageChip flag={el.flag} classes={classes} />
-            <Typography variant="body1">{el.name}</Typography>
-            <div className={classes.buttons}>
-              <IconButton
-                disabled={i === 0 || processing}
-                color="secondary"
-                aria-label="move to up"
-                onClick={() => swap({ first: i, second: i - 1 })}
-              >
-                <ArrowUpward />
-              </IconButton>
-              <IconButton
-                disabled={i === packages.length - 1 || processing}
-                color="secondary"
-                aria-label="move to down"
-                onClick={() => swap({ first: i, second: i + 1 })}
-              >
-                <ArrowDownward />
-              </IconButton>
-              <IconButton
-                color="secondary"
-                aria-label="delete"
-                disabled={processing}
-                onClick={() => remove(i)}
-              >
-                <Delete />
-              </IconButton>
-            </div>
-          </Container>
-          {i === 0 && processing && <LinearProgress className={classes.progress} />}
-        </Grid>
-      ))}
+      <Grid container item xs={10}>
+        <Paper>
+          <List style={{ maxHeight: 800, overflow: 'auto' }} className={classes.root}>
+            {packages.map((el: QueueNode, i: number) => (
+              <ListItem key={el.name}>
+                <Container
+                  maxWidth="xl"
+                  component={Paper}
+                  square
+                  className={classes.package}
+                  key={el.name}
+                  elevation={10}
+                >
+                  <PackageChip flag={el.flag} classes={classes} />
+                  <Typography variant="body1">{el.name}</Typography>
+                  <div className={classes.buttons}>
+                    <IconButton
+                      disabled={i === 0 || processing}
+                      color="secondary"
+                      aria-label="move to up"
+                      onClick={() => swap({ first: i, second: i - 1 })}
+                    >
+                      <ArrowUpward />
+                    </IconButton>
+                    <IconButton
+                      disabled={i === packages.length - 1 || processing}
+                      color="secondary"
+                      aria-label="move to down"
+                      onClick={() => swap({ first: i, second: i + 1 })}
+                    >
+                      <ArrowDownward />
+                    </IconButton>
+                    <IconButton
+                      color="secondary"
+                      aria-label="delete"
+                      disabled={processing}
+                      onClick={() => remove(i)}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </div>
+                </Container>
+                {i === 0 && processing && <LinearProgress className={classes.progress} />}
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
+      </Grid>
 
-      <Grid container justify="center">
+      <Grid container item xs={12} justify="center">
         {packages.length !== 0 ? (
           <Button
             size="large"

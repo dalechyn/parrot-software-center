@@ -255,7 +255,7 @@ const PackagePreview = ({
               disabled={isQueued && isBusy}
               onClick={() => {
                 enqueueSnackbar(`Package ${name} queued for upgrade`, {
-                  variant: 'info'
+                  variant: 'success'
                 })
                 upgrade(name)
                 setQueuedUpgrade(true)
@@ -299,7 +299,7 @@ const PackagePreview = ({
                     ? `Package ${name} dequeued`
                     : `Package ${name} queued for installation`,
                   {
-                    variant: 'success'
+                    variant: 'info'
                   }
                 )
                 install(name)
