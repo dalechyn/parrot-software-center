@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   CircularProgress,
   Grid,
@@ -54,6 +55,8 @@ const UpgradeForm = ({
   const [loading, setLoading] = useState(true)
   const [previews, setPreviews] = useState(Array<Preview>())
 
+  const [showRest, setShowRest] = useState(false)
+
   useEffect(() => {
     const f = async () => {
       try {
@@ -92,6 +95,7 @@ const UpgradeForm = ({
               <Paper elevation={10}>
                 <List style={{ maxHeight: 600, overflow: 'auto' }}>
                   {previews
+                    .slice(0, 3)
                     .filter(({ name }) =>
                       packages.every(({ name: packageName }) => packageName !== name)
                     )
@@ -100,19 +104,40 @@ const UpgradeForm = ({
                         <PackagePreview name={name} description={description} />
                       </ListItem>
                     ))}
+                  {showRest &&
+                    previews
+                      .slice(3)
+                      .filter(({ name }) =>
+                        packages.every(({ name: packageName }) => packageName !== name)
+                      )
+                      .map(({ name, description }) => (
+                        <ListItem key={name}>
+                          <PackagePreview name={name} description={description} />
+                        </ListItem>
+                      ))}
                 </List>
               </Paper>
-              <Button
-                size="large"
-                variant="contained"
-                style={{ marginTop: '1rem' }}
-                onClick={() => {
-                  previews.map(({ name }) => upgrade(name))
-                  push('/queue')
-                }}
-              >
-                Upgrade
-              </Button>
+              <Box display="flex" marginTop={3}>
+                <Button
+                  size="large"
+                  variant="contained"
+                  onClick={() => setShowRest(!showRest)}
+                  style={{ marginRight: '1rem' }}
+                >
+                  {showRest ? 'Minimize' : 'Expand'}
+                </Button>
+                <Button
+                  size="large"
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    previews.map(({ name }) => upgrade(name))
+                    push('/queue')
+                  }}
+                >
+                  Upgrade
+                </Button>
+              </Box>
             </>
           ) : (
             <SuccessIcon color="primary" fontSize="large" />
