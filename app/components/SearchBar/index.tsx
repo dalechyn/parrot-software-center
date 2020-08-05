@@ -19,7 +19,6 @@ const styles = {
 
 const mapDispatchToProps = {
   clearAlert: AlertActions.clear,
-  setAlert: AlertActions.set,
   searchPreviews: AptActions.searchPreviews,
   push
 }

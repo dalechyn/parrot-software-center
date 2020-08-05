@@ -1,7 +1,7 @@
 import { Button, CircularProgress, Grid, Link, makeStyles, Paper } from '@material-ui/core'
 import { unwrapResult } from '@reduxjs/toolkit'
 import React, { useEffect, useState } from 'react'
-import { AlertActions, AptActions, QueueActions } from '../../actions'
+import { AptActions, QueueActions } from '../../actions'
 import { connect, ConnectedProps } from 'react-redux'
 import { CheckCircleOutline as SuccessIcon } from '@material-ui/icons'
 import { push } from 'connected-react-router'
@@ -24,7 +24,6 @@ const mapStateToProps = ({ queue: { packages } }: RootState) => ({
 const mapDispatchToProps = {
   upgrade: QueueActions.upgrade,
   checkUpdates: AptActions.checkUpdates,
-  setAlert: AlertActions.set,
   push
 }
 

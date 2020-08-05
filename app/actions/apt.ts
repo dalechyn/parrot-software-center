@@ -42,26 +42,29 @@ export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async () => {
   }
 })
 
-export const process = createAsyncThunk('@apt/PROCESS', async (packages: QueueNode[], thunkAPI) => {
-  const prepared = packages
-    .map(({ flag, name }: QueueNode) => `LANG=C && apt ${flag} -y ${name}; echo ${PSC_FINISHED}`)
-    .join(';')
-  try {
-    const { stdout, stderr } = exec(`pkexec sh -c "${prepared}"`)
-    if (!stdout || !stderr) throw new Error('Failed to host shell')
+export const process = createAsyncThunk(
+  '@apt/PROCESS',
+  async (packages: QueueNode[], { dispatch }) => {
+    const prepared = packages
+      .map(({ flag, name }: QueueNode) => `LANG=C && apt ${flag} -y ${name}; echo ${PSC_FINISHED}`)
+      .join(';')
+    try {
+      const { stdout, stderr } = exec(`pkexec sh -c "${prepared}"`)
+      if (!stdout || !stderr) throw new Error('Failed to host shell')
 
-    for await (const chunk of stdout) {
-      const line = chunk as string
-      console.log(line)
-      if (line.match(PSC_FINISHED)) thunkAPI.dispatch(pop())
+      for await (const chunk of stdout) {
+        const line = chunk as string
+        console.log(line)
+        if (line.match(PSC_FINISHED)) dispatch(pop())
+      }
+
+      await waitStdoe(stderr, stdout)
+    } catch (e) {
+      dispatch(AlertActions.set(e))
+      throw e
     }
-
-    await waitStdoe(stderr, stdout)
-  } catch (e) {
-    thunkAPI.dispatch(AlertActions.set(e))
-    throw e
   }
-})
+)
 export const status = createAsyncThunk('@apt/STATUS', async (packageName: string) => {
   try {
     const { stdout, stderr } = await prExec(`LANG=C && dpkg-query -W ${packageName}`)
@@ -87,7 +90,7 @@ export const checkUpgradable = createAsyncThunk(
 
 export const searchPreviews = createAsyncThunk(
   '@apt/SEARCH_PREVIEWS',
-  async (packageName: string, thunkAPI) => {
+  async (packageName: string, { dispatch }) => {
     try {
       const { stdout } = await prExec(`LANG=C && apt-cache search --names-only ${packageName}`)
       const names = stdout.split('\n')
@@ -105,17 +108,17 @@ export const searchPreviews = createAsyncThunk(
         })
         .sort((a, b) => leven(a.name, packageName) - leven(b.name, packageName))
     } catch (e) {
-      thunkAPI.dispatch(AlertActions.set(e))
+      dispatch(AlertActions.set(e))
       throw e
     }
   }
 )
-export const search = createAsyncThunk('@apt/SEARCH', async (packageName: string, thunkAPI) => {
+export const search = createAsyncThunk('@apt/SEARCH', async (packageName: string, { dispatch }) => {
   try {
     const { stdout } = await prExec(`LANG=C && apt-cache show ${packageName}`)
     return stdout
   } catch (e) {
-    thunkAPI.dispatch(AlertActions.set(e))
+    dispatch(AlertActions.set(e))
     throw e
   }
 })
