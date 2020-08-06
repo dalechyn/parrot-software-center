@@ -75,17 +75,19 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
               <Paper style={{ padding: '1rem' }} elevation={10}>
                 {updates.map((upgradableName, i, dependsSplitted) => {
                   return (
-                    <>
+                    <div
+                      style={{ display: 'inline-block', whiteSpace: 'pre' }}
+                      key={`${name}-upgradable-link-${upgradableName}`}
+                    >
                       <Link
                         component="button"
-                        key={`${name}-upgradable-link-${upgradableName}`}
                         variant="body1"
                         onClick={() => push(`/package/${upgradableName}`)}
                       >
                         {upgradableName}
                       </Link>
                       {i !== dependsSplitted.length - 1 && ', '}
-                    </>
+                    </div>
                   )
                 })}
               </Paper>
