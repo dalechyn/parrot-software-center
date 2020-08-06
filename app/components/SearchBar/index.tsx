@@ -3,7 +3,7 @@ import React, { KeyboardEvent, ChangeEvent, useEffect, useState } from 'react'
 import { connect, ConnectedProps } from 'react-redux'
 import { push } from 'connected-react-router'
 
-import { debounce, CircularProgress, TextField } from '@material-ui/core'
+import { debounce, CircularProgress, TextField, makeStyles } from '@material-ui/core'
 import { Autocomplete } from '@material-ui/lab'
 import { Search } from '@material-ui/icons'
 import leven from 'leven'
@@ -11,11 +11,18 @@ import leven from 'leven'
 import { AlertActions, AptActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
 
-const styles = {
+const useStyles = makeStyles({
   root: {
+    color: 'white',
     width: 300
+  },
+  whiteColor: {
+    color: 'white'
+  },
+  notchedOutline: {
+    borderColor: 'white !important'
   }
-}
+})
 
 const mapDispatchToProps = {
   clearAlert: AlertActions.clear,
@@ -32,6 +39,8 @@ const SearchBar = ({ clearAlert, push, searchPreviews }: SearchBarProps) => {
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState(Array<string>())
   const [value, setValue] = useState('')
+
+  const classes = useStyles()
 
   useEffect(() => {
     let active = true
@@ -92,7 +101,8 @@ const SearchBar = ({ clearAlert, push, searchPreviews }: SearchBarProps) => {
   return (
     <Autocomplete
       id="search-bar"
-      style={styles.root}
+      classes={{ clearIndicator: classes.whiteColor }}
+      className={classes.root}
       freeSolo
       open={open}
       onOpen={() => setOpen(true)}
@@ -106,14 +116,18 @@ const SearchBar = ({ clearAlert, push, searchPreviews }: SearchBarProps) => {
           {...params}
           onKeyUp={handleKeyUp}
           onBlur={handleBlur}
-          label="Search a package"
+          label={<div style={{ display: 'inline-block', color: 'white' }}>Search a package</div>}
           variant="outlined"
           size="small"
-          color="primary"
           inputProps={{ ...params.inputProps, autoComplete: 'new-password' }}
           InputProps={{
             ...params.InputProps,
             startAdornment: <Search />,
+            classes: {
+              root: classes.whiteColor,
+              notchedOutline: classes.notchedOutline,
+              adornedEnd: classes.whiteColor
+            },
             endAdornment: (
               <>
                 {loading && <CircularProgress color="inherit" size={20} />}
