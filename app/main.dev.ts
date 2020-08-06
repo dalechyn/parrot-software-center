@@ -9,7 +9,7 @@
  * `./app/main.prod.js` using webpack. This gives us some performance wins.
  */
 import path from 'path'
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, nativeImage } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import log from 'electron-log'
 
@@ -59,7 +59,8 @@ const createWindow = async () => {
           }
         : {
             preload: path.join(__dirname, 'dist/renderer.prod.js')
-          }
+          },
+    icon: nativeImage.createFromPath(`file:://${__dirname}/app/app.png`)
   })
 
   mainWindow.loadURL(`file://${__dirname}/app.html`)
