@@ -27,10 +27,11 @@ import {
 import Alert from '@material-ui/lab/Alert'
 import SearchBar from '../SearchBar'
 import { AlertActions, AptActions, AuthActions } from '../../actions'
-import { useSnackbar } from 'notistack'
+import { SnackbarKey, useSnackbar } from 'notistack'
 import { unwrapResult } from '@reduxjs/toolkit'
 import AuthDialog from '../AuthDialog'
 import SettingsDialog from '../SettingsDialog'
+import useConstant from 'use-constant'
 
 const useStyles = makeStyles(theme => ({
   drawer: { width: 250 },
@@ -72,7 +73,18 @@ const Header = ({ alert, clear, checkUpdates, token, setUserInfo, pathname }: He
   const [drawerOpen, setDrawer] = useState(false)
   const [authOpened, setAuthOpened] = useState(false)
   const [settingsOpened, setSettingsOpened] = useState(false)
-  const { enqueueSnackbar } = useSnackbar()
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar()
+
+  const action = useConstant(() => (key: SnackbarKey) => (
+    <Button
+      color="inherit"
+      onClick={() => {
+        closeSnackbar(key)
+      }}
+    >
+      OK
+    </Button>
+  ))
 
   useEffect(() => {
     const f = async () => {
@@ -82,7 +94,8 @@ const Header = ({ alert, clear, checkUpdates, token, setUserInfo, pathname }: He
         anchorOrigin: {
           vertical: 'top',
           horizontal: 'right'
-        }
+        },
+        action
       })
     }
     f()
