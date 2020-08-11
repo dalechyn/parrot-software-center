@@ -26,7 +26,7 @@ const useStyles = makeStyles({
 
 const mapDispatchToProps = {
   clearAlert: AlertActions.clear,
-  searchPreviews: AptActions.searchPreviews,
+  fetchAutocompletion: AptActions.fetchAutocompletion,
   push
 }
 
@@ -34,7 +34,7 @@ const connector = connect(null, mapDispatchToProps)
 
 type SearchBarProps = ConnectedProps<typeof connector>
 
-const SearchBar = ({ clearAlert, push, searchPreviews }: SearchBarProps) => {
+const SearchBar = ({ clearAlert, push, fetchAutocompletion }: SearchBarProps) => {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState(Array<string>())
@@ -48,7 +48,7 @@ const SearchBar = ({ clearAlert, push, searchPreviews }: SearchBarProps) => {
     debounce(() => {
       const fetchCompletion = async (name: string) => {
         setLoading(true)
-        const response = await searchPreviews(name)
+        const response = await fetchAutocompletion(name)
         if (!active) {
           setLoading(false)
           return

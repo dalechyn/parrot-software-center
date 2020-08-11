@@ -15,7 +15,7 @@ import {
 } from '@material-ui/core'
 import { ArrowUpward, ArrowDownward, Delete } from '@material-ui/icons'
 import { AlertActions, QueueActions, AptActions } from '../../actions'
-import { INSTALL, UNINSTALL, UPGRADE } from '../../reducers/queue'
+import { INSTALL, UNINSTALL, UPGRADE } from '../../actions/apt'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -39,7 +39,7 @@ const useStyles = makeStyles(theme => ({
 
 export interface QueueNode {
   name: string
-  flag: string
+  flag: typeof INSTALL | typeof UNINSTALL | typeof UPGRADE | null
 }
 
 const flagMap: Record<string, Partial<typeof Chip>> = {
@@ -58,14 +58,13 @@ const flagMap: Record<string, Partial<typeof Chip>> = {
 }
 
 type PackageChipProps = {
-  flag: string
   classes: {
     chip: string
   }
-}
+} & Partial<Pick<QueueNode, 'flag'>>
 
 const PackageChip = ({ flag, classes }: PackageChipProps) => {
-  return <Chip className={classes.chip} size="medium" {...flagMap[flag]} />
+  return flag ? <Chip className={classes.chip} size="medium" {...flagMap[flag]} /> : null
 }
 
 const mapStateToProps = ({ queue: { packages, globalProgress, isBusy, length } }: RootState) => ({
@@ -79,7 +78,7 @@ const mapDispatchToProps = {
   swap: QueueActions.swap,
   remove: QueueActions.remove,
   setAlert: AlertActions.set,
-  aptProcess: AptActions.process
+  aptProcess: AptActions.perform
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
@@ -102,7 +101,7 @@ const Queue = ({
   const processPackages = useCallback(async () => {
     setProcessing(true)
     const res = await aptProcess(packages)
-    if (AptActions.process.rejected.match(res)) setAlert(new Error(`apt: ${res}`))
+    if (AptActions.perform.rejected.match(res)) setAlert(`apt: ${res}`)
   }, [packages, setAlert])
 
   return (

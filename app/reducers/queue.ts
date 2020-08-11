@@ -1,11 +1,8 @@
 import * as QueueActions from '../actions/queue'
 import * as AptActions from '../actions/apt'
+import { INSTALL, UNINSTALL, UPGRADE } from '../actions/apt'
 import { createReducer } from '@reduxjs/toolkit'
 import { QueueNode } from '../containers/Queue'
-
-export const INSTALL = 'install'
-export const UPGRADE = '--only-upgrade install'
-export const UNINSTALL = 'purge'
 
 export default createReducer(
   {
@@ -15,8 +12,8 @@ export default createReducer(
     length: 0,
     isBusy: false
   },
-  builder => {
-    return builder
+  builder =>
+    builder
       .addCase(QueueActions.install, (state, { payload }) => {
         const queue = state.packages.filter(
           ({ name, flag }) => !(payload === name && flag === UNINSTALL)
@@ -100,17 +97,16 @@ export default createReducer(
         }
         return state
       })
-      .addCase(AptActions.process.pending, state => {
+      .addCase(AptActions.perform.pending, state => {
         state.globalProgress++
         state.length = state.packages.length
         state.isBusy = true
         return state
       })
-      .addCase(AptActions.process.fulfilled, state => {
+      .addCase(AptActions.perform.fulfilled, state => {
         state.globalProgress = 0
         state.isBusy = false
         state.length = 0
         return state
       })
-  }
 )

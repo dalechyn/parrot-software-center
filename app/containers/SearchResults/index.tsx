@@ -3,16 +3,13 @@ import { connect, ConnectedProps } from 'react-redux'
 
 import { Grid, makeStyles, Typography } from '@material-ui/core'
 import { Pagination } from '@material-ui/lab'
-import leven from 'leven'
 
-import PackagePreviewList from '../../components/PackagePreviewList'
 import { AptActions, AlertActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
-import { Preview } from '../../actions/apt'
-import { Package } from '../PackageInfo'
 import { replace } from 'connected-react-router'
 import SearchField from '../../components/SearchField'
+import { SearchPreview, SearchPreviewSkeleton } from '../../components'
 
 const componentsInPage = 5
 
@@ -40,26 +37,32 @@ const useStyles = makeStyles(theme => ({
 const mapStateToProps = ({
   router: {
     location: { state }
-  }
+  },
+  previews
 }: RootState) => ({
-  ...state
+  ...state,
+  previews
 })
 
 const mapDispatchToProps = {
   setAlert: AlertActions.set,
-  searchPreviews: AptActions.searchPreviews,
-  search: AptActions.search,
+  fetchPreviews: AptActions.fetchPreviews,
   replace
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type SearchResultsProps = ConnectedProps<typeof connector> &
-  RouteComponentProps<Package & { page: string }>
+  RouteComponentProps<{ name: string; page: string }>
 
-const SearchResults = ({ setAlert, searchPreviews, match, replace }: SearchResultsProps) => {
+const SearchResults = ({
+  setAlert,
+  fetchPreviews,
+  match,
+  replace,
+  previews
+}: SearchResultsProps) => {
   const [loading, setLoading] = useState(false)
-  const [previews, setPreviews] = useState(Array<Preview>())
 
   const { name: initialName, page: initialPage } = match.params
   const [page, scroll] = useState(initialPage ? parseInt(initialPage) : 1)
@@ -71,13 +74,9 @@ const SearchResults = ({ setAlert, searchPreviews, match, replace }: SearchResul
     const f = async () => {
       if (!active) return
       try {
-        setPreviews(
-          unwrapResult(await searchPreviews(initialName)).sort(
-            (a, b) => leven(a.name, initialName) - leven(b.name, initialName)
-          )
-        )
+        unwrapResult(await fetchPreviews({ name: initialName, chunk: page }))
       } catch (e) {
-        setAlert(e)
+        setAlert(e.message)
       }
       setLoading(false)
     }
@@ -106,10 +105,7 @@ const SearchResults = ({ setAlert, searchPreviews, match, replace }: SearchResul
               const f = async () => {
                 // TimedOut error should be handled here
                 try {
-                  const previews = unwrapResult(await searchPreviews(name)).sort(
-                    (a, b) => leven(a.name, name) - leven(b.name, name)
-                  )
-                  setPreviews(previews)
+                  unwrapResult(await fetchPreviews({ name: initialName, chunk: page }))
                 } catch (e) {
                   setAlert(e)
                 }
@@ -138,9 +134,19 @@ const SearchResults = ({ setAlert, searchPreviews, match, replace }: SearchResul
             variant="outlined"
             shape="rounded"
           />
-          <PackagePreviewList
-            previews={previews.slice((page - 1) * componentsInPage, page * componentsInPage)}
-          />
+          <Grid
+            container
+            direction="column"
+            justify="space-evenly"
+            alignItems="center"
+            className={classes.grid}
+          >
+            {previews[0] ? <SearchPreview {...previews[0]} /> : <SearchPreviewSkeleton />}
+            {previews[1] ? <SearchPreview {...previews[1]} /> : <SearchPreviewSkeleton />}
+            {previews[2] ? <SearchPreview {...previews[2]} /> : <SearchPreviewSkeleton />}
+            {previews[3] ? <SearchPreview {...previews[3]} /> : <SearchPreviewSkeleton />}
+            {previews[4] ? <SearchPreview {...previews[4]} /> : <SearchPreviewSkeleton />}
+          </Grid>
           <Pagination
             className={classes.pagination}
             count={Math.ceil(previews.length / componentsInPage)}
