@@ -48,14 +48,14 @@ const SearchBar = ({ clearAlert, push, fetchAutocompletion }: SearchBarProps) =>
     debounce(() => {
       const fetchCompletion = async (name: string) => {
         setLoading(true)
-        const response = await fetchAutocompletion(name)
+        const response = unwrapResult(await fetchAutocompletion(name))
         if (!active) {
           setLoading(false)
           return
         }
 
         setOptions(
-          unwrapResult(response)
+          response
             .map(preview => preview.name)
             .sort((a: string, b: string) => leven(a, name) - leven(b, name))
             .slice(0, 5)
@@ -130,7 +130,7 @@ const SearchBar = ({ clearAlert, push, fetchAutocompletion }: SearchBarProps) =>
             },
             endAdornment: (
               <>
-                {loading && <CircularProgress color="inherit" size={20} />}
+                {loading && <CircularProgress disableShrink color="inherit" size={20} />}
                 {params.InputProps.endAdornment}
               </>
             )

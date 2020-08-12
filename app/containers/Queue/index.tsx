@@ -115,7 +115,7 @@ const Queue = ({
       className={classes.root}
     >
       <Grid container item xs={10}>
-        <Paper>
+        <Paper style={{ width: '100%' }}>
           <List style={{ maxHeight: 800, overflow: 'auto' }} className={classes.root}>
             {packages.map((el: QueueNode, i: number) => (
               <ListItem key={el.name}>

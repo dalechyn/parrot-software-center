@@ -66,6 +66,7 @@ const SearchResults = ({
 
   const { name: initialName, page: initialPage } = match.params
   const [page, scroll] = useState(initialPage ? parseInt(initialPage) : 1)
+  const [length, setLength] = useState(0)
 
   // Initial package names fetching effect
   useEffect(() => {
@@ -74,7 +75,7 @@ const SearchResults = ({
     const f = async () => {
       if (!active) return
       try {
-        unwrapResult(await fetchPreviews({ name: initialName, chunk: page }))
+        setLength(unwrapResult(await fetchPreviews({ name: initialName, chunk: page })))
       } catch (e) {
         setAlert(e.message)
       }
@@ -105,7 +106,7 @@ const SearchResults = ({
               const f = async () => {
                 // TimedOut error should be handled here
                 try {
-                  unwrapResult(await fetchPreviews({ name: initialName, chunk: page }))
+                  setLength(unwrapResult(await fetchPreviews({ name, chunk: 1 })))
                 } catch (e) {
                   setAlert(e)
                 }
@@ -128,7 +129,7 @@ const SearchResults = ({
         <>
           <Pagination
             className={classes.pagination}
-            count={Math.ceil(previews.length / componentsInPage)}
+            count={Math.ceil(length / componentsInPage)}
             onChange={pageChange}
             page={page}
             variant="outlined"
@@ -149,7 +150,7 @@ const SearchResults = ({
           </Grid>
           <Pagination
             className={classes.pagination}
-            count={Math.ceil(previews.length / componentsInPage)}
+            count={Math.ceil(length / componentsInPage)}
             onChange={pageChange}
             page={page}
             variant="outlined"

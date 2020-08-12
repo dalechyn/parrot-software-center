@@ -217,7 +217,7 @@ export const INSTALL = 'install'
 export const UPGRADE = '--only-upgrade install'
 export const UNINSTALL = 'purge'
 export const fetchPreviews = createAsyncThunk<
-  void,
+  number,
   { name: string; chunk: number },
   { state: RootState }
 >('@apt/FETCH_PREVIEWS', async ({ name: packageName, chunk }, { getState, dispatch }) => {
@@ -232,6 +232,8 @@ export const fetchPreviews = createAsyncThunk<
       .slice(0, -1)
       .map(str => str.split(/ - /))
       .sort((a, b) => leven(a[0], packageName) - leven(b[0], packageName))
+
+    const length = names.length
     names
       .slice((chunk - 1) * 5, chunk * 5)
       .map(async ([name, description]) => {
@@ -294,6 +296,7 @@ export const fetchPreviews = createAsyncThunk<
           dispatch(PreviewsActions.setPreview({ preview: await pr, index: i }))
         })()
       )
+    return length
   } catch (e) {
     dispatch(AlertActions.set(e.message))
     throw e
