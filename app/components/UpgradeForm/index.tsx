@@ -67,37 +67,44 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
             <h2>
               {updates.length !== 0
                 ? `${updates.length} updates available! Upgrade now!`
-                : 'Your system is up to date'}
+                : packages.length === 0
+                ? 'Your system is up to date'
+                : `${packages.length} are waiting for upgrade! Upgrade now!`}
             </h2>
           </Grid>
-          {updates.length !== 0 ? (
+          {packages.length !== 0 &&
+          updates.filter(update => packages.every(node => node.name !== update)) ? (
             <>
-              <Paper style={{ padding: '1rem' }} elevation={10}>
-                {updates.map((upgradableName, i, dependsSplitted) => {
-                  return (
-                    <div
-                      style={{ display: 'inline-block', whiteSpace: 'pre' }}
-                      key={`${name}-upgradable-link-${upgradableName}`}
-                    >
-                      <Link
-                        component="button"
-                        variant="body1"
-                        onClick={() => push(`/package/${upgradableName}`)}
+              {updates.length !== 0 && (
+                <Paper style={{ padding: '1rem' }} elevation={10}>
+                  {updates.map((upgradableName, i, dependsSplitted) => {
+                    return (
+                      <div
+                        style={{ display: 'inline-block', whiteSpace: 'pre' }}
+                        key={`${name}-upgradable-link-${upgradableName}`}
                       >
-                        {upgradableName}
-                      </Link>
-                      {i !== dependsSplitted.length - 1 && ', '}
-                    </div>
-                  )
-                })}
-              </Paper>
+                        <Link
+                          component="button"
+                          variant="body1"
+                          onClick={() => push(`/package/${upgradableName}`)}
+                        >
+                          {upgradableName}
+                        </Link>
+                        {i !== dependsSplitted.length - 1 && ', '}
+                      </div>
+                    )
+                  })}
+                </Paper>
+              )}
               <Button
                 size="large"
                 variant="contained"
                 color="primary"
                 style={{ marginTop: '1rem' }}
                 onClick={() => {
-                  updates.map(name => upgrade(name))
+                  updates
+                    .filter(update => packages.every(node => node.name !== update))
+                    .forEach(name => upgrade(name))
                   push('/queue')
                 }}
               >
