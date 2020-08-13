@@ -156,8 +156,8 @@ export const perform = createAsyncThunk(
 export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async () => {
   try {
     const { stdout } = await prExec("LANG=C && apt list --upgradable | egrep -o '^[a-z0-9.+-]+'")
-    const res = stdout.split('\n')
-    return res.splice(0, res.length - 1)
+    const res = stdout.split('\n').slice(0, -1)
+    return res.filter((x, i) => i === res.indexOf(x))
   } catch (e) {
     return []
   }
