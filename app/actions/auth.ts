@@ -19,10 +19,14 @@ export const login = createAsyncThunk<void, AuthInfo, { state: RootState }>(
       method: 'POST',
       body: JSON.stringify({ login, password })
     })
-    if (!res.ok)
-      throw new Error(
-        `There is already an account with that email or username, or it doesn't exist`
-      )
+    if (!res.ok) {
+      if (res.status === 403)
+        throw new Error(`This account is not confirmed. Follow email instructions to confirm it.`)
+      else
+        throw new Error(
+          `There is already an account with that email or username, or it doesn't exist.`
+        )
+    }
     dispatch(setUserInfo({ token: (await res.json()).token, login }))
   }
 )
