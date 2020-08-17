@@ -115,52 +115,54 @@ const Queue = ({
       className={classes.root}
     >
       <Grid container item xs={10}>
-        <Paper style={{ width: '100%' }}>
-          <List style={{ maxHeight: 800, overflow: 'auto' }} className={classes.root}>
-            {packages.map((el: QueueNode, i: number) => (
-              <ListItem key={el.name}>
-                <Container
-                  maxWidth="xl"
-                  component={Paper}
-                  square
-                  className={classes.package}
-                  key={el.name}
-                  elevation={10}
-                >
-                  <PackageChip flag={el.flag} classes={classes} />
-                  <Typography variant="body1">{el.name}</Typography>
-                  <div className={classes.buttons}>
-                    <IconButton
-                      disabled={i === 0 || processing}
-                      color="secondary"
-                      aria-label="move to up"
-                      onClick={() => swap({ first: i, second: i - 1 })}
-                    >
-                      <ArrowUpward />
-                    </IconButton>
-                    <IconButton
-                      disabled={i === packages.length - 1 || processing}
-                      color="secondary"
-                      aria-label="move to down"
-                      onClick={() => swap({ first: i, second: i + 1 })}
-                    >
-                      <ArrowDownward />
-                    </IconButton>
-                    <IconButton
-                      color="secondary"
-                      aria-label="delete"
-                      disabled={processing}
-                      onClick={() => remove(i)}
-                    >
-                      <Delete />
-                    </IconButton>
-                  </div>
-                </Container>
-                {i === 0 && processing && <LinearProgress className={classes.progress} />}
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
+        {packages.length !== 0 && (
+          <Paper style={{ width: '100%' }}>
+            <List style={{ maxHeight: 800, overflow: 'auto' }} className={classes.root}>
+              {packages.map((el: QueueNode, i: number) => (
+                <ListItem key={el.name}>
+                  <Container
+                    maxWidth="xl"
+                    component={Paper}
+                    square
+                    className={classes.package}
+                    key={el.name}
+                    elevation={10}
+                  >
+                    <PackageChip flag={el.flag} classes={classes} />
+                    <Typography variant="body1">{el.name}</Typography>
+                    <div className={classes.buttons}>
+                      <IconButton
+                        disabled={i === 0 || processing}
+                        color="secondary"
+                        aria-label="move to up"
+                        onClick={() => swap({ first: i, second: i - 1 })}
+                      >
+                        <ArrowUpward />
+                      </IconButton>
+                      <IconButton
+                        disabled={i === packages.length - 1 || processing}
+                        color="secondary"
+                        aria-label="move to down"
+                        onClick={() => swap({ first: i, second: i + 1 })}
+                      >
+                        <ArrowDownward />
+                      </IconButton>
+                      <IconButton
+                        color="secondary"
+                        aria-label="delete"
+                        disabled={processing}
+                        onClick={() => remove(i)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </div>
+                  </Container>
+                  {i === 0 && processing && <LinearProgress className={classes.progress} />}
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+        )}
       </Grid>
 
       <Grid container item xs={12} justify="center">

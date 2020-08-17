@@ -72,7 +72,7 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
                 : `${packages.length} are waiting for upgrade! Upgrade now!`}
             </h2>
           </Grid>
-          {packages.length !== 0 &&
+          {packages.length === 0 ||
           updates.filter(update => packages.every(node => node.name !== update)) ? (
             <>
               {updates.length !== 0 && (
