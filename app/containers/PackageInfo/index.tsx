@@ -214,7 +214,7 @@ const PackageInfo = ({
         <Paper className={classes.nameContainer} elevation={10}>
           <Img
             className={classes.media}
-            src={`${APIUrl}/assets/packages/${name}`}
+            src={`${APIUrl}/assets/packages/${name}.png`}
             unloader={
               <img className={classes.media} src={dummyPackageImg} alt={'No Package Found'} />
             }
@@ -482,14 +482,22 @@ const PackageInfo = ({
                     const key = prop as keyof PackageOptionalFields
                     const additionalInfo = rest as PackageOptionalFields
                     return (
-                      <div style={{ display: 'inline-block' }} key={`${name}@${version}@${key}`}>
-                        <Typography style={{ width: 'min-content' }} variant="h6">
-                          {key.charAt(0).toUpperCase() + key.slice(1)}:
+                      <>
+                        <Typography
+                          style={{ width: 'min-content' }}
+                          variant="h6"
+                          key={`${name}@${version}@${key}-key`}
+                        >
+                          {key.charAt(0).toUpperCase() + key.slice(1)}
                         </Typography>
-                        <Paper variant="outlined" className={classes.contentColumn}>
+                        <Paper
+                          variant="outlined"
+                          className={classes.contentColumn}
+                          key={`${name}@${version}@${key}-value`}
+                        >
                           <Typography variant="body1">{additionalInfo[key]}</Typography>
                         </Paper>
-                      </div>
+                      </>
                     )
                   })}
               </ExpansionPanelDetails>

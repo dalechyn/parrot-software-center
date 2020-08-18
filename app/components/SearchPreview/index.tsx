@@ -136,7 +136,7 @@ const SearchPreview = ({
             <div className={classes.nameHolder}>
               <Img
                 className={classes.media}
-                src={`${APIUrl}/assets/packages/${name}`}
+                src={`${APIUrl}/assets/packages/${name}.png`}
                 unloader={
                   <img className={classes.media} src={dummyPackageImg} alt={'No Package Found'} />
                 }

@@ -13,6 +13,13 @@ import { SearchPreview, SearchPreviewSkeleton } from '../../components'
 
 const componentsInPage = 5
 
+// Array.prototype.every iterates only on occupied elements, not all, so we have
+// to check it out manually
+const onlyNulls = (arr: Array<any>) => {
+  for (const el of arr) if (el !== null) return false
+  return true
+}
+
 const useStyles = makeStyles(theme => ({
   root: {
     display: 'flex',
@@ -71,7 +78,6 @@ const SearchResults = ({
   // Initial package names fetching effect
   useEffect(() => {
     let active = true
-    if (page !== 1) scroll(1)
     const f = async () => {
       if (!active) return
       try {
@@ -87,7 +93,7 @@ const SearchResults = ({
     return () => {
       active = false
     }
-  }, [])
+  }, [page])
 
   const pageChange = (_: ChangeEvent<unknown>, n: number) => {
     if (n === page) return
@@ -123,7 +129,7 @@ const SearchResults = ({
           />
         </Grid>
       </Grid>
-      {!loading && previews.length === 0 ? (
+      {!loading && previews.length === 5 && onlyNulls(previews) ? (
         <Typography variant="h6">Nothing found...</Typography>
       ) : (
         <>
@@ -142,11 +148,31 @@ const SearchResults = ({
             alignItems="center"
             className={classes.grid}
           >
-            {previews[0] ? <SearchPreview {...previews[0]} /> : <SearchPreviewSkeleton />}
-            {previews[1] ? <SearchPreview {...previews[1]} /> : <SearchPreviewSkeleton />}
-            {previews[2] ? <SearchPreview {...previews[2]} /> : <SearchPreviewSkeleton />}
-            {previews[3] ? <SearchPreview {...previews[3]} /> : <SearchPreviewSkeleton />}
-            {previews[4] ? <SearchPreview {...previews[4]} /> : <SearchPreviewSkeleton />}
+            {previews[0] ? (
+              <SearchPreview {...previews[0]} />
+            ) : (
+              previews[0] === undefined && <SearchPreviewSkeleton />
+            )}
+            {previews[1] ? (
+              <SearchPreview {...previews[1]} />
+            ) : (
+              previews[1] === undefined && <SearchPreviewSkeleton />
+            )}
+            {previews[2] ? (
+              <SearchPreview {...previews[2]} />
+            ) : (
+              previews[2] === undefined && <SearchPreviewSkeleton />
+            )}
+            {previews[3] ? (
+              <SearchPreview {...previews[3]} />
+            ) : (
+              previews[3] === undefined && <SearchPreviewSkeleton />
+            )}
+            {previews[4] ? (
+              <SearchPreview {...previews[4]} />
+            ) : (
+              previews[4] === undefined && <SearchPreviewSkeleton />
+            )}
           </Grid>
           <Pagination
             className={classes.pagination}

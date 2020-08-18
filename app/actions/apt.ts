@@ -234,8 +234,13 @@ export const fetchPreviews = createAsyncThunk<
       .sort((a, b) => leven(a[0], packageName) - leven(b[0], packageName))
 
     const length = names.length
-    names
-      .slice((chunk - 1) * 5, chunk * 5)
+    const slicedRawPreviews = names.slice((chunk - 1) * 5, chunk * 5)
+
+    for (let i = 4; i >= slicedRawPreviews.length; i--) {
+      dispatch(PreviewsActions.setPreview({ preview: null, index: i }))
+    }
+
+    slicedRawPreviews
       .map(async ([name, description]) => {
         const preview: PackagePreview = {
           name,
@@ -296,6 +301,7 @@ export const fetchPreviews = createAsyncThunk<
           dispatch(PreviewsActions.setPreview({ preview: await pr, index: i }))
         })()
       )
+
     return length
   } catch (e) {
     dispatch(AlertActions.set(e.message))

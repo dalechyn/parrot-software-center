@@ -1,4 +1,5 @@
 import {
+  Button,
   ExpansionPanel,
   ExpansionPanelActions,
   ExpansionPanelDetails,
@@ -9,7 +10,11 @@ import {
 } from '@material-ui/core'
 import { Skeleton } from '@material-ui/lab'
 import React from 'react'
-import { ExpandMore } from '@material-ui/icons'
+import { ArrowBack, ExpandMore } from '@material-ui/icons'
+import { goBack } from 'connected-react-router'
+import { connect, ConnectedProps } from 'react-redux'
+import { withRouter } from 'react-router'
+import { RouteComponentProps } from 'react-router-dom'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -49,10 +54,21 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const PackageInfoSkeleton = () => {
+const mapDispatchToProps = {
+  goBack
+}
+
+const connector = connect(null, mapDispatchToProps)
+
+type PackageInfoSkeletonProps = ConnectedProps<typeof connector> & RouteComponentProps
+
+const PackageInfoSkeleton = ({ goBack }: PackageInfoSkeletonProps) => {
   const classes = useStyles()
   return (
     <Paper elevation={8} className={classes.root}>
+      <Button size="large" startIcon={<ArrowBack />} onClick={() => goBack()}>
+        Go Back
+      </Button>
       <Paper className={classes.nameContainer} elevation={10}>
         <Skeleton height={60} width={60} className={classes.media} variant="rect" />
         <Skeleton width={250} variant="rect" />
@@ -99,4 +115,4 @@ const PackageInfoSkeleton = () => {
   )
 }
 
-export default PackageInfoSkeleton
+export default connector(withRouter(PackageInfoSkeleton))
