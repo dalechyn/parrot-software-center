@@ -1,7 +1,7 @@
 {
   "name": "parrot-software-center",
   "productName": "PSC",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Parrot Software Center application for ParrotOS",
   "scripts": {
     "build": "concurrently \"yarn build-main\" \"yarn build-renderer\"",
