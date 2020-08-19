@@ -120,32 +120,49 @@ const pkgRegex: {
 
 const waitStdoe = (stderr: Readable, stdout: Readable) =>
   Promise.race([
-    new Promise(resolve => stdout.on('close', resolve)),
     new Promise((_, reject) =>
       stderr.on('data', chunk => {
         const line = chunk as string
         reject(new Error(line))
       })
-    )
+    ),
+    new Promise((resolve, reject) => {
+      stdout.on('end', () => {
+        resolve()
+      })
+      stderr.on('end', () => {
+        reject(new Error(`Authorization error`))
+      })
+    })
   ])
 
 export const perform = createAsyncThunk(
   '@apt/PERFORM ',
   async (packages: QueueNode[], { dispatch }) => {
     const prepared = packages
-      .map(({ flag, name }: QueueNode) => `LANG=C && apt ${flag} -y ${name}; echo ${PSC_FINISHED}`)
+      .map(
+        ({ flag, name }: QueueNode) =>
+          `LANG=C DEBIAN_FRONTEND=noninteractive apt-get ${flag} -y ${name}; echo ${PSC_FINISHED}`
+      )
       .join(';')
     try {
       const { stdout, stderr } = exec(`pkexec sh -c "${prepared}"`)
       if (!stdout || !stderr) throw new Error('Failed to host shell')
 
+      // we need to subscribe to events before we do anything on the channels
+      const waitPromise = waitStdoe(stderr, stdout)
+
+      /*  for await (const chunk of stderr) {
+        throw new Error(chunk as string)
+      }
+*/
       for await (const chunk of stdout) {
         const line = chunk as string
         console.log(line)
         if (line.match(PSC_FINISHED)) dispatch(pop())
       }
 
-      await waitStdoe(stderr, stdout)
+      await waitPromise
     } catch (e) {
       dispatch(AlertActions.set(e.message))
       throw e
@@ -155,7 +172,7 @@ export const perform = createAsyncThunk(
 
 export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async () => {
   try {
-    const { stdout } = await prExec("LANG=C && apt list --upgradable | egrep -o '^[a-z0-9.+-]+'")
+    const { stdout } = await prExec("LANG=C apt list --upgradable | egrep -o '^[a-z0-9.+-]+'")
     const res = stdout.split('\n').slice(0, -1)
     return res.filter((x, i) => i === res.indexOf(x))
   } catch (e) {
@@ -190,7 +207,7 @@ export const fetchAutocompletion = createAsyncThunk<Autocompletion[], string, { 
   '@apt/FETCH_AUTOCOMPLETION',
   async (packageName, { dispatch }) => {
     try {
-      const { stdout } = await prExec(`LANG=C && apt-cache search --names-only ${packageName}`)
+      const { stdout } = await prExec(`LANG=C apt-cache search --names-only ${packageName}`)
       const names = stdout.split('\n')
       // additional sorting is needed because search
       // doesn't guarantee that queried package will be first in the list
@@ -224,7 +241,7 @@ export const fetchPreviews = createAsyncThunk<
   const { queue, settings } = getState()
   dispatch(PreviewsActions.clear())
   try {
-    const { stdout } = await prExec(`LANG=C && apt-cache search --names-only ${packageName}`)
+    const { stdout } = await prExec(`LANG=C apt-cache search --names-only ${packageName}`)
     // additional sorting is needed because search
     // doesn't guarantee that queried package will be first in the list
     const names = stdout
@@ -271,7 +288,7 @@ export const fetchPreviews = createAsyncThunk<
             if (stdout.length !== 0 || stderr.length === 0) {
               preview.installed = true
               const { stdout } = await prExec(
-                `LANG=C && apt-cache policy ${name} | egrep "(Installed|Candidate)" | cut -c 14-`
+                `LANG=C apt-cache policy ${name} | egrep "(Installed|Candidate)" | cut -c 14-`
               )
               const [current, candidate] = stdout.split('\n').slice(0, 2)
               if (current !== candidate) preview.upgradable = true
@@ -327,7 +344,7 @@ export const fetchPackage = createAsyncThunk<Package, string, { state: RootState
     }
 
     try {
-      const { stdout: aptResult } = await prExec(`LANG=C && apt-cache show ${packageName}`)
+      const { stdout: aptResult } = await prExec(`LANG=C apt-cache show ${packageName}`)
 
       if (
         !Object.keys(pkgRegex.required).every(prop => {
@@ -358,7 +375,7 @@ export const fetchPackage = createAsyncThunk<Package, string, { state: RootState
         }
       } else {
         try {
-          const { stdout, stderr } = await prExec(`LANG=C && dpkg-query -W ${packageName}`)
+          const { stdout, stderr } = await prExec(`LANG=C dpkg-query -W ${packageName}`)
           if (stdout.length !== 0 || stderr.length === 0) {
             newPackage.installed = true
             const { stdout } = await prExec(

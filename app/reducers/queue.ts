@@ -109,4 +109,10 @@ export default createReducer(
         state.length = 0
         return state
       })
+      .addCase(AptActions.perform.rejected, state => {
+        state.globalProgress = 0
+        state.isBusy = false
+        state.length = 0
+        return state
+      })
 )

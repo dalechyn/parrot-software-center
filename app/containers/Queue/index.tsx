@@ -16,10 +16,15 @@ import {
 import { ArrowUpward, ArrowDownward, Delete } from '@material-ui/icons'
 import { AlertActions, QueueActions, AptActions } from '../../actions'
 import { INSTALL, UNINSTALL, UPGRADE } from '../../actions/apt'
+import classnames from 'classnames'
 
 const useStyles = makeStyles(theme => ({
   root: {
     padding: theme.spacing(2)
+  },
+  container: {
+    display: 'flex',
+    flexFlow: 'column'
   },
   package: {
     display: 'flex',
@@ -33,7 +38,10 @@ const useStyles = makeStyles(theme => ({
     marginLeft: 'auto'
   },
   progress: {
-    width: '100vw'
+    width: '100%'
+  },
+  mTop: {
+    marginTop: theme.spacing(2)
   }
 }))
 
@@ -100,8 +108,7 @@ const Queue = ({
 
   const processPackages = useCallback(async () => {
     setProcessing(true)
-    const res = await aptProcess(packages)
-    if (AptActions.perform.rejected.match(res)) setAlert(`apt: ${res}`)
+    if (AptActions.perform.rejected.match(await aptProcess(packages))) setProcessing(false)
   }, [packages, setAlert])
 
   return (
@@ -111,7 +118,6 @@ const Queue = ({
       justify="space-evenly"
       alignItems="center"
       alignContent="stretch"
-      spacing={2}
       className={classes.root}
     >
       <Grid container item xs={10}>
@@ -124,40 +130,43 @@ const Queue = ({
                     maxWidth="xl"
                     component={Paper}
                     square
-                    className={classes.package}
+                    disableGutters
+                    className={classes.container}
                     key={el.name}
                     elevation={10}
                   >
-                    <PackageChip flag={el.flag} classes={classes} />
-                    <Typography variant="body1">{el.name}</Typography>
-                    <div className={classes.buttons}>
-                      <IconButton
-                        disabled={i === 0 || processing}
-                        color="secondary"
-                        aria-label="move to up"
-                        onClick={() => swap({ first: i, second: i - 1 })}
-                      >
-                        <ArrowUpward />
-                      </IconButton>
-                      <IconButton
-                        disabled={i === packages.length - 1 || processing}
-                        color="secondary"
-                        aria-label="move to down"
-                        onClick={() => swap({ first: i, second: i + 1 })}
-                      >
-                        <ArrowDownward />
-                      </IconButton>
-                      <IconButton
-                        color="secondary"
-                        aria-label="delete"
-                        disabled={processing}
-                        onClick={() => remove(i)}
-                      >
-                        <Delete />
-                      </IconButton>
+                    <div className={classes.package}>
+                      <PackageChip flag={el.flag} classes={classes} />
+                      <Typography variant="body1">{el.name}</Typography>
+                      <div className={classes.buttons}>
+                        <IconButton
+                          disabled={i === 0 || processing}
+                          color="secondary"
+                          aria-label="move to up"
+                          onClick={() => swap({ first: i, second: i - 1 })}
+                        >
+                          <ArrowUpward />
+                        </IconButton>
+                        <IconButton
+                          disabled={i === packages.length - 1 || processing}
+                          color="secondary"
+                          aria-label="move to down"
+                          onClick={() => swap({ first: i, second: i + 1 })}
+                        >
+                          <ArrowDownward />
+                        </IconButton>
+                        <IconButton
+                          color="secondary"
+                          aria-label="delete"
+                          disabled={processing}
+                          onClick={() => remove(i)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </div>
                     </div>
+                    {i === 0 && processing && <LinearProgress className={classes.progress} />}
                   </Container>
-                  {i === 0 && processing && <LinearProgress className={classes.progress} />}
                 </ListItem>
               ))}
             </List>
@@ -165,7 +174,7 @@ const Queue = ({
         )}
       </Grid>
 
-      <Grid container item xs={12} justify="center">
+      <Grid className={classes.mTop} container item xs={12} justify="center">
         {packages.length !== 0 ? (
           <Button
             size="large"
@@ -184,7 +193,7 @@ const Queue = ({
       {globalProgress > 0 && (
         <Grid item container xs={9}>
           <LinearProgress
-            className={classes.progress}
+            className={classnames(classes.progress, classes.mTop)}
             variant="buffer"
             value={((globalProgress - 1) / length) * 100}
             valueBuffer={(globalProgress / length) * 100}

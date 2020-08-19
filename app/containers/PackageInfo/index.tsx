@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Fragment } from 'react'
 
 import { connect, ConnectedProps } from 'react-redux'
 import { goBack, push } from 'connected-react-router'
@@ -482,22 +482,14 @@ const PackageInfo = ({
                     const key = prop as keyof PackageOptionalFields
                     const additionalInfo = rest as PackageOptionalFields
                     return (
-                      <>
-                        <Typography
-                          style={{ width: 'min-content' }}
-                          variant="h6"
-                          key={`${name}@${version}@${key}-key`}
-                        >
+                      <Fragment key={`${name}@${version}@${key}`}>
+                        <Typography style={{ width: 'min-content' }} variant="h6">
                           {key.charAt(0).toUpperCase() + key.slice(1)}
                         </Typography>
-                        <Paper
-                          variant="outlined"
-                          className={classes.contentColumn}
-                          key={`${name}@${version}@${key}-value`}
-                        >
+                        <Paper variant="outlined" className={classes.contentColumn}>
                           <Typography variant="body1">{additionalInfo[key]}</Typography>
                         </Paper>
-                      </>
+                      </Fragment>
                     )
                   })}
               </ExpansionPanelDetails>
