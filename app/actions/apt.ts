@@ -72,7 +72,7 @@ export type PackagePreview = {
 
 export type Package = PackageRequiredFields &
   PackageOptionalFields &
-  PackageStatus & { reviews: Review[]; screenshots: number }
+  PackageStatus & { reviews: Review[]; screenshots: string[] }
 
 type PkgRegexRequired = {
   [K in keyof PackageRequiredFields]: RegExp
@@ -340,7 +340,7 @@ export const fetchPackage = createAsyncThunk<Package, string, { state: RootState
       maintainer: '',
       rating: -1,
       reviews: [],
-      screenshots: 0
+      screenshots: []
     }
 
     try {
@@ -400,9 +400,11 @@ export const fetchPackage = createAsyncThunk<Package, string, { state: RootState
       } catch {}
 
       try {
-        newPackage.screenshots = await (
-          await fetch(`${settings.APIUrl}/assets/screenshots/${packageName}/info`)
-        ).json()
+        newPackage.screenshots = (
+          await (await fetch(`https://screenshots.debian.net/json/package/${packageName}`)).json()
+        ).screenshots.map(
+          (s: { small_image_url: string; large_image_url: string }) => s.large_image_url
+        )
       } catch (e) {}
 
       return newPackage

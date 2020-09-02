@@ -494,20 +494,16 @@ const PackageInfo = ({
                   })}
               </ExpansionPanelDetails>
             </ExpansionPanel>
-            <ExpansionPanel disabled={screenshots === 0}>
+            <ExpansionPanel disabled={screenshots.length === 0}>
               <ExpansionPanelSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
                 <Typography variant="h5">Screenshots</Typography>
               </ExpansionPanelSummary>
               <ExpansionPanelDetails style={{ justifyContent: 'center' }}>
                 <Box width="90%">
                   <Slider>
-                    {Array.from({ length: screenshots }, (_, k) => (
-                      <div key={`${name}-screen-${k}`}>
-                        <img
-                          style={{ margin: 'auto' }}
-                          src={`${APIUrl}/assets/screenshots/${name}/${k}.png`}
-                          alt="screenshot"
-                        />
+                    {screenshots.map((link, k) => (
+                      <div key={`${name}-screenshot-${k}`}>
+                        <img style={{ margin: 'auto' }} src={link} alt="screenshot" />
                       </div>
                     ))}
                   </Slider>
