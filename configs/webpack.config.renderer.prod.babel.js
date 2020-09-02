@@ -12,9 +12,16 @@ import TerserPlugin from 'terser-webpack-plugin'
 import baseConfig from './webpack.config.base'
 import CheckNodeEnv from '../internals/scripts/CheckNodeEnv'
 import DeleteSourceMaps from '../internals/scripts/DeleteSourceMaps'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
+import CspHtmlWebpackPlugin from 'csp-html-webpack-plugin'
+import crypto from 'crypto'
+import InlineChunkHtmlPlugin from 'react-dev-utils/InlineChunkHtmlPlugin'
 
 CheckNodeEnv('production')
 DeleteSourceMaps()
+
+const nonce = crypto.randomBytes(16).toString('base64')
+console.log('nonce is =', nonce)
 
 export default merge.smart(baseConfig, {
   devtool: process.env.DEBUG_PROD === 'true' ? 'source-map' : 'none',
@@ -216,6 +223,33 @@ export default merge.smart(baseConfig, {
     new BundleAnalyzerPlugin({
       analyzerMode: process.env.OPEN_ANALYZER === 'true' ? 'server' : 'disabled',
       openAnalyzer: process.env.OPEN_ANALYZER === 'true'
-    })
+    }),
+
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, '..', 'app/app_template.dev.html'),
+      filename: path.join(__dirname, '..', 'app/dist/app/app.html'),
+      cspPlugin: {
+        hashEnabled: {
+          'script-src': true,
+          'style-src': true
+        },
+        nonceEnabled: {
+          'script-src': false,
+          'style-src': false
+        }
+      }
+    }),
+
+    new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime/]),
+
+    new CspHtmlWebpackPlugin(
+      {
+        'base-uri': "'self'",
+        'object-src': "'none'",
+        'script-src': ["'unsafe-inline'", "'self'", "'unsafe-eval'"],
+        'style-src': ["'unsafe-inline'", "'self'", "'unsafe-eval'"]
+      },
+      { nonce }
+    )
   ]
 })

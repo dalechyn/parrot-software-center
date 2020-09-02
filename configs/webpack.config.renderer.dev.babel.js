@@ -6,12 +6,17 @@
  */
 
 import path from 'path'
+import crypto from 'crypto'
 import webpack from 'webpack'
 import merge from 'webpack-merge'
 import { spawn } from 'child_process'
 import { TypedCssModulesPlugin } from 'typed-css-modules-webpack-plugin'
 import baseConfig from './webpack.config.base'
 import CheckNodeEnv from '../internals/scripts/CheckNodeEnv'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
+import InlineChunkHtmlPlugin from 'react-dev-utils/InlineChunkHtmlPlugin'
+import HtmlWebpackHarddiskPlugin from 'html-webpack-harddisk-plugin'
+import CspHtmlWebpackPlugin from 'csp-html-webpack-plugin'
 
 // When an ESLint server is running, we can't set the NODE_ENV so we'll check if it's
 // at the dev webpack config is not accidentally run in a production environment
@@ -21,6 +26,8 @@ if (process.env.NODE_ENV === 'production') {
 
 const port = process.env.PORT || 1212
 const publicPath = `http://localhost:${port}/dist`
+const nonce = crypto.randomBytes(16).toString('base64')
+console.log('nonce is =', nonce)
 
 export default merge.smart(baseConfig, {
   devtool: 'inline-source-map',
@@ -44,16 +51,22 @@ export default merge.smart(baseConfig, {
   module: {
     rules: [
       {
+        test: /\.html$/,
+        loader: 'html-loader'
+      },
+      {
         test: /\.global\.css$/,
         use: [
           {
-            loader: 'style-loader'
+            loader: 'style-loader',
+            options: {
+              attributes: {
+                nonce
+              }
+            }
           },
           {
-            loader: 'css-loader',
-            options: {
-              sourceMap: true
-            }
+            loader: 'css-loader'
           }
         ]
       },
@@ -61,7 +74,12 @@ export default merge.smart(baseConfig, {
         test: /^((?!\.global).)*\.css$/,
         use: [
           {
-            loader: 'style-loader'
+            loader: 'style-loader',
+            options: {
+              attributes: {
+                nonce
+              }
+            }
           },
           {
             loader: 'css-loader',
@@ -80,7 +98,12 @@ export default merge.smart(baseConfig, {
         test: /\.global\.(scss|sass)$/,
         use: [
           {
-            loader: 'style-loader'
+            loader: 'style-loader',
+            options: {
+              attributes: {
+                nonce
+              }
+            }
           },
           {
             loader: 'css-loader',
@@ -89,7 +112,12 @@ export default merge.smart(baseConfig, {
             }
           },
           {
-            loader: 'sass-loader'
+            loader: 'sass-loader',
+            options: {
+              attributes: {
+                nonce
+              }
+            }
           }
         ]
       },
@@ -98,7 +126,12 @@ export default merge.smart(baseConfig, {
         test: /^((?!\.global).)*\.(scss|sass)$/,
         use: [
           {
-            loader: 'style-loader'
+            loader: 'style-loader',
+            options: {
+              attributes: {
+                nonce
+              }
+            }
           },
           {
             loader: 'css-loader',
@@ -177,6 +210,32 @@ export default merge.smart(baseConfig, {
     }
   },
   plugins: [
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, '..', 'app/app_template.dev.html'),
+      filename: path.join(__dirname, '..', 'app/app.html'),
+      alwaysWriteToDisk: true,
+      inject: true,
+      nonce
+    }),
+
+    new CspHtmlWebpackPlugin(
+      {
+        'base-uri': ["'self'"],
+        'object-src': ["'none'"],
+        'script-src': ["'self'"],
+        'style-src': ["'self'"],
+        'frame-src': ["'none'"],
+        'worker-src': ["'none'"]
+      },
+      {
+        nonce
+      }
+    ),
+
+    new HtmlWebpackHarddiskPlugin(),
+
+    new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime/]),
+
     new webpack.HotModuleReplacementPlugin({
       multiStep: true
     }),
@@ -196,7 +255,7 @@ export default merge.smart(baseConfig, {
      * NODE_ENV should be production so that modules do not perform certain
      * development checks
      *
-     * By default, use 'development' as NODE_ENV. This can be overriden with
+     * By default, use 'development' as NODE_ENV. This can be overridden with
      * 'staging', for example, by changing the ENV variables in the npm scripts
      */
     new webpack.EnvironmentPlugin({
@@ -217,13 +276,13 @@ export default merge.smart(baseConfig, {
     port,
     publicPath,
     compress: true,
-    noInfo: true,
-    stats: 'errors-only',
-    inline: true,
-    lazy: false,
+    noInfo: false,
+    stats: 'verbose', //'errors-only',
     hot: true,
-    headers: { 'Access-Control-Allow-Origin': '*' },
-    contentBase: path.join(__dirname, 'dist'),
+    // headers: { 'Access-Control-Allow-Origin': '*' },
+    contentBase: path.join(__dirname, '..', 'dist'),
+    watchContentBase: true,
+    writeToDisk: true,
     watchOptions: {
       aggregateTimeout: 300,
       ignored: /node_modules/,
