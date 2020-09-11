@@ -61,6 +61,7 @@ export type Autocompletion = {
 }
 
 export type PackagePreview = {
+  source: string
   cveInfo: {
     critical: number
     high: number
@@ -241,14 +242,33 @@ export const fetchPreviews = createAsyncThunk<
   const { queue, settings } = getState()
   dispatch(PreviewsActions.clear())
   try {
-    const { stdout } = await prExec(`LANG=C apt-cache search --names-only ${packageName}`)
+    const [{ stdout: aptResult }, { stdout: snapResult }] = await Promise.all([
+      prExec(`LANG=C apt-cache search --names-only ${packageName}`),
+      prExec(`LANG=C snap find ${packageName}`)
+    ])
+
     // additional sorting is needed because search
     // doesn't guarantee that queried package will be first in the list
-    const names = stdout
-      .split('\n')
-      .slice(0, -1)
-      .map(str => str.split(/ - /))
-      .sort((a, b) => leven(a[0], packageName) - leven(b[0], packageName))
+    const names = [
+      ...aptResult
+        .split('\n')
+        .slice(0, -1)
+        .map(str => {
+          const splitted = str.split(' - ')
+          return [splitted[0], splitted.slice(1).join(' - '), 'APT']
+        }),
+      ...snapResult
+        .split('\n')
+        .slice(1, -1)
+        .map(str => {
+          const res = /(^[a-zA-Z0-9-]+) +([a-zA-Z0-9-.~+-]+) +([a-zA-Z0-9-*.]+) +(-|[a-zA-Z0-9-]+) +(.*)/gm.exec(
+            str
+          )
+          if (!res || !res[1] || !res[5]) return []
+          return [res[1], res[5], 'SNAP']
+        })
+        .filter(el => el.length)
+    ].sort((a, b) => leven(a[0], packageName) - leven(b[0], packageName))
 
     const length = names.length
     const slicedRawPreviews = names.slice((chunk - 1) * 5, chunk * 5)
@@ -258,10 +278,11 @@ export const fetchPreviews = createAsyncThunk<
     }
 
     slicedRawPreviews
-      .map(async ([name, description]) => {
+      .map(async ([name, description, source]) => {
         const preview: PackagePreview = {
           name,
           description,
+          source,
           installed: false,
           upgradable: false,
           upgradeQueued: false,

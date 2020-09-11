@@ -18,7 +18,7 @@ import {
 import { Rating } from '@material-ui/lab'
 import Slider from 'react-slick'
 import { ArrowBack, ExpandMore } from '@material-ui/icons'
-import { blue, green } from '@material-ui/core/colors'
+import { blue, green, grey } from '@material-ui/core/colors'
 import dummyPackageImg from '../../assets/package.png'
 import { Img } from 'react-image'
 import { useSnackbar } from 'notistack'
@@ -36,6 +36,10 @@ const useStyles = makeStyles(theme => ({
   root: {
     margin: theme.spacing(4),
     padding: theme.spacing(4)
+  },
+  source: {
+    color: grey[500],
+    marginLeft: theme.spacing(2)
   },
   nameContainer: {
     display: 'flex',
@@ -147,6 +151,7 @@ const PackageInfo = ({
     version,
     maintainer,
     description,
+    source,
     name: _,
     depends,
     recommends,
@@ -227,6 +232,9 @@ const PackageInfo = ({
               <Typography variant="h5">@</Typography>
               <Typography style={{ color: blue[400] }} variant="h5">
                 {version}
+              </Typography>
+              <Typography className={classes.source} variant="body2">
+                {source}
               </Typography>
               <Rating
                 name="package-rating"

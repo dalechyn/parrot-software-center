@@ -69,6 +69,10 @@ const useStyles = makeStyles(theme => ({
   name: {
     paddingLeft: theme.spacing(1)
   },
+  source: {
+    color: grey[500],
+    marginLeft: theme.spacing(2)
+  },
   chipText: {
     color: grey[900]
   },
@@ -108,6 +112,7 @@ type SearchPreviewProps = ConnectedProps<typeof connector> & PackagePreview
 const SearchPreview = ({
   name,
   description,
+  source,
   push,
   install,
   uninstall,
@@ -143,6 +148,9 @@ const SearchPreview = ({
               />
               <Typography className={classes.name} variant="h5">
                 {name}
+              </Typography>
+              <Typography className={classes.source} variant="body2">
+                {source}
               </Typography>
               {rating === -1 ? (
                 <CircularProgress style={{ marginLeft: 'auto' }} />
