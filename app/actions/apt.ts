@@ -14,7 +14,7 @@ const prExec = promisify(exec)
 export type Review = {
   author: string
   rating: number
-  commentary: string
+  commentary: string 
 }
 
 export type PackageRequiredFields = {
@@ -200,7 +200,7 @@ const redhatCVEEndpoint: CVEEndpoint = {
         else critical++
       })
 
-    return { low, medium, high, critical }
+    return { low, medium, high, critical } вот тут хуйня
   }
 }
 
@@ -263,7 +263,7 @@ export const fetchPreviews = createAsyncThunk<
         .map(str => {
           const res = /(^[a-zA-Z0-9-]+) +([a-zA-Z0-9-.~+-]+) +([a-zA-Z0-9-*.]+) +(-|[a-zA-Z0-9-]+) +(.*)/gm.exec(
             str
-          )
+          ) и тут хуйня
           if (!res || !res[1] || !res[5]) return []
           return [res[1], res[5], 'SNAP']
         })
@@ -363,7 +363,7 @@ export const fetchPackage = createAsyncThunk<Package, string, { state: RootState
       reviews: [],
       screenshots: []
     }
-
+Переделай по быстрому
     try {
       const { stdout: aptResult } = await prExec(`LANG=C apt-cache show ${packageName}`)
 
@@ -436,7 +436,7 @@ export const fetchPackage = createAsyncThunk<Package, string, { state: RootState
   }
 )
 
-export const rate = createAsyncThunk<
+export const а я пока в душ схожу rate = createAsyncThunk<
   void,
   { name: string; token: string; commentary: string; rating: number },
   { state: RootState }
