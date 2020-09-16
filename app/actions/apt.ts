@@ -6,7 +6,7 @@ import { QueueNode } from '../containers/Queue'
 import { Readable } from 'stream'
 import leven from 'leven'
 import { CVEEndpoint } from '../components/SearchPreviewList'
-import { pop } from './queue'
+import { pop, QueueNodeMeta } from './queue'
 
 const PSC_FINISHED = '__PSC_FINISHED'
 const prExec = promisify(exec)
@@ -17,14 +17,26 @@ export type Review = {
   commentary: string
 }
 
-export type PackageRequiredFields = {
+export type CVEInfo = {
+  critical: number
+  high: number
+  medium: number
+  low: number
+}
+
+export type Sources = 'APT' | 'SNAP'
+
+export type PackageSource = {
+  packageSource: Sources
+}
+export type AptPackageRequiredFields = {
   name: string
   version: string
   maintainer: string
   description: string
 }
 
-export type PackageOptionalFields = Partial<{
+export type AptPackageOptionalFields = Partial<{
   section: string
   priority: string
   essential: string
@@ -52,7 +64,6 @@ export type PackageStatus = {
   installed: boolean
   upgradable: boolean
   upgradeQueued: boolean
-  rating: number
 } & Partial<Pick<QueueNode, 'flag'>>
 
 export type Autocompletion = {
@@ -61,31 +72,62 @@ export type Autocompletion = {
 }
 
 export type PackagePreview = {
-  source: string
-  cveInfo: {
-    critical: number
-    high: number
-    medium: number
-    low: number
-  }
+  cveInfo: CVEInfo
+  version: string
 } & PackageStatus &
-  Autocompletion
+  Autocompletion &
+  Pick<PackageEssentials, 'rating'> &
+  PackageSource
 
-export type Package = PackageRequiredFields &
-  PackageOptionalFields &
-  PackageStatus & { reviews: Review[]; screenshots: string[] }
-
-type PkgRegexRequired = {
-  [K in keyof PackageRequiredFields]: RegExp
+export type PackageEssentials = {
+  reviews: Review[]
+  screenshots: string[]
+  rating: number
 }
 
-type PkgRegexOptional = {
-  [K in keyof Required<PackageOptionalFields>]: RegExp
+export type AptPackage = AptPackageRequiredFields &
+  AptPackageOptionalFields &
+  PackageStatus &
+  PackageEssentials
+
+export type SnapChannel = {
+  channel: string
+  branch: string
+  info?: string
+  closed: boolean
 }
 
-const pkgRegex: {
-  required: PkgRegexRequired
-  optional: PkgRegexOptional
+export type SnapTrack = {
+  name: string
+  channels: SnapChannel[]
+}
+
+export type SnapPackage = {
+  name: string
+  summary: string
+  publisher: string
+  storeUrl: string
+  contact: string
+  license: string
+  description: string
+  snapId: string
+  refreshDate?: string
+  tracking?: string
+  channels: SnapTrack[]
+} & PackageEssentials &
+  PackageStatus
+
+type AptPkgRegexRequired = {
+  [K in keyof AptPackageRequiredFields]: RegExp
+}
+
+type AptPkgRegexOptional = {
+  [K in keyof Required<AptPackageOptionalFields>]: RegExp
+}
+
+const aptPkgRegex: {
+  required: AptPkgRegexRequired
+  optional: AptPkgRegexOptional
 } = {
   required: {
     name: /^Package: ([a-z0-9.+-]+)/m,
@@ -117,6 +159,20 @@ const pkgRegex: {
     aptManualInstalled: /^APT-Manual-Installed: (.*)/m,
     aptSources: /^APT-Sources: ((?:[a-z]+:\/\/)[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*))/m
   }
+}
+
+const snapPkgRegex = {
+  name: /^name: +(.*)/m,
+  summary: /^summary: +(.*)/m,
+  publisher: /^publisher: +(.*)/m,
+  storeUrl: /^store-url: +(.*)/m,
+  contact: /^contact: +(.*)/m,
+  license: /^license: +(.*)/m,
+  description: /^description: \|\n((?:  .*\n)+)/m,
+  snapId: /^snap-id: +(.*)/m,
+  refreshDate: /^refresh-date: (.*)/m,
+  channels: /^channels:\n((?:.*\n)+)/m,
+  installed: /^installed: *(?:([0-9.a-z]+)\/)?([0-9a-z]+): +(?:([0-9.a-z~+-]+) +(.*)|[–↑]) *\n?/m
 }
 
 const waitStdoe = (stderr: Readable, stdout: Readable) =>
@@ -173,9 +229,17 @@ export const perform = createAsyncThunk(
 
 export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async () => {
   try {
-    const { stdout } = await prExec("LANG=C apt list --upgradable | egrep -o '^[a-z0-9.+-]+'")
-    const res = stdout.split('\n').slice(0, -1)
-    return res.filter((x, i) => i === res.indexOf(x))
+    const { stdout } = await prExec('LANG=C apt list --upgradable')
+    const regex = /^([a-z0-9.+-]+)\/(?:[a-z-],?)+ (?:[0-9]:)?((?:[0-9]{1,4}:)?(?:(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?))/gm
+
+    const res: QueueNodeMeta[] = []
+    let match: RegExpExecArray | null
+    while ((match = regex.exec(stdout)))
+      res.push({ name: match[1], version: match[2], source: 'APT' })
+
+    return res.filter(
+      (x, i) => i === res.findIndex(el => x.name === el.name && x.source === el.source)
+    )
   } catch (e) {
     return []
   }
@@ -253,21 +317,33 @@ export const fetchPreviews = createAsyncThunk<
       ...aptResult
         .split('\n')
         .slice(0, -1)
-        .map(str => {
-          const splitted = str.split(' - ')
-          return [splitted[0], splitted.slice(1).join(' - '), 'APT']
-        }),
+        .reduce((result, str) => {
+          const nameRegExpResult = aptPkgRegex.required.name.exec(str)
+          const versionRegExpResult = aptPkgRegex.required.version.exec(str)
+          const descriptionRegExpResult = aptPkgRegex.required.description.exec(str)
+          if (!nameRegExpResult || !versionRegExpResult || !descriptionRegExpResult)
+            console.error(`Unexpected error in apt preview parsing: ${str}`)
+          else
+            result.push([
+              nameRegExpResult[1],
+              versionRegExpResult[1],
+              descriptionRegExpResult[1],
+              'APT'
+            ])
+          return result
+        }, Array<Array<string>>()),
       ...snapResult
         .split('\n')
         .slice(1, -1)
-        .map(str => {
+        .reduce((result, str) => {
           const res = /(^[a-zA-Z0-9-]+) +([a-zA-Z0-9-.~+-]+) +([a-zA-Z0-9-*.]+) +(-|[a-zA-Z0-9-]+) +(.*)/gm.exec(
             str
           )
-          if (!res || !res[1] || !res[5]) return []
-          return [res[1], res[5], 'SNAP']
-        })
-        .filter(el => el.length)
+          if (!res || !res[1] || !res[5])
+            console.error(`Unexpected error in snap preview parsing: ${str}`)
+          else result.push([res[1], res[2], res[5], 'SNAP'])
+          return result
+        }, Array<Array<string>>())
     ].sort((a, b) => leven(a[0], packageName) - leven(b[0], packageName))
 
     const length = names.length
@@ -278,11 +354,12 @@ export const fetchPreviews = createAsyncThunk<
     }
 
     slicedRawPreviews
-      .map(async ([name, description, source]) => {
+      .map(async ([name, version, description, source]) => {
         const preview: PackagePreview = {
           name,
           description,
-          source,
+          version,
+          packageSource: source as Sources,
           installed: false,
           upgradable: false,
           upgradeQueued: false,
@@ -347,11 +424,130 @@ export const fetchPreviews = createAsyncThunk<
   }
 })
 
-export const fetchPackage = createAsyncThunk<Package, string, { state: RootState }>(
-  '@apt/FETCH_PACKAGE',
+export const fetchSnapPackage = createAsyncThunk<SnapPackage, string, { state: RootState }>(
+  '@apt/FETCH_SNAP_PACKAGE',
   async (packageName, { getState, dispatch }) => {
     const { queue, settings } = getState()
-    const newPackage: Package = {
+    const newPackage: SnapPackage = {
+      name: '',
+      summary: '',
+      publisher: '',
+      storeUrl: '',
+      contact: '',
+      license: '',
+      description: '',
+      snapId: '',
+      channels: [],
+      rating: -1,
+      screenshots: [],
+      reviews: [],
+      installed: false,
+      upgradable: false,
+      upgradeQueued: false
+    }
+    try {
+      const { stdout: snapResult } = await prExec(`LANG=C snap info ${packageName}`)
+
+      const omitted = { ...snapPkgRegex }
+      delete omitted['channels']
+      delete omitted['installed']
+
+      Object.keys(omitted)
+        .slice(0, -1)
+        .every(prop => {
+          const key = prop as keyof Omit<typeof snapPkgRegex, 'channels' | 'installed'>
+          const match = omitted[key].exec(snapResult)
+          if (match) newPackage[key] = match[1]
+          else console.warn(`Missing ${key}`)
+          return match
+        })
+
+      const channelsMatch = snapPkgRegex.channels.exec(snapResult)
+      if (channelsMatch) {
+        const trackRegex = / *(?:([0-9.a-z]+)\/)?([0-9a-z]+): +(?:([0-9.a-z~+-]+) +(.*)|[–↑]) *\n?/gm
+        const tracks: SnapTrack[] = []
+        let channels: SnapChannel[] = []
+
+        let match = trackRegex.exec(channelsMatch[1])
+        if (match) {
+          let lastTrack = match[1]
+          let lastBranch = match[3]
+          do {
+            if (lastTrack !== match[1]) {
+              tracks.push({
+                name: lastTrack,
+                channels
+              })
+              lastTrack = match[1]
+              channels = []
+            }
+            if (lastBranch !== match[3] && match[3] !== '↑' && match[3] !== '–')
+              lastBranch = match[3]
+            channels.push({
+              channel: match[2] ?? '',
+              branch: lastBranch,
+              closed: match[3] === '–'
+            })
+          } while ((match = trackRegex.exec(channelsMatch[1])))
+        }
+        newPackage.channels = tracks
+      } else console.warn('Missing channels')
+
+      const foundPackage = queue.packages.find(
+        (pkg: QueueNode) => packageName === pkg.name && pkg.source == 'SNAP'
+      )
+      if (foundPackage) {
+        newPackage.flag = foundPackage.flag
+        if (foundPackage.flag === UPGRADE) {
+          newPackage.upgradable = true
+          newPackage.upgradeQueued = true
+        } else if (foundPackage.flag === INSTALL) {
+          newPackage.installed = true
+        }
+      } else {
+        if (snapPkgRegex.installed.test(snapResult)) newPackage.installed = true
+        try {
+          const { stdout, stderr } = await prExec(
+            `LANG=C snap refresh --list | sed 1d | grep ${packageName}`
+          )
+          if (stdout.length !== 0 || stderr.length === 0) {
+            newPackage.upgradable = true
+          }
+        } catch (e) {}
+      }
+
+      try {
+        const ratingsResponse = await fetch(`${settings.APIUrl}/ratings/${packageName}`)
+        newPackage.rating = (await ratingsResponse.json()).rating
+      } catch {
+        newPackage.rating = 0
+      }
+
+      try {
+        const reviewsResponse = await fetch(`${settings.APIUrl}/reviews/${packageName}`)
+        newPackage.reviews = await reviewsResponse.json()
+      } catch {}
+
+      try {
+        newPackage.screenshots = (
+          await (await fetch(`https://screenshots.debian.net/json/package/${packageName}`)).json()
+        ).screenshots.map(
+          (s: { small_image_url: string; large_image_url: string }) => s.large_image_url
+        )
+      } catch (e) {}
+      return newPackage
+    } catch (e) {
+      dispatch(AlertActions.set(e.message))
+      throw e
+    }
+  }
+)
+
+export const fetchAptPackage = createAsyncThunk<AptPackage, string, { state: RootState }>(
+  '@apt/FETCH_APT_PACKAGE',
+  async (packageName, { getState, dispatch }) => {
+    const { queue, settings } = getState()
+    const newPackage: AptPackage = {
       name: '',
       description: '',
       installed: false,
@@ -368,9 +564,9 @@ export const fetchPackage = createAsyncThunk<Package, string, { state: RootState
       const { stdout: aptResult } = await prExec(`LANG=C apt-cache show ${packageName}`)
 
       if (
-        !Object.keys(pkgRegex.required).every(prop => {
-          const key = prop as keyof typeof pkgRegex.required
-          const match = pkgRegex.required[key].exec(aptResult)
+        !Object.keys(aptPkgRegex.required).every(prop => {
+          const key = prop as keyof typeof aptPkgRegex.required
+          const match = aptPkgRegex.required[key].exec(aptResult)
           if (match) newPackage[key] = match[1]
           else console.warn(`Missing ${key}`)
           return match
@@ -378,13 +574,14 @@ export const fetchPackage = createAsyncThunk<Package, string, { state: RootState
       ) {
         throw new Error('Required fields are missing, skipping invalid package')
       }
-      Object.keys(pkgRegex.optional).forEach(prop => {
-        const key = prop as keyof typeof pkgRegex.optional
-        const match = pkgRegex.optional[key].exec(aptResult)
+      Object.keys(aptPkgRegex.optional).forEach(prop => {
+        const key = prop as keyof Omit<typeof aptPkgRegex.optional, 'source'>
+        const match = aptPkgRegex.optional[key].exec(aptResult)
         if (match) newPackage[key] = match[1]
         else console.warn(`Missing ${key}`)
       })
 
+      // Guessing if the package is installed
       const foundPackage = queue.packages.find((pkg: QueueNode) => packageName === pkg.name)
       if (foundPackage) {
         newPackage.flag = foundPackage.flag

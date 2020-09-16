@@ -17,6 +17,7 @@ import { ArrowUpward, ArrowDownward, Delete } from '@material-ui/icons'
 import { AlertActions, QueueActions, AptActions } from '../../actions'
 import { INSTALL, UNINSTALL, UPGRADE } from '../../actions/apt'
 import classnames from 'classnames'
+import { QueueNodeMeta } from '../../actions/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -45,8 +46,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export interface QueueNode {
-  name: string
+export type QueueNode = QueueNodeMeta & {
   flag: typeof INSTALL | typeof UNINSTALL | typeof UPGRADE | null
 }
 

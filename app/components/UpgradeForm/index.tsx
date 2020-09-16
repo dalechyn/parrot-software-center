@@ -7,6 +7,7 @@ import { CheckCircleOutline as SuccessIcon } from '@material-ui/icons'
 import { push } from 'connected-react-router'
 import { withRouter } from 'react-router'
 import { RouteComponentProps } from 'react-router-dom'
+import { QueueNodeMeta } from '../../actions/queue'
 
 const useStyles = makeStyles(theme => ({
   padded: {
@@ -34,14 +35,17 @@ type UpgradeFormProps = ConnectedProps<typeof connector> & RouteComponentProps
 const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps) => {
   const classes = useStyles()
   const [loading, setLoading] = useState(true)
-  const [updates, setUpdates] = useState(Array<string>())
+  const [updates, setUpdates] = useState(Array<QueueNodeMeta>())
 
   useEffect(() => {
     const f = async () => {
       try {
         setUpdates(
-          unwrapResult(await checkUpdates()).filter(name =>
-            packages.every(({ name: packageName }) => packageName !== name)
+          unwrapResult(await checkUpdates()).filter(({ name, source, version }) =>
+            packages.every(
+              ({ name: packageName, source: packageSource, version: packageVersion }) =>
+                packageName !== name && packageSource !== source && packageVersion !== version
+            )
           )
         )
       } catch (e) {
@@ -73,11 +77,13 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
             </h2>
           </Grid>
           {packages.length === 0 ||
-          updates.filter(update => packages.every(node => node.name !== update)) ? (
+          updates.filter(update =>
+            packages.every(node => node.name !== update.name && node.source !== update.source)
+          ) ? (
             <>
               {updates.length !== 0 && (
                 <Paper style={{ padding: '1rem' }} elevation={10}>
-                  {updates.map((upgradableName, i, dependsSplitted) => {
+                  {updates.map(({ name: upgradableName }, i, dependsSplitted) => {
                     return (
                       <div
                         style={{ display: 'inline-block', whiteSpace: 'pre' }}
@@ -103,7 +109,11 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
                 style={{ marginTop: '1rem' }}
                 onClick={() => {
                   updates
-                    .filter(update => packages.every(node => node.name !== update))
+                    .filter(update =>
+                      packages.every(
+                        node => node.name !== update.name && node.source !== update.source
+                      )
+                    )
                     .forEach(name => upgrade(name))
                   push('/queue')
                 }}

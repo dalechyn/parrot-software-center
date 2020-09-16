@@ -30,7 +30,7 @@ import { shell } from 'electron'
 import { QueueNode } from '../Queue'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
-import { Package, PackageOptionalFields } from '../../actions/apt'
+import { AptPackage, AptPackageOptionalFields } from '../../actions/apt'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -117,7 +117,7 @@ const mapDispatchToProps = {
   uninstall: QueueActions.uninstall,
   dontUpgrade: QueueActions.dontUpgrade,
   upgrade: QueueActions.upgrade,
-  fetchPackage: AptActions.fetchPackage
+  fetchAptPackage: AptActions.fetchAptPackage
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
@@ -136,13 +136,13 @@ const PackageInfo = ({
   APIUrl,
   isBusy,
   token,
-  fetchPackage
+  fetchAptPackage
 }: PackageInfoProps) => {
   const classes = useStyles()
 
   const { name } = match.params
   const [loading, setLoading] = useState(true)
-  const [packageInfo, setPackageInfo] = useState({} as Package)
+  const [packageInfo, setPackageInfo] = useState({} as AptPackage)
   const [authOpened, setAuthOpened] = useState(false)
   const [ratingOpened, setRatingOpened] = useState(false)
   const [available, setAvailable] = useState(true)
@@ -180,7 +180,7 @@ const PackageInfo = ({
     setLoading(true)
     const f = async () => {
       try {
-        setPackageInfo(unwrapResult(await fetchPackage(name)))
+        setPackageInfo(unwrapResult(await fetchAptPackage(name)))
       } catch {
         setAvailable(false)
       }
@@ -487,8 +487,8 @@ const PackageInfo = ({
                 {rest &&
                   Object.keys(rest).length !== 0 &&
                   Object.keys(rest).map(prop => {
-                    const key = prop as keyof PackageOptionalFields
-                    const additionalInfo = rest as PackageOptionalFields
+                    const key = prop as keyof AptPackageOptionalFields
+                    const additionalInfo = rest as AptPackageOptionalFields
                     return (
                       <Fragment key={`${name}@${version}@${key}`}>
                         <Typography style={{ width: 'min-content' }} variant="h6">
@@ -544,7 +544,7 @@ const PackageInfo = ({
                       enqueueSnackbar(`Package ${name}@${version} dequeued`, {
                         variant: 'error'
                       })
-                      dontUpgrade(name)
+                      dontUpgrade({ name, version, source: 'APT' })
                       setQueuedUpgrade(false)
                     }}
                     size="large"
@@ -562,7 +562,7 @@ const PackageInfo = ({
                       enqueueSnackbar(`Package ${name}@${version} queued for upgrade`, {
                         variant: 'success'
                       })
-                      upgrade(name)
+                      upgrade({ name, version, source: 'APT' })
                       setQueuedUpgrade(true)
                     }}
                   >
@@ -583,7 +583,7 @@ const PackageInfo = ({
                         variant: 'error'
                       }
                     )
-                    uninstall(name)
+                    uninstall({ name, version, source: 'APT' })
                     setInstalled(false)
                   }}
                   size="large"
@@ -606,7 +606,7 @@ const PackageInfo = ({
                         variant: 'info'
                       }
                     )
-                    install(name)
+                    install({ name, version, source: 'APT' })
                     setInstalled(true)
                   }}
                 >

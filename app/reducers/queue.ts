@@ -14,15 +14,18 @@ export default createReducer(
   },
   builder =>
     builder
-      .addCase(QueueActions.install, (state, { payload }) => {
+      .addCase(QueueActions.install, (state, { payload: { name, version, source } }) => {
         const queue = state.packages.filter(
-          ({ name, flag }) => !(payload === name && flag === UNINSTALL)
+          ({ name: filterName, source: filterSource, flag }) =>
+            !(filterName === name && filterSource === source && flag === UNINSTALL)
         )
         if (queue.length === state.packages.length) {
           state.packages = [
             ...state.packages,
             {
-              name: payload,
+              name,
+              version,
+              source,
               flag: INSTALL
             }
           ]
@@ -33,15 +36,18 @@ export default createReducer(
         state.length--
         return state
       })
-      .addCase(QueueActions.uninstall, (state, { payload }) => {
+      .addCase(QueueActions.uninstall, (state, { payload: { name, version, source } }) => {
         const queue = state.packages.filter(
-          ({ name, flag }) => !(payload === name && flag === INSTALL)
+          ({ name: filterName, source: filterSource, flag }) =>
+            !(filterName === name && filterSource === source && flag === INSTALL)
         )
         if (queue.length === state.packages.length) {
           state.packages = [
             ...state.packages,
             {
-              name: payload,
+              name,
+              version,
+              source,
               flag: UNINSTALL
             }
           ]
@@ -52,20 +58,23 @@ export default createReducer(
         state.length--
         return state
       })
-      .addCase(QueueActions.upgrade, (state, { payload }) => {
+      .addCase(QueueActions.upgrade, (state, { payload: { name, version, source } }) => {
         state.packages = [
           ...state.packages,
           {
-            name: payload,
+            name,
+            version,
+            source,
             flag: UPGRADE
           }
         ]
         state.length++
         return state
       })
-      .addCase(QueueActions.dontUpgrade, (state, { payload }) => {
+      .addCase(QueueActions.dontUpgrade, (state, { payload: { name, source } }) => {
         state.packages = state.packages.filter(
-          ({ name, flag }) => !(payload === name && flag === UPGRADE)
+          ({ name: filterName, source: filterSouce, flag }) =>
+            !(filterName === name && filterSouce === source && flag === UPGRADE)
         )
         state.length--
         return state

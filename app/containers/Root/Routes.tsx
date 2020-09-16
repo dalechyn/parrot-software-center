@@ -1,6 +1,6 @@
 import React from 'react'
 import { Switch, Route } from 'react-router-dom'
-import { Home, PackageInfo, SearchResults, Queue, Mirrors } from '../index'
+import { Home, AptPackageInfo, SearchResults, Queue, Mirrors, SnapPackageInfo } from '../index'
 
 const Routes = () => {
   return (
@@ -17,8 +17,11 @@ const Routes = () => {
       <Route exact path="/search/:name/:page?">
         <SearchResults />
       </Route>
-      <Route exact path="/package/:name">
-        <PackageInfo />
+      <Route exact path="/package/apt/:name">
+        <AptPackageInfo />
+      </Route>
+      <Route exact path="/package/snap/:name">
+        <SnapPackageInfo />
       </Route>
       <Route exact path="/queue">
         <Queue />

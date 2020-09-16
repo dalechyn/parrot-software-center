@@ -20,7 +20,7 @@ import {
 } from '@material-ui/core'
 import { amber, grey, orange, red } from '@material-ui/core/colors'
 import dummyPackageImg from '../../assets/package.png'
-import { AptActions, QueueActions } from '../../actions'
+import { QueueActions } from '../../actions'
 import { QueueNode } from '../../containers/Queue'
 import { Rating } from '@material-ui/lab'
 import { PackagePreview } from '../../actions/apt'
@@ -101,8 +101,7 @@ const mapDispatchToProps = {
   install: QueueActions.install,
   uninstall: QueueActions.uninstall,
   upgrade: QueueActions.upgrade,
-  dontUpgrade: QueueActions.dontUpgrade,
-  fetchPreviews: AptActions.fetchPreviews
+  dontUpgrade: QueueActions.dontUpgrade
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
@@ -111,8 +110,9 @@ type SearchPreviewProps = ConnectedProps<typeof connector> & PackagePreview
 
 const SearchPreview = ({
   name,
+  version,
   description,
-  source,
+  packageSource,
   push,
   install,
   uninstall,
@@ -135,7 +135,11 @@ const SearchPreview = ({
 
   return (
     <Card className={classes.root}>
-      <CardActionArea onClick={() => push(`/package/${name}`)}>
+      <CardActionArea
+        onClick={() =>
+          push(packageSource === 'APT' ? `/package/apt/${name}` : `/package/snap/${name}`)
+        }
+      >
         <CardContent>
           <Paper className={classes.header} elevation={10}>
             <div className={classes.nameHolder}>
@@ -150,7 +154,7 @@ const SearchPreview = ({
                 {name}
               </Typography>
               <Typography className={classes.source} variant="body2">
-                {source}
+                {packageSource}
               </Typography>
               {rating === -1 ? (
                 <CircularProgress style={{ marginLeft: 'auto' }} />
@@ -211,7 +215,7 @@ const SearchPreview = ({
                 enqueueSnackbar(`Package ${name} dequeued`, {
                   variant: 'error'
                 })
-                dontUpgrade(name)
+                dontUpgrade({ name, version, source: packageSource })
                 setQueuedUpgrade(false)
               }}
               variant="outlined"
@@ -227,7 +231,7 @@ const SearchPreview = ({
                 enqueueSnackbar(`Package ${name} queued for upgrade`, {
                   variant: 'success'
                 })
-                upgrade(name)
+                upgrade({ name, version, source: packageSource })
                 setQueuedUpgrade(true)
               }}
               variant="outlined"
@@ -250,7 +254,7 @@ const SearchPreview = ({
                   variant: 'error'
                 }
               )
-              uninstall(name)
+              uninstall({ name, version, source: packageSource })
               setInstalled(false)
             }}
             variant="outlined"
@@ -271,7 +275,7 @@ const SearchPreview = ({
                   variant: 'info'
                 }
               )
-              install(name)
+              install({ name, version, source: packageSource })
               setInstalled(true)
             }}
             variant="outlined"
