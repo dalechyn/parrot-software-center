@@ -18,6 +18,7 @@ import { AlertActions, QueueActions, AptActions } from '../../actions'
 import { INSTALL, UNINSTALL, UPGRADE } from '../../actions/apt'
 import classnames from 'classnames'
 import { QueueNodeMeta } from '../../actions/queue'
+import { grey } from '@material-ui/core/colors'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -40,6 +41,10 @@ const useStyles = makeStyles(theme => ({
   },
   progress: {
     width: '100%'
+  },
+  source: {
+    color: grey[500],
+    marginLeft: theme.spacing(2)
   },
   mTop: {
     marginTop: theme.spacing(2)
@@ -138,6 +143,12 @@ const Queue = ({
                     <div className={classes.package}>
                       <PackageChip flag={el.flag} classes={classes} />
                       <Typography variant="body1">{el.name}</Typography>
+                      <Typography className={classes.source} variant="body1">
+                        {el.source}
+                      </Typography>
+                      <Typography className={classes.source} variant="body1">
+                        {el.version}
+                      </Typography>
                       <div className={classes.buttons}>
                         <IconButton
                           disabled={i === 0 || processing}

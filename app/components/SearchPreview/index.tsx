@@ -18,7 +18,7 @@ import {
   Paper,
   Typography
 } from '@material-ui/core'
-import { amber, grey, orange, red } from '@material-ui/core/colors'
+import { amber, blue, grey, orange, red } from '@material-ui/core/colors'
 import dummyPackageImg from '../../assets/package.png'
 import { QueueActions } from '../../actions'
 import { QueueNode } from '../../containers/Queue'
@@ -152,6 +152,10 @@ const SearchPreview = ({
               />
               <Typography className={classes.name} variant="h5">
                 {name}
+              </Typography>
+              <Typography variant="h5">@</Typography>
+              <Typography style={{ color: blue[400] }} variant="h5">
+                {version}
               </Typography>
               <Typography className={classes.source} variant="body2">
                 {packageSource}

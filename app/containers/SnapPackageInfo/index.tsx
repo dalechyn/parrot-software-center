@@ -361,10 +361,10 @@ const PackageInfo = ({
                     disabled={isBusy}
                     className={cls(classes.button, classes.uninstall)}
                     onClick={() => {
-                      enqueueSnackbar(`Package ${name}@version dequeued`, {
+                      enqueueSnackbar(`Package ${name}@${selectedVersion.split('/')[2]} dequeued`, {
                         variant: 'error'
                       })
-                      dontUpgrade({ name, version: '-', source: 'SNAP' })
+                      dontUpgrade({ name, version: selectedVersion, source: 'SNAP' })
                       setQueuedUpgrade(false)
                     }}
                     size="large"
@@ -379,10 +379,13 @@ const PackageInfo = ({
                     className={cls(classes.button, classes.upgrade)}
                     size="large"
                     onClick={() => {
-                      enqueueSnackbar(`Package ${name}@version queued for upgrade`, {
-                        variant: 'success'
-                      })
-                      upgrade({ name, version: '-', source: 'SNAP' })
+                      enqueueSnackbar(
+                        `Package ${name}@${selectedVersion.split('/')[2]} queued for upgrade`,
+                        {
+                          variant: 'success'
+                        }
+                      )
+                      upgrade({ name, version: selectedVersion, source: 'SNAP' })
                       setQueuedUpgrade(true)
                     }}
                   >
@@ -397,13 +400,13 @@ const PackageInfo = ({
                   onClick={() => {
                     enqueueSnackbar(
                       packages.find((el: QueueNode) => el.name === name)
-                        ? `Package ${name}@version dequeued`
-                        : `Package ${name}@version queued for deletion`,
+                        ? `Package ${name}@${selectedVersion.split('/')[2]} dequeued`
+                        : `Package ${name}@${selectedVersion.split('/')[2]} queued for deletion`,
                       {
                         variant: 'error'
                       }
                     )
-                    uninstall({ name, version: '-', source: 'SNAP' })
+                    uninstall({ name, version: selectedVersion, source: 'SNAP' })
                     setInstalled(false)
                   }}
                   size="large"
@@ -420,13 +423,15 @@ const PackageInfo = ({
                   onClick={() => {
                     enqueueSnackbar(
                       packages.find((el: QueueNode) => el.name === name)
-                        ? `Package ${name}@$version dequeued`
-                        : `Package ${name}@$version queued for installation`,
+                        ? `Package ${name}@${selectedVersion.split('/')[2]} dequeued`
+                        : `Package ${name}@${
+                            selectedVersion.split('/')[2]
+                          } queued for installation`,
                       {
                         variant: 'info'
                       }
                     )
-                    install({ name, version: '-', source: 'SNAP' })
+                    install({ name, version: selectedVersion, source: 'SNAP' })
                     setInstalled(true)
                   }}
                 >

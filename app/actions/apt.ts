@@ -172,7 +172,7 @@ const snapPkgRegex = {
   snapId: /^snap-id: +(.*)/m,
   refreshDate: /^refresh-date: (.*)/m,
   channels: /^channels:\n((?:.*\n)+)/m,
-  installed: /^installed: *(?:([0-9.a-z]+)\/)?([0-9a-z]+): +(?:([0-9.a-z~+-]+) +(.*)|[–↑]) *\n?/m
+  installed: /^installed: +(.*)  +(.*) *\n?/m
 }
 
 const waitStdoe = (stderr: Readable, stdout: Readable) =>
@@ -307,7 +307,7 @@ export const fetchPreviews = createAsyncThunk<
   dispatch(PreviewsActions.clear())
   try {
     const [{ stdout: aptResult }, { stdout: snapResult }] = await Promise.all([
-      prExec(`LANG=C apt-cache search --names-only ${packageName}`),
+      prExec(`LANG=C apt search ${packageName}`),
       prExec(`LANG=C snap find ${packageName}`)
     ])
 
@@ -315,21 +315,15 @@ export const fetchPreviews = createAsyncThunk<
     // doesn't guarantee that queried package will be first in the list
     const names = [
       ...aptResult
-        .split('\n')
-        .slice(0, -1)
+        .split('\n\n')
+        .slice(2, -1)
         .reduce((result, str) => {
-          const nameRegExpResult = aptPkgRegex.required.name.exec(str)
-          const versionRegExpResult = aptPkgRegex.required.version.exec(str)
-          const descriptionRegExpResult = aptPkgRegex.required.description.exec(str)
-          if (!nameRegExpResult || !versionRegExpResult || !descriptionRegExpResult)
+          const match = /([a-z0-9.+-]+)\/((?:[a-z0-9.+-]+,?)+) (?:[0-9]:)?([a-zA-Z0-9-.~+-]+) ([a-z0-9-+]*)(?: ?\[.*\])?\n  (.*)/m.exec(
+            str
+          )
+          if (!match || !match[1] || !match[3] || !match[5])
             console.error(`Unexpected error in apt preview parsing: ${str}`)
-          else
-            result.push([
-              nameRegExpResult[1],
-              versionRegExpResult[1],
-              descriptionRegExpResult[1],
-              'APT'
-            ])
+          else result.push([match[1], match[3], match[5], 'APT'])
           return result
         }, Array<Array<string>>()),
       ...snapResult
@@ -382,14 +376,25 @@ export const fetchPreviews = createAsyncThunk<
           }
         } else {
           try {
-            const { stdout, stderr } = await prExec(`LANG=C && dpkg-query -W ${name}`)
-            if (stdout.length !== 0 || stderr.length === 0) {
-              preview.installed = true
-              const { stdout } = await prExec(
-                `LANG=C apt-cache policy ${name} | egrep "(Installed|Candidate)" | cut -c 14-`
+            if (source === 'APT') {
+              const { stdout, stderr } = await prExec(`LANG=C && dpkg-query -W ${name}`)
+              if (stdout.length !== 0 || stderr.length === 0) {
+                preview.installed = true
+                const { stdout } = await prExec(
+                  `LANG=C apt-cache policy ${name} | egrep "(Installed|Candidate)" | cut -c 14-`
+                )
+                const [current, candidate] = stdout.split('\n').slice(0, 2)
+                if (current !== candidate) preview.upgradable = true
+              }
+            } else if (source === 'SNAP') {
+              const { stdout: snapInfo } = await prExec(`LANG=C snap info ${packageName}`)
+              if (snapPkgRegex.installed.test(snapInfo)) preview.installed = true
+              const { stdout, stderr } = await prExec(
+                `LANG=C snap refresh --list | sed 1d | grep ${packageName}`
               )
-              const [current, candidate] = stdout.split('\n').slice(0, 2)
-              if (current !== candidate) preview.upgradable = true
+              if (stdout.length !== 0 || stderr.length === 0) {
+                preview.upgradable = true
+              }
             }
           } catch {}
         }
