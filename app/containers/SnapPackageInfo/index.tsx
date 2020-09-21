@@ -153,7 +153,7 @@ const PackageInfo = ({
     snapId,
     refreshDate,
     tracking,
-    channels,
+    tracks,
     reviews,
     rating: ratingInitial,
     upgradable,
@@ -175,7 +175,9 @@ const PackageInfo = ({
         const res = unwrapResult(await fetchSnapPackage(name))
         setPackageInfo(res)
         selectVersion(
-          `${res.channels[0].name}/${res.channels[0].channels[0].channel}/${res.channels[0].channels[0].branch}`
+          `${res.tracks[0].name}/${res.tracks[0].channels[0].risk}${
+            res.tracks[0].channels[0].branch ? `/${res.tracks[0].channels[0].branch}` : ''
+          }:${res.tracks[0].channels[0].version}`
         )
       } catch {
         setAvailable(false)
@@ -227,7 +229,7 @@ const PackageInfo = ({
             <>
               <Typography variant="h5">@</Typography>
               <Typography style={{ color: blue[400] }} variant="h5">
-                {selectedVersion.split('/')[2]}
+                {selectedVersion.split(':')[1]}
               </Typography>
               <Typography className={classes.source} variant="body2">
                 SNAP
@@ -260,22 +262,25 @@ const PackageInfo = ({
                     selectVersion(value as string)
                   }}
                 >
-                  {channels
+                  {tracks
                     .map(track =>
                       track.channels.map(channel => (
                         <MenuItem
-                          key={`item-${track.name}-${channel.channel}-${channel.branch}`}
-                          value={`${track.name}/${channel.channel}/${channel.branch}`}
+                          key={`item-${track.name}-${channel.risk}-${channel.branch ?? 'default'}-${
+                            channel.version
+                          }`}
+                          value={`${track.name}/${channel.risk}${
+                            channel.branch ? `/${channel.branch}` : ''
+                          }:${channel.version}`}
                         >
-                          {`${track.name}/${channel.channel}/${channel.branch}`}
+                          {`${track.name}/${channel.risk}${
+                            channel.branch ? `/${channel.branch}` : ''
+                          }`}
                         </MenuItem>
                       ))
                     )
                     .flat()}
                 </Select>
-                {/*<Paper variant="outlined" className={classes.contentColumn}>
-                  <Typography variant="body1">{version}</Typography>
-                </Paper>*/}
                 <Typography variant="h6">Maintainer:</Typography>
                 <Paper variant="outlined" className={classes.contentColumn}>
                   <Typography variant="body1">{publisher}</Typography>
@@ -361,7 +366,7 @@ const PackageInfo = ({
                     disabled={isBusy}
                     className={cls(classes.button, classes.uninstall)}
                     onClick={() => {
-                      enqueueSnackbar(`Package ${name}@${selectedVersion.split('/')[2]} dequeued`, {
+                      enqueueSnackbar(`Package ${name}@${selectedVersion.split(':')[1]} dequeued`, {
                         variant: 'error'
                       })
                       dontUpgrade({ name, version: selectedVersion, source: 'SNAP' })
@@ -380,7 +385,7 @@ const PackageInfo = ({
                     size="large"
                     onClick={() => {
                       enqueueSnackbar(
-                        `Package ${name}@${selectedVersion.split('/')[2]} queued for upgrade`,
+                        `Package ${name}@${selectedVersion.split(':')[1]} queued for upgrade`,
                         {
                           variant: 'success'
                         }
@@ -400,8 +405,8 @@ const PackageInfo = ({
                   onClick={() => {
                     enqueueSnackbar(
                       packages.find((el: QueueNode) => el.name === name)
-                        ? `Package ${name}@${selectedVersion.split('/')[2]} dequeued`
-                        : `Package ${name}@${selectedVersion.split('/')[2]} queued for deletion`,
+                        ? `Package ${name}@${selectedVersion.split(':')[1]} dequeued`
+                        : `Package ${name}@${selectedVersion.split(':')[1]} queued for deletion`,
                       {
                         variant: 'error'
                       }
@@ -423,9 +428,9 @@ const PackageInfo = ({
                   onClick={() => {
                     enqueueSnackbar(
                       packages.find((el: QueueNode) => el.name === name)
-                        ? `Package ${name}@${selectedVersion.split('/')[2]} dequeued`
+                        ? `Package ${name}@${selectedVersion.split(':')[1]} dequeued`
                         : `Package ${name}@${
-                            selectedVersion.split('/')[2]
+                            selectedVersion.split(':')[1]
                           } queued for installation`,
                       {
                         variant: 'info'

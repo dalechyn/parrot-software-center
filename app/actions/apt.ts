@@ -8,6 +8,9 @@ import leven from 'leven'
 import { CVEEndpoint } from '../components/SearchPreviewList'
 import { pop, QueueNodeMeta } from './queue'
 
+export const INSTALL = 'install'
+export const UPGRADE = '--only-upgrade install'
+export const UNINSTALL = 'remove'
 const PSC_FINISHED = '__PSC_FINISHED'
 const prExec = promisify(exec)
 
@@ -91,10 +94,9 @@ export type AptPackage = AptPackageRequiredFields &
   PackageEssentials
 
 export type SnapChannel = {
-  channel: string
-  branch: string
-  info?: string
-  closed: boolean
+  risk: string
+  branch?: string
+  version: string
 }
 
 export type SnapTrack = {
@@ -113,7 +115,7 @@ export type SnapPackage = {
   snapId: string
   refreshDate?: string
   tracking?: string
-  channels: SnapTrack[]
+  tracks: SnapTrack[]
 } & PackageEssentials &
   PackageStatus
 
@@ -197,9 +199,12 @@ export const perform = createAsyncThunk(
   '@apt/PERFORM ',
   async (packages: QueueNode[], { dispatch }) => {
     const prepared = packages
-      .map(
-        ({ flag, name }: QueueNode) =>
-          `LANG=C DEBIAN_FRONTEND=noninteractive apt-get ${flag} -y ${name}; echo ${PSC_FINISHED}`
+      .map(({ flag, name, source, version }: QueueNode) =>
+        source === 'APT'
+          ? `LANG=C DEBIAN_FRONTEND=noninteractive apt-get ${flag} -y ${name}@${version}; echo ${PSC_FINISHED}`
+          : `LANG=C snap ${flag === UPGRADE ? 'refresh' : flag} ${name}${
+              flag === INSTALL ? ` --channel=${version.split(':')[0]}` : ''
+            }`
       )
       .join(';')
     try {
@@ -295,9 +300,6 @@ export const fetchAutocompletion = createAsyncThunk<Autocompletion[], string, { 
   }
 )
 
-export const INSTALL = 'install'
-export const UPGRADE = '--only-upgrade install'
-export const UNINSTALL = 'purge'
 export const fetchPreviews = createAsyncThunk<
   number,
   { name: string; chunk: number },
@@ -442,7 +444,7 @@ export const fetchSnapPackage = createAsyncThunk<SnapPackage, string, { state: R
       license: '',
       description: '',
       snapId: '',
-      channels: [],
+      tracks: [],
       rating: -1,
       screenshots: [],
       reviews: [],
@@ -469,33 +471,39 @@ export const fetchSnapPackage = createAsyncThunk<SnapPackage, string, { state: R
 
       const channelsMatch = snapPkgRegex.channels.exec(snapResult)
       if (channelsMatch) {
-        const trackRegex = / *(?:([0-9.a-z]+)\/)?([0-9a-z]+): +(?:([0-9.a-z~+-]+) +(.*)|[–↑]) *\n?/gm
+        const trackRegex = / *(?:(?<track>[0-9.a-z]+)\/)(?<risk>[0-9a-z]+)(?:\/(?<branch>[0-9a-z]+))?: +(?:(?<version>[0-9.a-z~+-]+|[–↑]) +(?<essential>.*)?) *\n?/gm
         const tracks: SnapTrack[] = []
         let channels: SnapChannel[] = []
 
         let match = trackRegex.exec(channelsMatch[1])
-        if (match) {
-          let lastTrack = match[1]
-          let lastBranch = match[3]
+        if (match && match.groups) {
+          let lastTrack = match.groups['track']
+          let lastVersion = match.groups['version']
           do {
-            if (lastTrack !== match[1]) {
+            if (lastTrack !== match.groups['track']) {
               tracks.push({
                 name: lastTrack,
                 channels
               })
-              lastTrack = match[1]
+              lastTrack = match.groups['track']
               channels = []
             }
-            if (lastBranch !== match[3] && match[3] !== '↑' && match[3] !== '–')
-              lastBranch = match[3]
-            channels.push({
-              channel: match[2] ?? '',
-              branch: lastBranch,
-              closed: match[3] === '–'
+            if (lastVersion !== match.groups['version'] && match.groups['version'] !== '↑')
+              lastVersion = match.groups['version']
+            if (match.groups['version'] !== '--')
+              channels.push({
+                risk: match.groups['risk'] ?? '',
+                ...(match.groups['branch'] ? { branch: match.groups['branch'] } : {}),
+                version: lastVersion
+              })
+          } while ((match = trackRegex.exec(channelsMatch[1])) && match.groups)
+          if (!tracks.length && channels.length)
+            tracks.push({
+              name: lastTrack,
+              channels
             })
-          } while ((match = trackRegex.exec(channelsMatch[1])))
         }
-        newPackage.channels = tracks
+        newPackage.tracks = tracks
       } else console.warn('Missing channels')
 
       const foundPackage = queue.packages.find(

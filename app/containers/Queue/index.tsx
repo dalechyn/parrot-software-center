@@ -147,7 +147,7 @@ const Queue = ({
                         {el.source}
                       </Typography>
                       <Typography className={classes.source} variant="body1">
-                        {el.version}
+                        {el.source === 'APT' ? el.version : el.version.split(':')[1]}
                       </Typography>
                       <div className={classes.buttons}>
                         <IconButton

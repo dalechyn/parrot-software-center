@@ -83,18 +83,20 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
             <>
               {updates.length !== 0 && (
                 <Paper style={{ padding: '1rem' }} elevation={10}>
-                  {updates.map(({ name: upgradableName }, i, dependsSplitted) => {
+                  {updates.map(({ name, source }, i, dependsSplitted) => {
                     return (
                       <div
                         style={{ display: 'inline-block', whiteSpace: 'pre' }}
-                        key={`${name}-upgradable-link-${upgradableName}`}
+                        key={`${name}-upgradable-link-${source}`}
                       >
                         <Link
                           component="button"
                           variant="body1"
-                          onClick={() => push(`/package/${upgradableName}`)}
+                          onClick={() =>
+                            push(`/package/${source === 'APT' ? 'apt' : 'snap'}/${name}`)
+                          }
                         >
-                          {upgradableName}
+                          {name}
                         </Link>
                         {i !== dependsSplitted.length - 1 && ', '}
                       </div>
