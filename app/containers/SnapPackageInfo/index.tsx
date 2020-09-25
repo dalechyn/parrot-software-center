@@ -10,6 +10,7 @@ import {
   ExpansionPanelActions,
   ExpansionPanelDetails,
   ExpansionPanelSummary,
+  Link,
   makeStyles,
   MenuItem,
   Paper,
@@ -31,6 +32,7 @@ import { QueueNode } from '../Queue'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
 import { SnapPackage } from '../../actions/apt'
+import { shell } from 'electron'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -285,30 +287,60 @@ const PackageInfo = ({
                 <Paper variant="outlined" className={classes.contentColumn}>
                   <Typography variant="body1">{publisher}</Typography>
                 </Paper>
-                <Typography variant="h6">Description:</Typography>
-                <Paper variant="outlined" className={classes.contentColumn}>
-                  <Typography variant="body1">{processDescription(description)}</Typography>
-                </Paper>
-                <Typography variant="h6">Snap-ID:</Typography>
-                <Paper variant="outlined" className={classes.contentColumn}>
-                  <Typography variant="body1">{snapId}</Typography>
-                </Paper>
-                <Typography variant="h6">Summary:</Typography>
-                <Paper variant="outlined" className={classes.contentColumn}>
-                  <Typography variant="body1">{summary}</Typography>
-                </Paper>
-                <Typography variant="h6">Store-URL:</Typography>
-                <Paper variant="outlined" className={classes.contentColumn}>
-                  <Typography variant="body1">{storeUrl}</Typography>
-                </Paper>
-                <Typography variant="h6">Contact:</Typography>
-                <Paper variant="outlined" className={classes.contentColumn}>
-                  <Typography variant="body1">{contact}</Typography>
-                </Paper>
-                <Typography variant="h6">License:</Typography>
-                <Paper variant="outlined" className={classes.contentColumn}>
-                  <Typography variant="body1">{license}</Typography>
-                </Paper>
+                {description && (
+                  <>
+                    <Typography variant="h6">Description:</Typography>
+                    <Paper variant="outlined" className={classes.contentColumn}>
+                      <Typography variant="body1">{processDescription(description)}</Typography>
+                    </Paper>
+                  </>
+                )}
+                {snapId && (
+                  <>
+                    <Typography variant="h6">Snap-ID:</Typography>
+                    <Paper variant="outlined" className={classes.contentColumn}>
+                      <Typography variant="body1">{snapId}</Typography>
+                    </Paper>
+                  </>
+                )}
+                {summary && (
+                  <>
+                    <Typography variant="h6">Summary:</Typography>
+                    <Paper variant="outlined" className={classes.contentColumn}>
+                      <Typography variant="body1">{summary}</Typography>
+                    </Paper>
+                  </>
+                )}
+                {storeUrl && (
+                  <>
+                    <Typography variant="h6">Store-URL:</Typography>
+                    <Paper variant="outlined" className={classes.contentColumn}>
+                      <Link
+                        component="button"
+                        variant="body1"
+                        onClick={() => shell.openExternal(storeUrl)}
+                      >
+                        {storeUrl}
+                      </Link>
+                    </Paper>
+                  </>
+                )}
+                {contact && (
+                  <>
+                    <Typography variant="h6">Contact:</Typography>
+                    <Paper variant="outlined" className={classes.contentColumn}>
+                      <Typography variant="body1">{contact}</Typography>
+                    </Paper>
+                  </>
+                )}
+                {license && (
+                  <>
+                    <Typography variant="h6">License:</Typography>
+                    <Paper variant="outlined" className={classes.contentColumn}>
+                      <Typography variant="body1">{license}</Typography>
+                    </Paper>
+                  </>
+                )}
                 {refreshDate && (
                   <>
                     <Typography variant="h6">Refresh Date:</Typography>

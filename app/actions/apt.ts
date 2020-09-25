@@ -1,5 +1,5 @@
 import { exec } from 'child_process'
-import { createAsyncThunk } from '@reduxjs/toolkit'
+import { createAsyncThunk, Dispatch } from '@reduxjs/toolkit'
 import { promisify } from 'util'
 import { AlertActions, PreviewsActions } from '../actions'
 import { QueueNode } from '../containers/Queue'
@@ -177,34 +177,44 @@ const snapPkgRegex = {
   installed: /^installed: +(.*)  +(.*) *\n?/m
 }
 
-const waitStdoe = (stderr: Readable, stdout: Readable) =>
-  Promise.race([
-    new Promise((_, reject) =>
-      stderr.on('data', chunk => {
-        const line = chunk as string
-        reject(new Error(line))
-      })
-    ),
-    new Promise((resolve, reject) => {
-      stdout.on('end', () => {
-        resolve()
-      })
-      stderr.on('end', () => {
-        reject(new Error(`Authorization error`))
-      })
+const waitStdoe = (stderr: Readable, stdout: Readable, dispatch: Dispatch) => {
+  let lastStderrLine: string
+  let lastStderr: boolean
+
+  stdout.on('data', chunk => {
+    lastStderr = false
+    const line = chunk as string
+    console.log(line)
+    if (line.match(PSC_FINISHED)) dispatch(pop())
+  })
+
+  stderr.on('data', chunk => {
+    lastStderr = true
+    lastStderrLine = chunk as string
+  })
+  return new Promise((resolve, reject) => {
+    stdout.on('close', () => {
+      resolve()
     })
-  ])
+    stderr.on('close', () => {
+      if (lastStderr) reject(new Error(lastStderrLine))
+    })
+  })
+}
 
 export const perform = createAsyncThunk(
   '@apt/PERFORM ',
   async (packages: QueueNode[], { dispatch }) => {
     const prepared = packages
-      .map(({ flag, name, source, version }: QueueNode) =>
-        source === 'APT'
-          ? `LANG=C DEBIAN_FRONTEND=noninteractive apt-get ${flag} -y ${name}@${version}; echo ${PSC_FINISHED}`
-          : `LANG=C snap ${flag === UPGRADE ? 'refresh' : flag} ${name}${
-              flag === INSTALL ? ` --channel=${version.split(':')[0]}` : ''
-            }`
+      .map(
+        ({ flag, name, source, version }: QueueNode) =>
+          (source === 'APT'
+            ? `LANG=C DEBIAN_FRONTEND=noninteractive apt-get ${flag} -y ${name}${
+                flag === INSTALL ? `=${version}` : ''
+              }`
+            : `LANG=C snap ${flag === UPGRADE ? 'refresh' : flag} ${name}${
+                flag === INSTALL ? ` --channel=${version.split(':')[0]}` : ''
+              }`) + `;echo ${PSC_FINISHED}`
       )
       .join(';')
     try {
@@ -212,19 +222,12 @@ export const perform = createAsyncThunk(
       if (!stdout || !stderr) throw new Error('Failed to host shell')
 
       // we need to subscribe to events before we do anything on the channels
-      const waitPromise = waitStdoe(stderr, stdout)
+      await waitStdoe(stderr, stdout, dispatch)
 
       /*  for await (const chunk of stderr) {
         throw new Error(chunk as string)
       }
 */
-      for await (const chunk of stdout) {
-        const line = chunk as string
-        console.log(line)
-        if (line.match(PSC_FINISHED)) dispatch(pop())
-      }
-
-      await waitPromise
     } catch (e) {
       dispatch(AlertActions.set(e.message))
       throw e
