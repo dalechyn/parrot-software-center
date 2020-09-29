@@ -6,7 +6,6 @@ import { push } from 'connected-react-router'
 import { debounce, CircularProgress, TextField, makeStyles } from '@material-ui/core'
 import { Autocomplete } from '@material-ui/lab'
 import { Search } from '@material-ui/icons'
-import leven from 'leven'
 
 import { AlertActions, AptActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
@@ -54,12 +53,7 @@ const SearchBar = ({ clearAlert, push, fetchAutocompletion }: SearchBarProps) =>
           return
         }
 
-        setOptions(
-          response
-            .map(preview => preview.name)
-            .sort((a: string, b: string) => leven(a, name) - leven(b, name))
-            .slice(0, 5)
-        )
+        setOptions(response.slice(0, 5))
         setLoading(false)
       }
 

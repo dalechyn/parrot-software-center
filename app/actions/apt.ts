@@ -69,16 +69,12 @@ export type PackageStatus = {
   upgradeQueued: boolean
 } & Partial<Pick<QueueNode, 'flag'>>
 
-export type Autocompletion = {
+export type PackagePreview = {
   name: string
   description: string
-}
-
-export type PackagePreview = {
   cveInfo: CVEInfo
   version: string
 } & PackageStatus &
-  Autocompletion &
   Pick<PackageEssentials, 'rating'> &
   PackageSource
 
@@ -276,26 +272,32 @@ const redhatCVEEndpoint: CVEEndpoint = {
   }
 }
 
-export const fetchAutocompletion = createAsyncThunk<Autocompletion[], string, { state: RootState }>(
+export const fetchAutocompletion = createAsyncThunk<string[], string, { state: RootState }>(
   '@apt/FETCH_AUTOCOMPLETION',
   async (packageName, { dispatch }) => {
     try {
-      const { stdout } = await prExec(`LANG=C apt-cache search --names-only ${packageName}`)
-      const names = stdout.split('\n')
+      const [{ stdout: aptStdout }, { stdout: snapStdOut }] = await Promise.all([
+        prExec(`LANG=C apt-cache search --names-only ${packageName}`),
+        // currently there are no stable ways to fetch a socket in node.js :(
+        // see https://github.com/node-fetch/node-fetch/issues/336
+        // I don't really want to use connections as I'd deal with streams and there is always risk to loose data
+        // especially in such fast requests. However those critical parts should be rewritten in C/Python bindings in
+        // future
+        prExec(
+          `curl -sS --unix-socket /run/snapd.socket http://localhost/v2/find?q=${packageName} -X GET`
+        )
+      ])
+      const aptNames = aptStdout.split('\n')
       // additional sorting is needed because search
       // doesn't guarantee that queried package will be first in the list
-      return (
-        await Promise.all(
-          names.slice(0, names.length - 1).map(async str => {
-            const res = str.split(/ - /)
-            const autocompletion: Autocompletion = {
-              name: res[0],
-              description: res[1]
-            }
-            return autocompletion
-          })
-        )
-      ).sort((a, b) => leven(a.name, packageName) - leven(b.name, packageName))
+      const snapResults = JSON.parse(snapStdOut)
+      return [
+        // to avoid duplicates among snap and apt
+        ...new Set([
+          ...aptNames.slice(0, aptNames.length - 1).map(str => str.split(/ - /)[0]),
+          ...snapResults.result.map((el: { name: string }) => el.name)
+        ])
+      ].sort((a, b) => leven(a, packageName) - leven(b, packageName))
     } catch (e) {
       dispatch(AlertActions.set(e.message))
       throw e
