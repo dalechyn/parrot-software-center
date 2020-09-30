@@ -19,7 +19,6 @@ import {
   Typography
 } from '@material-ui/core'
 import { amber, blue, grey, orange, red } from '@material-ui/core/colors'
-import dummyPackageImg from '../../assets/package.png'
 import { QueueActions } from '../../actions'
 import { QueueNode } from '../../containers/Queue'
 import { Rating } from '@material-ui/lab'
@@ -122,6 +121,7 @@ const SearchPreview = ({
   cveInfo,
   upgradable,
   installed,
+  icon,
   rating,
   isBusy,
   upgradeQueued,
@@ -146,9 +146,7 @@ const SearchPreview = ({
               <Img
                 className={classes.media}
                 src={`${APIUrl}/assets/packages/${name}.png`}
-                unloader={
-                  <img className={classes.media} src={dummyPackageImg} alt={'No Package Found'} />
-                }
+                unloader={<img className={classes.media} src={icon} alt={'No Package Found'} />}
               />
               <Typography className={classes.name} variant="h5">
                 {name}

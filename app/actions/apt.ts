@@ -14,6 +14,8 @@ export const UNINSTALL = 'remove'
 const PSC_FINISHED = '__PSC_FINISHED'
 const prExec = promisify(exec)
 
+import dummyPackageImg from '../assets/package.png'
+
 export type Review = {
   author: string
   rating: number
@@ -73,6 +75,7 @@ export type PackagePreview = {
   name: string
   description: string
   cveInfo: CVEInfo
+  icon: string
   version: string
 } & PackageStatus &
   Pick<PackageEssentials, 'rating'> &
@@ -315,11 +318,23 @@ export const fetchPreviews = createAsyncThunk<
   try {
     const [{ stdout: aptResult }, { stdout: snapResult }] = await Promise.all([
       prExec(`LANG=C apt search ${packageName}`),
-      prExec(`LANG=C snap find ${packageName}`)
+      prExec(
+        `curl -sS --unix-socket /run/snapd.socket http://localhost/v2/find?q=${packageName} -X GET`
+      )
     ])
 
     // additional sorting is needed because search
     // doesn't guarantee that queried package will be first in the list
+
+    type RawPreview = {
+      name: string
+      version: string
+      description: string
+      installed: boolean
+      upgradable?: boolean
+      icon?: string
+    } & PackageSource
+
     const names = [
       ...aptResult
         .split('\n\n')
@@ -330,22 +345,41 @@ export const fetchPreviews = createAsyncThunk<
           )
           if (!match || !match[1] || !match[3] || !match[5])
             console.error(`Unexpected error in apt preview parsing: ${str}`)
-          else result.push([match[1], match[3], match[5], 'APT'])
+          else
+            result.push({
+              name: match[1],
+              version: match[3],
+              description: match[5],
+              installed: /installed|upgradable/.test(str),
+              upgradable: /upgradable/.test(str),
+              packageSource: 'APT'
+            })
           return result
-        }, Array<Array<string>>()),
-      ...snapResult
-        .split('\n')
-        .slice(1, -1)
-        .reduce((result, str) => {
-          const res = /(^[a-zA-Z0-9-]+) +([a-zA-Z0-9-.~+-]+) +([a-zA-Z0-9-*.]+) +(-|[a-zA-Z0-9-]+) +(.*)/gm.exec(
-            str
-          )
-          if (!res || !res[1] || !res[5])
-            console.error(`Unexpected error in snap preview parsing: ${str}`)
-          else result.push([res[1], res[2], res[5], 'SNAP'])
-          return result
-        }, Array<Array<string>>())
-    ].sort((a, b) => leven(a[0], packageName) - leven(b[0], packageName))
+        }, Array<RawPreview>()),
+      ...JSON.parse(snapResult).result.map(
+        ({
+          name,
+          version,
+          summary,
+          'install-date': installDate,
+          icon
+        }: {
+          name: string
+          version: string
+          summary: string
+          'install-date': string
+          icon: string
+        }) =>
+          ({
+            name,
+            version,
+            description: summary,
+            installed: !!installDate,
+            icon,
+            packageSource: 'SNAP'
+          } as RawPreview)
+      )
+    ].sort((a, b) => leven(a.name, packageName) - leven(b.name, packageName))
 
     const length = names.length
     const slicedRawPreviews = names.slice((chunk - 1) * 5, chunk * 5)
@@ -355,14 +389,15 @@ export const fetchPreviews = createAsyncThunk<
     }
 
     slicedRawPreviews
-      .map(async ([name, version, description, source]) => {
+      .map(async ({ name, version, description, installed, packageSource, icon, upgradable }) => {
         const preview: PackagePreview = {
           name,
           description,
           version,
-          packageSource: source as Sources,
-          installed: false,
-          upgradable: false,
+          packageSource,
+          installed,
+          upgradable: upgradable ?? false,
+          icon: icon ?? dummyPackageImg,
           upgradeQueued: false,
           rating: -1,
           cveInfo: {
@@ -383,19 +418,7 @@ export const fetchPreviews = createAsyncThunk<
           }
         } else {
           try {
-            if (source === 'APT') {
-              const { stdout, stderr } = await prExec(`LANG=C && dpkg-query -W ${name}`)
-              if (stdout.length !== 0 || stderr.length === 0) {
-                preview.installed = true
-                const { stdout } = await prExec(
-                  `LANG=C apt-cache policy ${name} | egrep "(Installed|Candidate)" | cut -c 14-`
-                )
-                const [current, candidate] = stdout.split('\n').slice(0, 2)
-                if (current !== candidate) preview.upgradable = true
-              }
-            } else if (source === 'SNAP') {
-              const { stdout: snapInfo } = await prExec(`LANG=C snap info ${packageName}`)
-              if (snapPkgRegex.installed.test(snapInfo)) preview.installed = true
+            if (packageSource === 'SNAP') {
               const { stdout, stderr } = await prExec(
                 `LANG=C snap refresh --list | sed 1d | grep ${packageName}`
               )
