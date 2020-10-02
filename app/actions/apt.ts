@@ -114,7 +114,7 @@ export type SnapPackage = {
   snapId: string
   refreshDate?: string
   tracking?: string
-  tracks: SnapTrack[]
+  tracks: string[]
 } & PackageEssentials &
   PackageStatus
 
@@ -481,58 +481,35 @@ export const fetchSnapPackage = createAsyncThunk<SnapPackage, string, { state: R
       upgradeQueued: false
     }
     try {
-      const { stdout: snapResult } = await prExec(`LANG=C snap info ${packageName}`)
+      const snapResult = JSON.parse(
+        (
+          await prExec(
+            `curl -sS --unix-socket /run/snapd.socket http://localhost/v2/find?name=${packageName} -X GET`
+          )
+        ).stdout
+      ).result[0]
 
-      const omitted = { ...snapPkgRegex }
-      delete omitted['channels']
-      delete omitted['installed']
-
-      Object.keys(omitted)
-        .slice(0, -1)
-        .every(prop => {
-          const key = prop as keyof Omit<typeof snapPkgRegex, 'channels' | 'installed'>
-          const match = omitted[key].exec(snapResult)
-          if (match) newPackage[key] = match[1]
-          else console.warn(`Missing ${key}`)
-          return match
-        })
-
-      const channelsMatch = snapPkgRegex.channels.exec(snapResult)
-      if (channelsMatch) {
-        const trackRegex = / *(?:(?<track>[0-9.a-z]+)\/)(?<risk>[0-9a-z]+)(?:\/(?<branch>[0-9a-z]+))?: +(?:(?<version>[0-9.a-z~+-]+|[–↑]) +(?<essential>.*)?) *\n?/gm
-        const tracks: SnapTrack[] = []
-        let channels: SnapChannel[] = []
-
-        let match = trackRegex.exec(channelsMatch[1])
-        if (match && match.groups) {
-          let lastTrack = match.groups['track']
-          let lastVersion = match.groups['version']
-          do {
-            if (lastTrack !== match.groups['track']) {
-              tracks.push({
-                name: lastTrack,
-                channels
-              })
-              lastTrack = match.groups['track']
-              channels = []
-            }
-            if (lastVersion !== match.groups['version'] && match.groups['version'] !== '↑')
-              lastVersion = match.groups['version']
-            if (match.groups['version'] !== '--')
-              channels.push({
-                risk: match.groups['risk'] ?? '',
-                ...(match.groups['branch'] ? { branch: match.groups['branch'] } : {}),
-                version: lastVersion
-              })
-          } while ((match = trackRegex.exec(channelsMatch[1])) && match.groups)
-          if (!tracks.length && channels.length)
-            tracks.push({
-              name: lastTrack,
-              channels
-            })
-        }
-        newPackage.tracks = tracks
-      } else console.warn('Missing channels')
+      newPackage.name = snapResult.name
+      newPackage.summary = snapResult.summary
+      newPackage.publisher = snapResult.publisher['display-name']
+      newPackage.description = snapResult.description
+      newPackage.storeUrl = snapResult['store-url']
+      newPackage.contact = snapResult.contact
+      newPackage.license = snapResult.license
+      newPackage.snapId = snapResult.id
+      newPackage.screenshots = snapResult.media?.reduce(
+        (result: Array<string>, { url, type }: { url: string; type: string }) => {
+          if (type === 'screenshot') result.push(url)
+          return result
+        },
+        []
+      )
+      newPackage.installed = !!snapResult['install-date']
+      newPackage.tracks = Object.values(
+        snapResult.channels as Array<{ channel: string; version: string }>
+      )
+        .reverse()
+        .map(({ channel, version }) => `${channel}:${version}`)
 
       const foundPackage = queue.packages.find(
         (pkg: QueueNode) => packageName === pkg.name && pkg.source == 'SNAP'
@@ -570,11 +547,14 @@ export const fetchSnapPackage = createAsyncThunk<SnapPackage, string, { state: R
       } catch {}
 
       try {
-        newPackage.screenshots = (
-          await (await fetch(`https://screenshots.debian.net/json/package/${packageName}`)).json()
-        ).screenshots.map(
-          (s: { small_image_url: string; large_image_url: string }) => s.large_image_url
-        )
+        newPackage.screenshots = [
+          ...newPackage.screenshots,
+          ...(
+            await (await fetch(`https://screenshots.debian.net/json/package/${packageName}`)).json()
+          ).screenshots.map(
+            (s: { small_image_url: string; large_image_url: string }) => s.large_image_url
+          )
+        ]
       } catch (e) {}
       return newPackage
     } catch (e) {

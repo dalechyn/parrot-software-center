@@ -93,13 +93,6 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const processDescription = (str: string) => {
-  return str
-    .split('\n')
-    .map(line => line.slice(2))
-    .join('\n')
-}
-
 const mapStateToProps = ({
   router: {
     location: { state }
@@ -176,11 +169,7 @@ const PackageInfo = ({
       try {
         const res = unwrapResult(await fetchSnapPackage(name))
         setPackageInfo(res)
-        selectVersion(
-          `${res.tracks[0].name}/${res.tracks[0].channels[0].risk}${
-            res.tracks[0].channels[0].branch ? `/${res.tracks[0].channels[0].branch}` : ''
-          }:${res.tracks[0].channels[0].version}`
-        )
+        selectVersion(`${res.tracks[0]}`)
       } catch {
         setAvailable(false)
       }
@@ -264,24 +253,11 @@ const PackageInfo = ({
                     selectVersion(value as string)
                   }}
                 >
-                  {tracks
-                    .map(track =>
-                      track.channels.map(channel => (
-                        <MenuItem
-                          key={`item-${track.name}-${channel.risk}-${channel.branch ?? 'default'}-${
-                            channel.version
-                          }`}
-                          value={`${track.name}/${channel.risk}${
-                            channel.branch ? `/${channel.branch}` : ''
-                          }:${channel.version}`}
-                        >
-                          {`${track.name}/${channel.risk}${
-                            channel.branch ? `/${channel.branch}` : ''
-                          }`}
-                        </MenuItem>
-                      ))
-                    )
-                    .flat()}
+                  {tracks.map(track => (
+                    <MenuItem key={`item-${track}`} value={track}>
+                      {track.split(':')[0]}
+                    </MenuItem>
+                  ))}
                 </Select>
                 <Typography variant="h6">Maintainer:</Typography>
                 <Paper variant="outlined" className={classes.contentColumn}>
@@ -291,7 +267,7 @@ const PackageInfo = ({
                   <>
                     <Typography variant="h6">Description:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
-                      <Typography variant="body1">{processDescription(description)}</Typography>
+                      <Typography variant="body1">{description}</Typography>
                     </Paper>
                   </>
                 )}
@@ -329,7 +305,13 @@ const PackageInfo = ({
                   <>
                     <Typography variant="h6">Contact:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
-                      <Typography variant="body1">{contact}</Typography>
+                      <Link
+                        component="button"
+                        variant="body1"
+                        onClick={() => shell.openExternal(contact)}
+                      >
+                        {contact}
+                      </Link>
                     </Paper>
                   </>
                 )}
@@ -359,14 +341,14 @@ const PackageInfo = ({
                 )}
               </ExpansionPanelDetails>
             </ExpansionPanel>
-            <ExpansionPanel disabled={screenshots.length === 0}>
+            <ExpansionPanel disabled={!screenshots || screenshots.length === 0}>
               <ExpansionPanelSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
                 <Typography variant="h5">Screenshots</Typography>
               </ExpansionPanelSummary>
               <ExpansionPanelDetails style={{ justifyContent: 'center' }}>
                 <Box width="90%">
                   <Slider>
-                    {screenshots.map((link, k) => (
+                    {screenshots?.map((link, k) => (
                       <div key={`${name}-screenshot-${k}`}>
                         <img style={{ margin: 'auto' }} src={link} alt="screenshot" />
                       </div>
