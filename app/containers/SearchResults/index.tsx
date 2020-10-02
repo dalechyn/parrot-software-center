@@ -10,12 +10,13 @@ import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { replace } from 'connected-react-router'
 import SearchField from '../../components/SearchField'
 import { SearchPreview, SearchPreviewSkeleton } from '../../components'
+import { PackagePreview } from '../../actions/apt'
 
 const componentsInPage = 5
 
 // Array.prototype.every iterates only on occupied elements, not all, so we have
 // to check it out manually
-const onlyNulls = (arr: Array<any>) => {
+const onlyNulls = (arr: Array<PackagePreview | null | undefined>) => {
   for (const el of arr) if (el !== null) return false
   return true
 }
