@@ -360,6 +360,7 @@ export const fetchPreviews = createAsyncThunk<
         ({
           name,
           version,
+          channels,
           summary,
           'install-date': installDate,
           icon
@@ -368,16 +369,21 @@ export const fetchPreviews = createAsyncThunk<
           version: string
           summary: string
           'install-date': string
+          channels: { [key: string]: { channel: string; version: string } }
           icon: string
-        }) =>
-          ({
+        }) => {
+          const channelsArray = channels
+            ? Object.values(channels).reverse()
+            : [{ channel: 'latest/stable', version }]
+          return {
             name,
-            version,
+            version: `${channelsArray[0].channel}:${channelsArray[0].version}`,
             description: summary,
             installed: !!installDate,
             icon,
             packageSource: 'SNAP'
-          } as RawPreview)
+          } as RawPreview
+        }
       )
     ].sort((a, b) => leven(a.name, packageName) - leven(b.name, packageName))
 

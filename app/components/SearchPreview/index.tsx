@@ -153,7 +153,7 @@ const SearchPreview = ({
               </Typography>
               <Typography variant="h5">@</Typography>
               <Typography style={{ color: blue[400] }} variant="h5">
-                {version}
+                {packageSource === 'APT' ? version : version.split(':')[1]}
               </Typography>
               <Typography className={classes.source} variant="body2">
                 {packageSource}
@@ -208,8 +208,7 @@ const SearchPreview = ({
         </CardContent>
       </CardActionArea>
       <CardActions className={classes.buttonsHolder}>
-        {packageSource === 'APT' &&
-          upgradable &&
+        {upgradable &&
           (queuedUpgrade ? (
             <Button
               classes={{ outlined: classes.uninstall }}
@@ -244,50 +243,49 @@ const SearchPreview = ({
             </Button>
           ))}
 
-        {packageSource === 'APT' &&
-          (installedOrQueried ? (
-            <Button
-              classes={{ outlined: classes.uninstall }}
-              disabled={isBusy}
-              onClick={() => {
-                enqueueSnackbar(
-                  packages.find((el: QueueNode) => el.name === name)
-                    ? `Package ${name} dequeued`
-                    : `Package ${name} queued for deletion`,
-                  {
-                    variant: 'error'
-                  }
-                )
-                uninstall({ name, version, source: packageSource })
-                setInstalled(false)
-              }}
-              variant="outlined"
-              size="medium"
-            >
-              Uninstall
-            </Button>
-          ) : (
-            <Button
-              classes={{ outlined: classes.install }}
-              disabled={isBusy}
-              onClick={() => {
-                enqueueSnackbar(
-                  packages.find((el: QueueNode) => el.name === name)
-                    ? `Package ${name} dequeued`
-                    : `Package ${name} queued for installation`,
-                  {
-                    variant: 'info'
-                  }
-                )
-                install({ name, version, source: packageSource })
-                setInstalled(true)
-              }}
-              variant="outlined"
-              size="medium"
-            >
-              Install
-            </Button>
-          ))}
+        {installedOrQueried ? (
+          <Button
+            classes={{ outlined: classes.uninstall }}
+            disabled={isBusy}
+            onClick={() => {
+              enqueueSnackbar(
+                packages.find((el: QueueNode) => el.name === name)
+                  ? `Package ${name} dequeued`
+                  : `Package ${name} queued for deletion`,
+                {
+                  variant: 'error'
+                }
+              )
+              uninstall({ name, version, source: packageSource })
+              setInstalled(false)
+            }}
+            variant="outlined"
+            size="medium"
+          >
+            Uninstall
+          </Button>
+        ) : (
+          <Button
+            classes={{ outlined: classes.install }}
+            disabled={isBusy}
+            onClick={() => {
+              enqueueSnackbar(
+                packages.find((el: QueueNode) => el.name === name)
+                  ? `Package ${name} dequeued`
+                  : `Package ${name} queued for installation`,
+                {
+                  variant: 'info'
+                }
+              )
+              install({ name, version, source: packageSource })
+              setInstalled(true)
+            }}
+            variant="outlined"
+            size="medium"
+          >
+            Install
+          </Button>
+        )}
       </CardActions>
     </Card>
   )
