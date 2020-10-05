@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import { connect, ConnectedProps } from 'react-redux'
 
-import { Grid, makeStyles, Typography } from '@material-ui/core'
+import { Checkbox, FormControlLabel, Grid, makeStyles, Typography } from '@material-ui/core'
 import { Pagination } from '@material-ui/lab'
 
 import { AptActions, AlertActions } from '../../actions'
@@ -75,6 +75,7 @@ const SearchResults = ({
   const { name: initialName, page: initialPage } = match.params
   const [page, scroll] = useState(initialPage ? parseInt(initialPage) : 1)
   const [length, setLength] = useState(0)
+  const [filter, setFilter] = useState({ apt: true, snap: true })
 
   // Initial package names fetching effect
   useEffect(() => {
@@ -82,7 +83,7 @@ const SearchResults = ({
     const f = async () => {
       if (!active) return
       try {
-        setLength(unwrapResult(await fetchPreviews({ name: initialName, chunk: page })))
+        setLength(unwrapResult(await fetchPreviews({ name: initialName, chunk: page, filter })))
       } catch (e) {
         setAlert(e.message)
       }
@@ -101,19 +102,33 @@ const SearchResults = ({
     replace(`/search/${initialName}/${n}`)
     scroll(n)
   }
+
+  const filterChange = ({
+    target: { name, checked }
+  }: {
+    target: { name: string; checked: boolean }
+  }) => {
+    if (
+      (name === 'apt' && !checked && !filter.snap) ||
+      (name === 'snap' && !checked && !filter.apt)
+    )
+      return
+    setFilter({ ...filter, [name]: checked })
+  }
+
   const classes = useStyles()
 
   return (
     <section className={classes.root}>
-      <Grid container justify="center">
-        <Grid item xs={6}>
+      <Grid container justify="center" direction="column" alignContent="center">
+        <Grid item xs={6} style={{ width: '100%' }}>
           <SearchField
             query={initialName}
             onEnter={name => {
               const f = async () => {
                 // TimedOut error should be handled here
                 try {
-                  setLength(unwrapResult(await fetchPreviews({ name, chunk: 1 })))
+                  setLength(unwrapResult(await fetchPreviews({ name, chunk: 1, filter })))
                 } catch (e) {
                   setAlert(e)
                 }
@@ -127,6 +142,16 @@ const SearchResults = ({
                 f()
               }
             }}
+          />
+        </Grid>
+        <Grid item container xs={6} style={{ justifyContent: 'center' }}>
+          <FormControlLabel
+            control={<Checkbox name="apt" checked={filter.apt} onChange={filterChange} />}
+            label="APT"
+          />
+          <FormControlLabel
+            control={<Checkbox name="snap" checked={filter.snap} onChange={filterChange} />}
+            label="SNAP"
           />
         </Grid>
       </Grid>

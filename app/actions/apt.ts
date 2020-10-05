@@ -310,17 +310,19 @@ export const fetchAutocompletion = createAsyncThunk<string[], string, { state: R
 
 export const fetchPreviews = createAsyncThunk<
   number,
-  { name: string; chunk: number },
+  { name: string; chunk: number; filter: { apt: boolean; snap: boolean } },
   { state: RootState }
->('@apt/FETCH_PREVIEWS', async ({ name: packageName, chunk }, { getState, dispatch }) => {
+>('@apt/FETCH_PREVIEWS', async ({ name: packageName, chunk, filter }, { getState, dispatch }) => {
   const { queue, settings } = getState()
   dispatch(PreviewsActions.clear())
   try {
     const [{ stdout: aptResult }, { stdout: snapResult }] = await Promise.all([
-      prExec(`LANG=C apt search ${packageName}`),
-      prExec(
-        `curl -sS --unix-socket /run/snapd.socket http://localhost/v2/find?q=${packageName} -X GET`
-      )
+      filter.apt ? prExec(`LANG=C apt search ${packageName}`) : Promise.resolve({ stdout: '' }),
+      filter.snap
+        ? prExec(
+            `curl -sS --unix-socket /run/snapd.socket http://localhost/v2/find?q=${packageName} -X GET`
+          )
+        : Promise.resolve({ stdout: '' })
     ])
 
     // additional sorting is needed because search
@@ -336,55 +338,59 @@ export const fetchPreviews = createAsyncThunk<
     } & PackageSource
 
     const names = [
-      ...aptResult
-        .split('\n\n')
-        .slice(2, -1)
-        .reduce((result, str) => {
-          const match = /([a-z0-9.+-]+)\/((?:[a-z0-9.+-]+,?)+) (?:[0-9]:)?([a-zA-Z0-9-.~+-]+) ([a-z0-9-+]*)(?: ?\[.*\])?\n  (.*)/m.exec(
-            str
+      ...(filter.apt
+        ? aptResult
+            .split('\n\n')
+            .slice(2, -1)
+            .reduce((result, str) => {
+              const match = /([a-z0-9.+-]+)\/((?:[a-z0-9.+-]+,?)+) (?:[0-9]:)?([a-zA-Z0-9-.~+-]+) ([a-z0-9-+]*)(?: ?\[.*\])?\n  (.*)/m.exec(
+                str
+              )
+              if (!match || !match[1] || !match[3] || !match[5])
+                console.error(`Unexpected error in apt preview parsing: ${str}`)
+              else
+                result.push({
+                  name: match[1],
+                  version: match[3],
+                  description: match[5],
+                  installed: /installed|upgradable/.test(str),
+                  upgradable: /upgradable/.test(str),
+                  packageSource: 'APT'
+                })
+              return result
+            }, Array<RawPreview>())
+        : []),
+      ...(filter.snap
+        ? JSON.parse(snapResult).result.map(
+            ({
+              name,
+              version,
+              channels,
+              summary,
+              'install-date': installDate,
+              icon
+            }: {
+              name: string
+              version: string
+              summary: string
+              'install-date': string
+              channels: { [key: string]: { channel: string; version: string } }
+              icon: string
+            }) => {
+              const channelsArray = channels
+                ? Object.values(channels).reverse()
+                : [{ channel: 'latest/stable', version }]
+              return {
+                name,
+                version: `${channelsArray[0].channel}:${channelsArray[0].version}`,
+                description: summary,
+                installed: !!installDate,
+                icon,
+                packageSource: 'SNAP'
+              } as RawPreview
+            }
           )
-          if (!match || !match[1] || !match[3] || !match[5])
-            console.error(`Unexpected error in apt preview parsing: ${str}`)
-          else
-            result.push({
-              name: match[1],
-              version: match[3],
-              description: match[5],
-              installed: /installed|upgradable/.test(str),
-              upgradable: /upgradable/.test(str),
-              packageSource: 'APT'
-            })
-          return result
-        }, Array<RawPreview>()),
-      ...JSON.parse(snapResult).result.map(
-        ({
-          name,
-          version,
-          channels,
-          summary,
-          'install-date': installDate,
-          icon
-        }: {
-          name: string
-          version: string
-          summary: string
-          'install-date': string
-          channels: { [key: string]: { channel: string; version: string } }
-          icon: string
-        }) => {
-          const channelsArray = channels
-            ? Object.values(channels).reverse()
-            : [{ channel: 'latest/stable', version }]
-          return {
-            name,
-            version: `${channelsArray[0].channel}:${channelsArray[0].version}`,
-            description: summary,
-            installed: !!installDate,
-            icon,
-            packageSource: 'SNAP'
-          } as RawPreview
-        }
-      )
+        : [])
     ].sort((a, b) => leven(a.name, packageName) - leven(b.name, packageName))
 
     const length = names.length
