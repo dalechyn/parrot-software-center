@@ -101,6 +101,38 @@ const processDescription = (str: string) => {
   return lines.join('')
 }
 
+const createPackageRelationsProcessor = (innerPush: typeof push) => (
+  input: string,
+  relation: string
+) =>
+  input.split(', ').map((r, i, inputSplitted) => (
+    <>
+      <div style={{ display: 'inline-block' }} key={`${relation}-${r}-${i}`}>
+        <Typography key={`outer-${relation}-${i}`} variant="body1" style={{ whiteSpace: 'nowrap' }}>
+          {r.split(' | ').map((orConflicts, orI, arr) => {
+            const [name, ...rest] = orConflicts.split(' ')
+            return (
+              <>
+                <Link
+                  component="button"
+                  variant="body1"
+                  key={`link-${relation}-${r}`}
+                  onClick={() => innerPush(`/package/apt/${name}`)}
+                  noWrap
+                >
+                  {name}
+                </Link>
+                {' ' + rest.join('')}
+                {arr.length > 1 && orI !== arr.length - 1 && ' | '}
+              </>
+            )
+          })}
+        </Typography>
+      </div>
+      {i !== inputSplitted.length - 1 && ', '}
+    </>
+  ))
+
 const mapStateToProps = ({
   router: {
     location: { state }
@@ -146,6 +178,7 @@ const PackageInfo = ({
   const [authOpened, setAuthOpened] = useState(false)
   const [ratingOpened, setRatingOpened] = useState(false)
   const [available, setAvailable] = useState(true)
+  const processPackageRelations = createPackageRelationsProcessor(push)
 
   const {
     version,
@@ -279,25 +312,7 @@ const PackageInfo = ({
                   <>
                     <Typography variant="h6">Depends:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
-                      {depends.split(', ').map((d, i, dependsSplitted) => {
-                        const [depName, ...rest] = d.split(' ')
-                        return (
-                          <div style={{ display: 'inline-block' }} key={`${name}-depends-${d}`}>
-                            <Typography variant="body1">
-                              <Link
-                                component="button"
-                                variant="body1"
-                                key={`${name}-depends-${d}`}
-                                onClick={() => push(`/package/${depName}`)}
-                              >
-                                {depName}
-                              </Link>
-                              {' ' + rest.join('')}
-                              {i !== dependsSplitted.length - 1 && ', '}
-                            </Typography>
-                          </div>
-                        )
-                      })}
+                      {processPackageRelations(depends, 'depends')}
                     </Paper>
                   </>
                 )}
@@ -305,24 +320,7 @@ const PackageInfo = ({
                   <>
                     <Typography variant="h6">Breaks:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
-                      {breaks.split(', ').map((b, i, breaksSplitted) => {
-                        const [breakName, ...rest] = b.split(' ')
-                        return (
-                          <div style={{ display: 'inline-block' }} key={`${name}-breals-${b}`}>
-                            <Typography variant="body1">
-                              <Link
-                                component="button"
-                                variant="body1"
-                                onClick={() => push(`/package/${breakName}`)}
-                              >
-                                {breakName}
-                              </Link>
-                              {' ' + rest.join('')}
-                              {i !== breaksSplitted.length - 1 && ', '}
-                            </Typography>
-                          </div>
-                        )
-                      })}
+                      {processPackageRelations(breaks, 'breaks')}
                     </Paper>
                   </>
                 )}
@@ -330,24 +328,7 @@ const PackageInfo = ({
                   <>
                     <Typography variant="h6">Recommends:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
-                      {recommends.split(', ').map((b, i, recommendsSplitted) => {
-                        const [recommendName, ...rest] = b.split(' ')
-                        return (
-                          <div style={{ display: 'inline-block' }} key={`${name}-recommends-${b}`}>
-                            <Typography variant="body1">
-                              <Link
-                                component="button"
-                                variant="body1"
-                                onClick={() => push(`/package/${recommendName}`)}
-                              >
-                                {recommendName}
-                              </Link>
-                              {' ' + rest.join('')}
-                              {i !== recommendsSplitted.length - 1 && ', '}
-                            </Typography>
-                          </div>
-                        )
-                      })}
+                      {processPackageRelations(recommends, 'recommends')}
                     </Paper>
                   </>
                 )}
@@ -355,24 +336,7 @@ const PackageInfo = ({
                   <>
                     <Typography variant="h6">Conflicts:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
-                      {conflicts.split(', ').map((b, i, conflictsSplitted) => {
-                        const [conflictName, ...rest] = b.split(' ')
-                        return (
-                          <div style={{ display: 'inline-block' }} key={`${name}-conflicts-${b}`}>
-                            <Typography variant="body1">
-                              <Link
-                                component="button"
-                                variant="body1"
-                                onClick={() => push(`/package/${conflictName}`)}
-                              >
-                                {conflictName}
-                              </Link>
-                              {' ' + rest.join('')}
-                              {i !== conflictsSplitted.length - 1 && ', '}
-                            </Typography>
-                          </div>
-                        )
-                      })}
+                      {processPackageRelations(conflicts, 'conflicts')}
                     </Paper>
                   </>
                 )}
@@ -380,24 +344,7 @@ const PackageInfo = ({
                   <>
                     <Typography variant="h6">Suggests:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
-                      {suggests.split(', ').map((b, i, suggestsSplitted) => {
-                        const [suggestedName, ...rest] = b.split(' ')
-                        return (
-                          <div style={{ display: 'inline-block' }} key={`${name}-suggests-${b}`}>
-                            <Typography variant="body1">
-                              <Link
-                                component="button"
-                                variant="body1"
-                                onClick={() => push(`/package/${suggestedName}`)}
-                              >
-                                {suggestedName}
-                              </Link>
-                              {' ' + rest.join('')}
-                              {i !== suggestsSplitted.length - 1 && ', '}
-                            </Typography>
-                          </div>
-                        )
-                      })}
+                      {processPackageRelations(suggests, 'suggests')}
                     </Paper>
                   </>
                 )}
@@ -405,24 +352,7 @@ const PackageInfo = ({
                   <>
                     <Typography variant="h6">Replaces:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
-                      {replaces.split(', ').map((b, i, replacesSplitted) => {
-                        const [replaceName, ...rest] = b.split(' ')
-                        return (
-                          <div style={{ display: 'inline-block' }} key={`${name}-replaces-${b}`}>
-                            <Typography variant="body1">
-                              <Link
-                                component="button"
-                                variant="body1"
-                                onClick={() => push(`/package/${replaceName}`)}
-                              >
-                                {replaceName}
-                              </Link>
-                              {' ' + rest.join('')}
-                              {i !== replacesSplitted.length - 1 && ', '}
-                            </Typography>
-                          </div>
-                        )
-                      })}
+                      {processPackageRelations(replaces, 'replaces')}
                     </Paper>
                   </>
                 )}
@@ -430,25 +360,7 @@ const PackageInfo = ({
                   <>
                     <Typography variant="h6">Provides:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
-                      {provides.split(', ').map((b, i, providesSplitted) => {
-                        const [provideName, ...rest] = b.split(' ')
-                        const version = rest.join('')
-                        return (
-                          <div style={{ display: 'inline-block' }} key={`${name}-provides-${b}`}>
-                            <Typography variant="body1">
-                              <Link
-                                component="button"
-                                variant="body1"
-                                onClick={() => push(`/package/${provideName}`)}
-                              >
-                                {provideName}
-                              </Link>
-                              {version && ` ${version}`}
-                              {i !== providesSplitted?.length - 1 && ', '}
-                            </Typography>
-                          </div>
-                        )
-                      })}
+                      {processPackageRelations(provides, 'provides')}
                     </Paper>
                   </>
                 )}
@@ -492,7 +404,7 @@ const PackageInfo = ({
                     return (
                       <Fragment key={`${name}@${version}@${key}`}>
                         <Typography style={{ width: 'min-content' }} variant="h6">
-                          {key.charAt(0).toUpperCase() + key.slice(1)}
+                          {key.charAt(0).toUpperCase() + key.slice(1)}:
                         </Typography>
                         <Paper variant="outlined" className={classes.contentColumn}>
                           <Typography variant="body1">{additionalInfo[key]}</Typography>
