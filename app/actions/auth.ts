@@ -22,10 +22,9 @@ export const login = createAsyncThunk<void, AuthInfo, { state: RootState }>(
     if (!res.ok) {
       if (res.status === 403)
         throw new Error(`This account is not confirmed. Follow email instructions to confirm it.`)
-      else
-        throw new Error(
-          `There is already an account with that email or username, or it doesn't exist.`
-        )
+      else if (res.status === 401) throw new Error('Login and password are not accepted.')
+      else if (res.status == 400) throw new Error('Username with that login does not exist')
+      else throw new Error(res.statusText)
     }
     dispatch(setUserInfo({ token: (await res.json()).token, login }))
   }
@@ -37,6 +36,10 @@ export const register = createAsyncThunk<void, AuthInfo, { state: RootState }>(
       method: 'POST',
       body: JSON.stringify({ email, login, password })
     })
-    if (!res.ok) throw new Error('There is already an account with that email or username')
+    if (!res.ok) {
+      if (res.status === 400)
+        throw new Error('There is already an account with that email or username')
+      else throw new Error(res.statusText)
+    }
   }
 )
