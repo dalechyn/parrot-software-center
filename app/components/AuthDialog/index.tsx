@@ -7,13 +7,20 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Link
+  Link,
+  FormControl,
+  InputLabel,
+  Input,
+  InputAdornment,
+  IconButton,
+  FormHelperText
 } from '@material-ui/core'
 import { useSnackbar } from 'notistack'
 import { AuthActions } from '../../actions'
 import { connect, ConnectedProps } from 'react-redux'
 import { unwrapResult } from '@reduxjs/toolkit'
 import { useForm } from 'react-hook-form'
+import { Visibility, VisibilityOff } from '@material-ui/icons'
 
 const mapDispatchToProps = {
   login: AuthActions.login,
@@ -38,6 +45,7 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
   const [registered, setRegistered] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   const { enqueueSnackbar } = useSnackbar()
   const { register, handleSubmit, errors, clearError } = useForm<FormData>()
@@ -96,17 +104,28 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
             inputRef={register({ required: true, minLength: 3, maxLength: 20 })}
             fullWidth
           />
-          <TextField
-            autoFocus
-            margin="dense"
-            name="password"
-            label="Password"
-            type="password"
-            error={!!errors.password}
-            helperText="Password needs to have 6-20 symbols"
-            inputRef={register({ required: true, minLength: 6, maxLength: 20 })}
-            fullWidth
-          />
+          <FormControl fullWidth>
+            <InputLabel>Password</InputLabel>
+            <Input
+              fullWidth
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              inputRef={register({ required: true, minLength: 6, maxLength: 20 })}
+              error={!!errors.password}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() => setShowPassword(!showPassword)}
+                    onMouseDown={event => event.preventDefault()}
+                  >
+                    {showPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              }
+            />
+            <FormHelperText>Password needs to have 6-20 symbols</FormHelperText>
+          </FormControl>
           <Link
             component="button"
             type="button"
