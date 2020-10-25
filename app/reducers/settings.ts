@@ -18,7 +18,7 @@ try {
   initialSettings = {
     loadCVEs: true,
     darkTheme: false,
-    APIUrl: process.env.NODE_ENV === 'development' ? 'http://localhost:8000/' : ''
+    APIUrl: process.env.NODE_ENV === 'development' ? 'localhost' : 'http://165.227.140.210:8000/'
   }
 }
 
