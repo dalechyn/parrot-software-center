@@ -42,13 +42,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const mapStateToProps = ({
-  router: {
-    location: { state }
-  },
-  previews
-}: RootState) => ({
-  ...state,
+const mapStateToProps = ({ previews }: RootState) => ({
   previews
 })
 

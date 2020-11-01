@@ -6,10 +6,10 @@ import { goBack, push } from 'connected-react-router'
 import {
   Box,
   Button,
-  ExpansionPanel,
-  ExpansionPanelActions,
-  ExpansionPanelDetails,
-  ExpansionPanelSummary,
+  Accordion,
+  AccordionActions,
+  AccordionDetails,
+  AccordionSummary,
   Link,
   makeStyles,
   MenuItem,
@@ -94,13 +94,10 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const mapStateToProps = ({
-  router: {
-    location: { state }
-  },
   settings: { APIUrl },
   queue: { packages, isBusy },
   auth: { token }
-}: RootState) => ({ ...state, APIUrl, packages, isBusy, token })
+}: RootState) => ({ APIUrl, packages, isBusy, token })
 
 const mapDispatchToProps = {
   goBack,
@@ -240,11 +237,11 @@ const PackageInfo = ({
         </Paper>
         {available && (
           <>
-            <ExpansionPanel disabled={!packageInfo} className={classes.panel} defaultExpanded>
-              <ExpansionPanelSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
+            <Accordion disabled={!packageInfo} className={classes.panel} defaultExpanded>
+              <AccordionSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
                 <Typography variant="h5">General info</Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.grid}>
+              </AccordionSummary>
+              <AccordionDetails className={classes.grid}>
                 <Typography variant="h6">Version:</Typography>
                 <Select
                   variant="outlined"
@@ -339,13 +336,13 @@ const PackageInfo = ({
                     </Paper>
                   </>
                 )}
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-            <ExpansionPanel disabled={!screenshots || screenshots.length === 0}>
-              <ExpansionPanelSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
+              </AccordionDetails>
+            </Accordion>
+            <Accordion disabled={!screenshots || screenshots.length === 0}>
+              <AccordionSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
                 <Typography variant="h5">Screenshots</Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails style={{ justifyContent: 'center' }}>
+              </AccordionSummary>
+              <AccordionDetails style={{ justifyContent: 'center' }}>
                 <Box width="90%">
                   <Slider>
                     {screenshots?.map((link, k) => (
@@ -355,13 +352,13 @@ const PackageInfo = ({
                     ))}
                   </Slider>
                 </Box>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-            <ExpansionPanel disabled={reviews?.length === 0}>
-              <ExpansionPanelSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
+              </AccordionDetails>
+            </Accordion>
+            <Accordion disabled={reviews?.length === 0}>
+              <AccordionSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
                 <Typography variant="h5">Reviews</Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails style={{ justifyContent: 'center' }}>
+              </AccordionSummary>
+              <AccordionDetails style={{ justifyContent: 'center' }}>
                 {reviews?.map(({ author, rating, commentary }, k) => (
                   <ReviewRating
                     key={`${name}-review-${k}`}
@@ -370,9 +367,9 @@ const PackageInfo = ({
                     commentary={commentary}
                   />
                 ))}
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-            <ExpansionPanelActions className={classes.actions}>
+              </AccordionDetails>
+            </Accordion>
+            <AccordionActions className={classes.actions}>
               {upgradable &&
                 (queuedUpgrade ? (
                   <Button
@@ -457,7 +454,7 @@ const PackageInfo = ({
                   Install
                 </Button>
               )}
-            </ExpansionPanelActions>
+            </AccordionActions>
           </>
         )}
       </Paper>
