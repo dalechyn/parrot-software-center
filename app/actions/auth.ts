@@ -9,6 +9,7 @@ type AuthInfo = {
 type UserInfo = {
   login: string
   token: string
+  role: string
 }
 
 export const setUserInfo = createAction<UserInfo>('@auth/SET_USER_INFO')
@@ -26,7 +27,8 @@ export const login = createAsyncThunk<void, AuthInfo, { state: RootState }>(
       else if (res.status == 400) throw new Error('Username with that login does not exist')
       else throw new Error(res.statusText)
     }
-    dispatch(setUserInfo({ token: (await res.json()).token, login }))
+    const userInfo = await res.json()
+    dispatch(setUserInfo({ ...userInfo, login }))
   }
 )
 export const register = createAsyncThunk<void, AuthInfo, { state: RootState }>(
@@ -43,3 +45,15 @@ export const register = createAsyncThunk<void, AuthInfo, { state: RootState }>(
     }
   }
 )
+export const deleteReview = createAsyncThunk<
+  void,
+  { packageName: string; author: string },
+  { state: RootState }
+>('@auth/DELETE_REVIEW', async ({ packageName, author }, { getState }) => {
+  const state = getState()
+  const res = await fetch(`${state.settings.APIUrl}/delete`, {
+    method: 'POST',
+    body: JSON.stringify({ package: packageName, author, token: state.auth.token })
+  })
+  if (!res.ok) throw new Error(res.statusText)
+})

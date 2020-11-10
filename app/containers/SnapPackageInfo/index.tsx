@@ -96,8 +96,8 @@ const useStyles = makeStyles(theme => ({
 const mapStateToProps = ({
   settings: { APIUrl },
   queue: { packages, isBusy },
-  auth: { token }
-}: RootState) => ({ APIUrl, packages, isBusy, token })
+  auth: { token, role }
+}: RootState) => ({ APIUrl, packages, isBusy, token, role })
 
 const mapDispatchToProps = {
   goBack,
@@ -114,6 +114,7 @@ const connector = connect(mapStateToProps, mapDispatchToProps)
 type PackageInfoProps = ConnectedProps<typeof connector> & RouteComponentProps<{ name: string }>
 
 const PackageInfo = ({
+  role,
   goBack,
   packages,
   install,
@@ -362,6 +363,8 @@ const PackageInfo = ({
                 {reviews?.map(({ author, rating, commentary }, k) => (
                   <ReviewRating
                     key={`${name}-review-${k}`}
+                    packageName={name}
+                    role={role}
                     author={author}
                     rating={rating}
                     commentary={commentary}
