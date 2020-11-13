@@ -1,9 +1,8 @@
-import { exec } from 'child_process'
+import { ChildProcess, exec } from 'child_process'
 import { createAsyncThunk, Dispatch } from '@reduxjs/toolkit'
 import { promisify } from 'util'
 import { AlertActions, PreviewsActions } from '../actions'
 import { QueueNode } from '../containers/Queue'
-import { Readable } from 'stream'
 import leven from 'leven'
 import { CVEEndpoint } from '../components/SearchPreviewList'
 import { pop, QueueNodeMeta } from './queue'
@@ -134,7 +133,7 @@ const aptPkgRegex: {
     name: /^Package: ([a-z0-9.+-]+)/m,
     version: /^Version: ((?<epoch>[0-9]{1,4}:)?(?<upstream>[A-Za-z0-9~.]+)(?:-(?<debian>[A-Za-z0-9~.]+))?)/m,
     // eslint-disable-next-line no-control-regex
-    maintainer: /^Maintainer: ((?<name>(?:[\S ]+\S+)) <(?<email>(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)]))>)/m,
+    maintainer: /^Maintainer: (.*)/m,
     description: /^Description-(?:[a-z]{2}): (.*(?:\n \S.*)*)/m
   },
   optional: {
@@ -176,27 +175,22 @@ const snapPkgRegex = {
   installed: /^installed: +(.*)  +(.*) *\n?/m
 }
 
-const waitStdoe = (stderr: Readable, stdout: Readable, dispatch: Dispatch) => {
+const waitStdoe = (childProcess: ChildProcess, dispatch: Dispatch) => {
   let lastStderrLine: string
-  let lastStderr: boolean
 
-  stdout.on('data', chunk => {
-    lastStderr = false
+  childProcess.stdout?.on('data', chunk => {
     const line = chunk as string
     console.log(line)
     if (line.match(PSC_FINISHED)) dispatch(pop())
   })
 
-  stderr.on('data', chunk => {
-    lastStderr = true
+  childProcess.stderr?.on('data', chunk => {
     lastStderrLine = chunk as string
   })
   return new Promise((resolve, reject) => {
-    stdout.on('close', () => {
-      resolve()
-    })
-    stderr.on('close', () => {
-      if (lastStderr) reject(new Error(lastStderrLine))
+    childProcess.on('close', exitCode => {
+      if (exitCode === 0) resolve()
+      else reject(new Error(lastStderrLine))
     })
   })
 }
@@ -210,23 +204,15 @@ export const perform = createAsyncThunk(
           (source === 'APT'
             ? `LANG=C DEBIAN_FRONTEND=noninteractive apt-get ${flag} -y ${name}${
                 flag === INSTALL ? `=${version}` : ''
-              }`
+              } || exit 1`
             : `LANG=C snap ${flag === UPGRADE ? 'refresh' : flag} ${name}${
                 flag === INSTALL ? ` --channel=${version.split(':')[0]}` : ''
-              }`) + `;echo ${PSC_FINISHED}`
+              } || exit 1`) + `;echo ${PSC_FINISHED}`
       )
       .join(';')
     try {
-      const { stdout, stderr } = exec(`pkexec sh -c "${prepared}"`)
-      if (!stdout || !stderr) throw new Error('Failed to host shell')
-
-      // we need to subscribe to events before we do anything on the channels
-      await waitStdoe(stderr, stdout, dispatch)
-
-      /*  for await (const chunk of stderr) {
-        throw new Error(chunk as string)
-      }
-*/
+      const childProcess = exec(`pkexec sh -c "${prepared}"`)
+      await waitStdoe(childProcess, dispatch)
     } catch (e) {
       dispatch(AlertActions.set(e.message))
       throw e
@@ -340,8 +326,11 @@ export const fetchPreviews = createAsyncThunk<
     const names = [
       ...(filter.apt
         ? aptResult
+            .split('\n')
+            .slice(2)
+            .join('\n')
+            // Removed redundant apt search message
             .split('\n\n')
-            .slice(2, -1)
             .reduce((result, str) => {
               const match = /([a-z0-9.+-]+)\/((?:[a-z0-9.+-]+,?)+) (?:[0-9]:)?([a-zA-Z0-9-.~+-]+) ([a-z0-9-+]*)(?: ?\[.*\])?\n  (.*)/m.exec(
                 str
