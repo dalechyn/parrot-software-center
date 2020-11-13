@@ -13,9 +13,9 @@ import { unwrapResult } from '@reduxjs/toolkit'
 import { Autocomplete } from '@material-ui/lab'
 
 const useStyles = makeStyles({
-  whiteColor: {
+/*whiteColor: {
     color: 'white'
-  },
+  }, */
   notchedOutline: {
     borderColor: '#2196f3 !important'
   }
