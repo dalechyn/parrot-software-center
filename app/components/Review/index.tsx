@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import {
   CardContent,
   Card,
@@ -24,10 +24,20 @@ type ReviewProps = ConnectedProps<typeof connector> & {
   commentary: string
   rating: number
   role: string
+  id: number
+  destroyReviewComponent: (id: number) => void
 }
 
-const Review = ({ packageName, author, rating, commentary, role, deleteReview }: ReviewProps) => {
-  const [removed, setRemoved] = useState(false)
+const Review = ({
+  id,
+  packageName,
+  author,
+  rating,
+  commentary,
+  role,
+  deleteReview,
+  destroyReviewComponent
+}: ReviewProps) => {
   return (
     <Card style={{ width: '100%' }}>
       <CardHeader
@@ -36,7 +46,7 @@ const Review = ({ packageName, author, rating, commentary, role, deleteReview }:
       />
       <Divider />
       <CardContent>
-        <Typography>{removed ? 'REMOVED' : commentary}</Typography>
+        <Typography>{commentary}</Typography>
       </CardContent>
       {role === 'moderator' && (
         <CardActions>
@@ -44,7 +54,7 @@ const Review = ({ packageName, author, rating, commentary, role, deleteReview }:
             onClick={() =>
               (async () => {
                 await deleteReview({ author, packageName })
-                setRemoved(true)
+                destroyReviewComponent(id)
               })()
             }
           >

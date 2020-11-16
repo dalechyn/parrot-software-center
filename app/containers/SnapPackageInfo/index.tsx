@@ -31,7 +31,7 @@ import PackageInfoSkeleton from './skeleton'
 import { QueueNode } from '../Queue'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
-import { SnapPackage } from '../../actions/apt'
+import { Review, SnapPackage } from '../../actions/apt'
 import { shell } from 'electron'
 
 const useStyles = makeStyles(theme => ({
@@ -147,18 +147,16 @@ const PackageInfo = ({
     refreshDate,
     tracking,
     tracks,
-    reviews,
-    rating: ratingInitial,
     upgradable,
-    upgradeQueued,
-    installed,
     screenshots
   } = packageInfo
 
-  const [installedOrQueried, setInstalled] = useState(installed)
-  const [queuedUpgrade, setQueuedUpgrade] = useState(upgradeQueued)
-  const [rating, setRating] = useState(ratingInitial)
+  const [installedOrQueried, setInstalled] = useState(false)
+  const [queuedUpgrade, setQueuedUpgrade] = useState(false)
+  const [rating, setRating] = useState(0)
   const [selectedVersion, selectVersion] = useState('//')
+  const [reviews, setReviews] = useState(Array<Review>())
+  const [reviewsExpanded, setReviewsExpanded] = useState(false)
 
   useEffect(() => {
     setAvailable(true)
@@ -179,6 +177,7 @@ const PackageInfo = ({
   useEffect(() => {
     setInstalled(packageInfo.installed)
     setRating(packageInfo.rating)
+    setReviews(packageInfo.reviews)
     setQueuedUpgrade(packageInfo.upgradeQueued)
   }, [packageInfo])
 
@@ -193,6 +192,13 @@ const PackageInfo = ({
     setPackageInfo({ ...packageInfo, rating: value })
     setRating(value)
     setRatingOpened(true)
+  }
+
+  const destroyReviewComponent = (id: number) => {
+    // Immutability is first
+    const newReviews = [...reviews.slice(0, id), ...reviews.slice(id + 1)]
+    setReviews(newReviews)
+    if (newReviews.length === 0) setReviewsExpanded(false)
   }
 
   return loading ? (
@@ -355,7 +361,13 @@ const PackageInfo = ({
                 </Box>
               </AccordionDetails>
             </Accordion>
-            <Accordion disabled={reviews?.length === 0}>
+            <Accordion
+              disabled={!reviews || reviews?.length === 0}
+              expanded={reviewsExpanded}
+              onChange={() => {
+                if (reviews && reviews.length !== 0) setReviewsExpanded(!reviewsExpanded)
+              }}
+            >
               <AccordionSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
                 <Typography variant="h5">Reviews</Typography>
               </AccordionSummary>
@@ -363,7 +375,9 @@ const PackageInfo = ({
                 {reviews?.map(({ author, rating, commentary }, k) => (
                   <ReviewRating
                     key={`${name}-review-${k}`}
+                    id={k}
                     packageName={name}
+                    destroyReviewComponent={destroyReviewComponent}
                     role={role}
                     author={author}
                     rating={rating}
