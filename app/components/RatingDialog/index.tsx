@@ -28,6 +28,7 @@ type RatingDialogProps = ConnectedProps<typeof connector> & {
   onClose: () => void
   name: string
   rating: number
+  addFn: (rating: number, commentary: string) => void
 }
 
 type FormData = {
@@ -35,7 +36,7 @@ type FormData = {
   commentary: string
 }
 
-const RatingDialog = ({ name, onClose, rating, token, rate }: RatingDialogProps) => {
+const RatingDialog = ({ name, onClose, rating, token, rate, addFn }: RatingDialogProps) => {
   const [loading, setLoading] = useState(false)
 
   const { enqueueSnackbar } = useSnackbar()
@@ -48,6 +49,7 @@ const RatingDialog = ({ name, onClose, rating, token, rate }: RatingDialogProps)
           setLoading(true)
           rate({ name, token, rating, commentary })
           setLoading(false)
+          addFn(rating, commentary)
           enqueueSnackbar('Your review is sent!')
           onClose()
         })}

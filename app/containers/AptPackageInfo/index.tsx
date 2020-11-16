@@ -136,8 +136,8 @@ const createPackageRelationsProcessor = (innerPush: typeof push) => (
 const mapStateToProps = ({
   settings: { APIUrl },
   queue: { packages, isBusy },
-  auth: { token, role }
-}: RootState) => ({ APIUrl, packages, isBusy, token, role })
+  auth: { token, role, login }
+}: RootState) => ({ APIUrl, packages, isBusy, token, role, login })
 
 const mapDispatchToProps = {
   goBack,
@@ -166,7 +166,8 @@ const PackageInfo = ({
   APIUrl,
   isBusy,
   token,
-  fetchAptPackage
+  fetchAptPackage,
+  login
 }: PackageInfoProps) => {
   const classes = useStyles()
 
@@ -183,7 +184,7 @@ const PackageInfo = ({
     maintainer,
     description,
     source,
-    name: _,
+    name: _a,
     depends,
     recommends,
     replaces,
@@ -195,6 +196,10 @@ const PackageInfo = ({
     homepage,
     upgradable,
     screenshots,
+    reviews: _b,
+    installed: _c,
+    upgradeQueued: _d,
+    rating: _f,
     ...rest
   } = packageInfo
 
@@ -243,6 +248,10 @@ const PackageInfo = ({
     const newReviews = [...reviews.slice(0, id), ...reviews.slice(id + 1)]
     setReviews(newReviews)
     if (newReviews.length === 0) setReviewsExpanded(false)
+  }
+
+  const addReviewComponent = (rating: number, commentary: string) => {
+    setReviews([...reviews, { author: login, rating, commentary }])
   }
 
   return loading ? (
@@ -545,7 +554,12 @@ const PackageInfo = ({
       </Paper>
       {authOpened && <AuthDialog onClose={() => setAuthOpened(false)} />}
       {ratingOpened && (
-        <RatingDialog name={name} onClose={() => setRatingOpened(false)} rating={rating} />
+        <RatingDialog
+          name={name}
+          onClose={() => setRatingOpened(false)}
+          rating={rating}
+          addFn={addReviewComponent}
+        />
       )}
     </>
   )
