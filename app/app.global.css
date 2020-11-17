@@ -1,6 +1,7 @@
 @import '~slick-carousel/slick/slick.css';
 @import '~slick-carousel/slick/slick-theme.css';
 @import '~hack-font/build/web/hack.css';
+@import '~leaflet/dist/leaflet.css';
 
 *,
 *::after,
@@ -9,4 +10,13 @@
   -webkit-user-drag: none;
   -webkit-app-region: no-drag;
   cursor: default;
+}
+
+.leaflet-popup-close-button {
+  display: none;
+}
+
+.leaflet-div-icon {
+  background: none;
+  border: none;
 }
