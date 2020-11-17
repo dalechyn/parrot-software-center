@@ -73,7 +73,7 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
                 ? `${updates.length} updates available! Upgrade now!`
                 : packages.length === 0
                 ? 'Your system is up to date'
-                : `${packages.length} are waiting for upgrade! Upgrade now!`}
+                : `${packages.length} packages are waiting for upgrade! Upgrade now!`}
             </h2>
           </Grid>
           {packages.length === 0 ||
