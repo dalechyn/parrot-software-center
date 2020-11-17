@@ -10,12 +10,11 @@ import MirrorUp from './assets/mirror_up.png'
 
 import L, { divIcon } from 'leaflet'
 
-import 'leaflet/dist/leaflet.css'
-
 // stupid hack so that leaflet's images work after going through webpack
 import marker from 'leaflet/dist/images/marker-icon.png'
 import marker2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
+import { connect, ConnectedProps } from 'react-redux'
 
 // Uhmmm, nice typings man!
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -63,7 +62,13 @@ const corner1 = L.latLng(-90, -200)
 const corner2 = L.latLng(90, 200)
 const bounds = L.latLngBounds(corner1, corner2)
 
-const Mirrors = () => {
+const mapStateToProps = ({ settings: { darkTheme } }: RootState) => ({ darkTheme })
+
+const connector = connect(mapStateToProps)
+
+type MirrorProps = ConnectedProps<typeof connector>
+
+const Mirrors = ({ darkTheme }: MirrorProps) => {
   const classes = useStyles()
   const [statusCode, setStatusCode] = useState(-1)
   const [mirrors, setMirrors] = useState(
@@ -141,8 +146,14 @@ const Mirrors = () => {
           minZoom={2.0}
         >
           <TileLayer
-            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution={`&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors ${
+              darkTheme ? '&copy; <a href="http://cartodb.com/attributions">CartoDB</a>' : ''
+            }`}
+            url={
+              darkTheme
+                ? 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png'
+                : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+            }
           />
           {mirrors.map(({ lat, lon, id, up }, i) => (
             <Marker
@@ -184,4 +195,4 @@ const Mirrors = () => {
   )
 }
 
-export default Mirrors
+export default connector(Mirrors)
