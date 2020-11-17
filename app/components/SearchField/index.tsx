@@ -13,9 +13,6 @@ import { unwrapResult } from '@reduxjs/toolkit'
 import { Autocomplete } from '@material-ui/lab'
 
 const useStyles = makeStyles({
-/*whiteColor: {
-    color: 'white'
-  }, */
   notchedOutline: {
     borderColor: '#2196f3 !important'
   }
@@ -91,15 +88,13 @@ const SearchField = ({ query, onEnter, fetchAutocompletion }: SearchFieldProps) 
   return (
     <Autocomplete
       id="search-bar"
-      classes={{ clearIndicator: classes.whiteColor }}
       freeSolo
-      defaultValue={value}
       open={open}
       onOpen={() => setOpen(true)}
       onClose={() => setOpen(false)}
       options={options}
       loading={loading}
-      inputValue={value}
+      value={value}
       onInputChange={handleChange}
       renderInput={params => (
         <TextField
@@ -120,9 +115,7 @@ const SearchField = ({ query, onEnter, fetchAutocompletion }: SearchFieldProps) 
               </InputAdornment>
             ),
             classes: {
-              root: classes.whiteColor,
-              notchedOutline: classes.notchedOutline,
-              adornedEnd: classes.whiteColor
+              notchedOutline: classes.notchedOutline
             },
             endAdornment: (
               <>
