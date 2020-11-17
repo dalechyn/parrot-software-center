@@ -75,16 +75,21 @@ const Header = ({ alert, clear, checkUpdates, token, setUserInfo, pathname }: He
   const [settingsOpened, setSettingsOpened] = useState(false)
   const { enqueueSnackbar, closeSnackbar } = useSnackbar()
 
-  const action = useConstant(() => (key: SnackbarKey) => (
-    <Button
-      color="inherit"
-      onClick={() => {
-        closeSnackbar(key)
-      }}
-    >
-      OK
-    </Button>
-  ))
+  const action = useConstant(
+    () =>
+      function Action(key: SnackbarKey) {
+        return (
+          <Button
+            color="inherit"
+            onClick={() => {
+              closeSnackbar(key)
+            }}
+          >
+            OK
+          </Button>
+        )
+      }
+  )
 
   useEffect(() => {
     const f = async () => {
@@ -125,7 +130,7 @@ const Header = ({ alert, clear, checkUpdates, token, setUserInfo, pathname }: He
         </Toolbar>
         <Divider />
       </AppBar>
-      <Drawer classes={{ paper: classes.drawer }} open={drawerOpen}>
+      <Drawer classes={{ paper: classes.drawer }} open={drawerOpen} onClose={handleDrawerClose}>
         <div className={classes.drawerHeader}>
           <Button startIcon={<DrawerCloseIcon />} fullWidth onClick={handleDrawerClose}>
             Hide
@@ -148,7 +153,7 @@ const Header = ({ alert, clear, checkUpdates, token, setUserInfo, pathname }: He
         {token ? (
           <Button
             startIcon={<LoginIcon />}
-            onClick={() => setUserInfo({ login: '', token: '' })}
+            onClick={() => setUserInfo({ login: '', token: '', role: '' })}
             size="large"
           >
             Log out
