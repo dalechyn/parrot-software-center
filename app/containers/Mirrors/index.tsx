@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { Button, CircularProgress, makeStyles, Typography } from '@material-ui/core'
 import JSON5 from 'json5'
 import { Error } from '@material-ui/icons'
-import { Marker, MapContainer, Popup, TileLayer } from 'react-leaflet'
+import { Marker, MapContainer, Popup, TileLayer, useMapEvents } from 'react-leaflet'
 import MirrorDown from './assets/mirror_down.png'
 import MirrorUp from './assets/mirror_up.png'
+import cls from 'classnames'
 
 // https://github.com/PaulLeCam/react-leaflet/issues/255
 
-import L, { divIcon } from 'leaflet'
+import L, { divIcon, LatLng } from 'leaflet'
 
 // stupid hack so that leaflet's images work after going through webpack
 import marker from 'leaflet/dist/images/marker-icon.png'
@@ -51,12 +52,96 @@ const useStyles = makeStyles({
     height: '100%',
     width: '100%'
   },
+  mapDarkBackground: {
+    background: '#262626'
+  },
   popup: {
     display: 'flex',
     flexFlow: 'column',
     alignItems: 'center'
   }
 })
+
+type MirrorInfo = {
+  lat: number
+  lon: number
+  id: string
+  enabled: boolean
+  up: boolean
+}
+
+type ViewPort = {
+  center: L.LatLng
+  zoom: number
+}
+
+type MapChildrenProps = {
+  mirrors: MirrorInfo[]
+  darkTheme: boolean
+  setViewPort: Dispatch<SetStateAction<ViewPort>>
+}
+
+const MapChildren = ({ mirrors, darkTheme, setViewPort, ...props }: MapChildrenProps) => {
+  const classes = useStyles()
+  const map = useMapEvents({
+    zoom: () => {
+      setViewPort({ center: map.getCenter(), zoom: map.getZoom() })
+    },
+    moveend: () => {
+      setViewPort({ zoom: map.getZoom(), center: map.getCenter() })
+    }
+  })
+  return (
+    <>
+      <TileLayer
+        attribution={`&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors ${
+          darkTheme ? '&copy; <a href="http://cartodb.com/attributions">CartoDB</a>' : ''
+        }`}
+        url={
+          darkTheme
+            ? 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png'
+            : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+        }
+        {...props}
+      />
+
+      {mirrors.map(({ lat, lon, id, up }, i) => (
+        <Marker
+          /*icon={
+        <img
+          src={up ? MirrorUp : MirrorDown}
+          height={43}
+          width={32}
+          className={classes.marker}
+          alt=""
+        />
+      }*/
+          icon={divIcon({
+            html: `<img src="${up ? MirrorUp : MirrorDown}"  alt="popup"/>`,
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            tooltipAnchor: [16, -28],
+            shadowSize: [41, 41]
+          })}
+          key={`marker-${i}`}
+          position={[lat, lon]}
+        >
+          <Popup>
+            <div className={classes.popup}>
+              <div>Mirror ID: {id}</div>
+              <div>
+                <Button color="secondary" variant="outlined">
+                  Disable
+                </Button>
+              </div>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+    </>
+  )
+}
 
 const corner1 = L.latLng(-90, -200)
 const corner2 = L.latLng(90, 200)
@@ -71,9 +156,8 @@ type MirrorProps = ConnectedProps<typeof connector>
 const Mirrors = ({ darkTheme }: MirrorProps) => {
   const classes = useStyles()
   const [statusCode, setStatusCode] = useState(-1)
-  const [mirrors, setMirrors] = useState(
-    Array<{ lat: number; lon: number; id: string; enabled: boolean; up: boolean }>()
-  )
+  const [mirrors, setMirrors] = useState(Array<MirrorInfo>())
+  const [viewPort, setViewPort] = useState({ center: new LatLng(50, 30), zoom: 3 })
 
   useEffect(() => {
     // loading .mirrorstats page
@@ -135,60 +219,33 @@ const Mirrors = ({ darkTheme }: MirrorProps) => {
             </Typography>
           </div>
         </>
-      ) : (
+      ) : darkTheme ? (
+        // There is no way to use dynamical tilelayer so in order to recreate the whole map and don't
+        // break the mapcontainer we need to recreate it from the top
         <MapContainer
-          className={classes.map}
-          center={[51.505, -0.09]}
-          zoom={3}
-          scrollWheelZoom={false}
+          className={cls(classes.map, classes.mapDarkBackground)}
+          center={viewPort.center}
+          zoom={viewPort.zoom}
+          key="map-dark"
+          scrollWheelZoom
           maxBoundsViscosity={1.0}
           maxBounds={bounds}
           minZoom={2.0}
         >
-          <TileLayer
-            attribution={`&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors ${
-              darkTheme ? '&copy; <a href="http://cartodb.com/attributions">CartoDB</a>' : ''
-            }`}
-            url={
-              darkTheme
-                ? 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png'
-                : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-            }
-          />
-          {mirrors.map(({ lat, lon, id, up }, i) => (
-            <Marker
-              /*icon={
-                <img
-                  src={up ? MirrorUp : MirrorDown}
-                  height={43}
-                  width={32}
-                  className={classes.marker}
-                  alt=""
-                />
-              }*/
-              icon={divIcon({
-                html: `<img src="${up ? MirrorUp : MirrorDown}"  alt="popup"/>`,
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                tooltipAnchor: [16, -28],
-                shadowSize: [41, 41]
-              })}
-              key={`marker-${i}`}
-              position={[lat, lon]}
-            >
-              <Popup>
-                <div className={classes.popup}>
-                  <div>Mirror ID: {id}</div>
-                  <div>
-                    <Button color="secondary" variant="outlined">
-                      Disable
-                    </Button>
-                  </div>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+          <MapChildren mirrors={mirrors} darkTheme={true} setViewPort={setViewPort} />
+        </MapContainer>
+      ) : (
+        <MapContainer
+          className={classes.map}
+          center={viewPort.center}
+          zoom={viewPort.zoom}
+          key="map-light"
+          scrollWheelZoom
+          maxBoundsViscosity={1.0}
+          maxBounds={bounds}
+          minZoom={2.0}
+        >
+          <MapChildren mirrors={mirrors} darkTheme={false} setViewPort={setViewPort} />
         </MapContainer>
       )}
     </section>
