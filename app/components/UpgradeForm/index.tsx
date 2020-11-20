@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Grid, Link, makeStyles, Paper } from '@material-ui/core'
+import { Button, CircularProgress, Grid, makeStyles, Paper } from '@material-ui/core'
 import { unwrapResult } from '@reduxjs/toolkit'
 import React, { useEffect, useState } from 'react'
 import { AptActions, QueueActions } from '../../actions'
@@ -8,13 +8,11 @@ import { push } from 'connected-react-router'
 import { withRouter } from 'react-router'
 import { RouteComponentProps } from 'react-router-dom'
 import { QueueNodeMeta } from '../../actions/queue'
+import UpdateList from './UpdateList'
 
 const useStyles = makeStyles(theme => ({
   padded: {
     padding: theme.spacing(2)
-  },
-  margin: {
-    marginTop: theme.spacing(2)
   }
 }))
 
@@ -83,25 +81,7 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
             <>
               {updates.length !== 0 && (
                 <Paper style={{ padding: '1rem' }} elevation={10}>
-                  {updates.map(({ name, source }, i, dependsSplitted) => {
-                    return (
-                      <div
-                        style={{ display: 'inline-block', whiteSpace: 'pre' }}
-                        key={`${name}-upgradable-link-${source}`}
-                      >
-                        <Link
-                          component="button"
-                          variant="body1"
-                          onClick={() =>
-                            push(`/package/${source === 'APT' ? 'apt' : 'snap'}/${name}`)
-                          }
-                        >
-                          {name}
-                        </Link>
-                        {i !== dependsSplitted.length - 1 && ', '}
-                      </div>
-                    )
-                  })}
+                  <UpdateList updates={updates} />
                 </Paper>
               )}
               <Button
