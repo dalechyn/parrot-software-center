@@ -3,6 +3,7 @@ import { createAction } from '@reduxjs/toolkit'
 export type QueueNodeMeta = {
   name: string
   version: string
+  oldVersion?: string
   source: 'APT' | 'SNAP'
 }
 

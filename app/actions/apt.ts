@@ -223,12 +223,12 @@ export const perform = createAsyncThunk(
 export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async () => {
   try {
     const { stdout } = await prExec('LANG=C apt list --upgradable')
-    const regex = /^([a-z0-9.+-]+)\/(?:[a-z-],?)+ (?:[0-9]:)?((?:[0-9]{1,4}:)?(?:(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?))/gm
+    const regex = /^([a-z0-9.+-]+)\/(?:[a-z-],?)+ (?:[0-9]:)?((?:[0-9]{1,4}:)?(?:(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)) [a-z0-9]+ \[upgradable from: (?:[0-9]:)?((?:[0-9]{1,4}:)?(?:(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?))\]/gm
 
     const res: QueueNodeMeta[] = []
     let match: RegExpExecArray | null
     while ((match = regex.exec(stdout)))
-      res.push({ name: match[1], version: match[2], source: 'APT' })
+      res.push({ name: match[1], version: match[2], oldVersion: match[3], source: 'APT' })
 
     return res.filter(
       (x, i) => i === res.findIndex(el => x.name === el.name && x.source === el.source)
