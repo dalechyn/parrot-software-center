@@ -22,7 +22,8 @@ import {
   Queue as QueueIcon,
   Explore as MapIcon,
   VpnKey as LoginIcon,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Assessment as AssessmentIcon
 } from '@material-ui/icons'
 import Alert from '@material-ui/lab/Alert'
 import SearchBar from '../SearchBar'
@@ -52,11 +53,11 @@ const useStyles = makeStyles(theme => ({
 
 const mapStateToProps = ({
   alert,
-  auth: { token },
+  auth: { token, role },
   router: {
     location: { pathname }
   }
-}: RootState) => ({ alert, token, pathname })
+}: RootState) => ({ alert, token, role, pathname })
 
 const mapDispatchToProps = {
   clear: AlertActions.clear,
@@ -68,7 +69,15 @@ const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type HeaderProps = ConnectedProps<typeof connector>
 
-const Header = ({ alert, clear, checkUpdates, token, setUserInfo, pathname }: HeaderProps) => {
+const Header = ({
+  alert,
+  clear,
+  checkUpdates,
+  token,
+  role,
+  setUserInfo,
+  pathname
+}: HeaderProps) => {
   const classes = useStyles()
   const [drawerOpen, setDrawer] = useState(false)
   const [authOpened, setAuthOpened] = useState(false)
@@ -143,6 +152,11 @@ const Header = ({ alert, clear, checkUpdates, token, setUserInfo, pathname }: He
         <Button startIcon={<QueueIcon />} size="large" component={Link} to={'/queue'}>
           Queue
         </Button>
+        {role === 'moderator' && (
+          <Button startIcon={<AssessmentIcon />} size="large" component={Link} to={'/reports'}>
+            Reports
+          </Button>
+        )}
         <Button startIcon={<MapIcon />} size="large" component={Link} to={'/mirrors'}>
           Mirrors
         </Button>

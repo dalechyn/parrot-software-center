@@ -45,15 +45,3 @@ export const register = createAsyncThunk<void, AuthInfo, { state: RootState }>(
     }
   }
 )
-export const deleteReview = createAsyncThunk<
-  void,
-  { packageName: string; author: string },
-  { state: RootState }
->('@auth/DELETE_REVIEW', async ({ packageName, author }, { getState }) => {
-  const state = getState()
-  const res = await fetch(`${state.settings.APIUrl}/delete`, {
-    method: 'POST',
-    body: JSON.stringify({ package: packageName, author, token: state.auth.token })
-  })
-  if (!res.ok) throw new Error(res.statusText)
-})

@@ -35,10 +35,6 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(2),
     marginLeft: 'auto',
     marginRight: 'auto'
-  },
-  grid: {
-    display: 'inline-grid',
-    gridGap: theme.spacing(2)
   }
 }))
 
@@ -161,13 +157,7 @@ const SearchResults = ({
             variant="outlined"
             shape="rounded"
           />
-          <Grid
-            container
-            direction="column"
-            justify="space-evenly"
-            alignItems="center"
-            className={classes.grid}
-          >
+          <Grid container direction="column" justify="space-evenly" alignItems="center" spacing={2}>
             {previews[0] ? (
               <SearchPreview {...previews[0]} />
             ) : (

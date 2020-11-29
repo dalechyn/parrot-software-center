@@ -47,7 +47,7 @@ const RatingDialog = ({ name, onClose, rating, token, rate, addFn }: RatingDialo
       <form
         onSubmit={handleSubmit(async ({ rating, commentary }) => {
           setLoading(true)
-          rate({ name, token, rating, commentary })
+          await rate({ name, token, rating, commentary })
           setLoading(false)
           addFn(rating, commentary)
           enqueueSnackbar('Your review is sent!')

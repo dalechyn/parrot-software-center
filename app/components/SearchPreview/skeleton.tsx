@@ -5,6 +5,7 @@ import {
   CardActionArea,
   CardActions,
   CardContent,
+  Grid,
   makeStyles,
   Paper
 } from '@material-ui/core'
@@ -48,33 +49,35 @@ const useStyles = makeStyles(theme => ({
 const SearchSkeleton = () => {
   const classes = useStyles()
   return (
-    <Card className={classes.root}>
-      <CardActionArea disabled>
-        <CardContent>
-          <Paper className={classes.header} elevation={10}>
-            <div className={classes.nameHolder}>
-              <Skeleton height={40} width={40} variant="circle" />
-              <Skeleton className={classes.name} variant="rect" />
-            </div>
-            <div className={classes.cve}>
-              <Skeleton width={100} variant="rect" />
-              <Skeleton width={100} variant="rect" />
-              <Skeleton width={100} variant="rect" />
-              <Skeleton width={100} variant="rect" />
-            </div>
-          </Paper>
-          <Box className={classes.description}>
-            <Skeleton variant="rect" width="75%" />
-            <Skeleton variant="rect" width="100%" />
-            <Skeleton variant="rect" width="95%" />
-            <Skeleton variant="rect" width="30%" />
-          </Box>
-        </CardContent>
-      </CardActionArea>
-      <CardActions className={classes.buttons}>
-        <Skeleton variant="rect" height={35} width={90} />
-      </CardActions>
-    </Card>
+    <Grid item>
+      <Card className={classes.root}>
+        <CardActionArea disabled>
+          <CardContent>
+            <Paper className={classes.header} elevation={10}>
+              <div className={classes.nameHolder}>
+                <Skeleton height={40} width={40} variant="circle" />
+                <Skeleton className={classes.name} variant="rect" />
+              </div>
+              <div className={classes.cve}>
+                <Skeleton width={100} variant="rect" />
+                <Skeleton width={100} variant="rect" />
+                <Skeleton width={100} variant="rect" />
+                <Skeleton width={100} variant="rect" />
+              </div>
+            </Paper>
+            <Box className={classes.description}>
+              <Skeleton variant="rect" width="75%" />
+              <Skeleton variant="rect" width="100%" />
+              <Skeleton variant="rect" width="95%" />
+              <Skeleton variant="rect" width="30%" />
+            </Box>
+          </CardContent>
+        </CardActionArea>
+        <CardActions className={classes.buttons}>
+          <Skeleton variant="rect" height={35} width={90} />
+        </CardActions>
+      </Card>
+    </Grid>
   )
 }
 
