@@ -42,14 +42,14 @@ const ReportDialog = ({ name, reportedUser, onClose, reportReview }: ReportDialo
           onClose()
         })}
       >
-        <DialogTitle id="form-dialog-title">Share your review!</DialogTitle>
+        <DialogTitle id="form-dialog-title">Report review</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             multiline
             margin="dense"
             name="commentary"
-            label="Please describe your report"
+            label="Report information"
             inputRef={register({ required: true, minLength: 3, maxLength: 256 })}
             rows={10}
             fullWidth

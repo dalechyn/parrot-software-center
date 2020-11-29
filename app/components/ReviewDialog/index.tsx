@@ -6,14 +6,14 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
-  TextField
+  TextField,
+  Checkbox
 } from '@material-ui/core'
 import { ReviewsActions } from '../../actions'
 import { connect, ConnectedProps } from 'react-redux'
 import { Controller, useForm } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 import { ReportInfo } from '../../actions/reviews'
-import { CheckBox } from '@material-ui/icons'
 
 const mapStateToProps = ({ auth: { login } }: RootState) => ({ login })
 
@@ -52,7 +52,26 @@ const ReviewDialog = ({ onSubmit, onClose, report, reviewReport, login }: Review
         })}
       >
         <DialogTitle id="form-dialog-title">Review</DialogTitle>
-        <DialogContent style={{ display: 'flex', flexFlow: 'column' }}>
+        <DialogContent>
+          <div>
+            <FormControlLabel
+              control={
+                <Controller
+                  as={<Checkbox />}
+                  control={control}
+                  name="deleteReview"
+                  color="primary"
+                />
+              }
+              label="Delete user review"
+            />
+            <FormControlLabel
+              control={
+                <Controller as={<Checkbox />} control={control} name="ban" color="primary" />
+              }
+              label="Ban user"
+            />
+          </div>
           <TextField
             autoFocus
             multiline
@@ -62,18 +81,6 @@ const ReviewDialog = ({ onSubmit, onClose, report, reviewReport, login }: Review
             inputRef={register({ required: true, minLength: 3, maxLength: 256 })}
             rows={10}
             fullWidth
-          />
-          <FormControlLabel
-            control={
-              <Controller as={<CheckBox />} control={control} name="deleteReview" color="primary" />
-            }
-            color="primary"
-            label="Delete user review"
-          />
-          <FormControlLabel
-            control={<Controller as={<CheckBox />} control={control} name="ban" color="primary" />}
-            color="primary"
-            label="Ban user"
           />
         </DialogContent>
         <DialogActions>
