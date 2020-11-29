@@ -8,6 +8,7 @@ import dummyPackageImg from '../../assets/package.png'
 import { connect, ConnectedProps } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router'
 import { useSnackbar } from 'notistack'
+import cls from 'classnames'
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -38,6 +39,12 @@ const useStyles = makeStyles(theme => ({
   gridItem: {
     paddingLeft: theme.spacing(1),
     paddingRight: theme.spacing(1)
+  },
+  expanded: {
+    display: 'inline-block'
+  },
+  notExpanded: {
+    display: 'none'
   }
 }))
 
@@ -64,6 +71,62 @@ const UpdateList = ({ updates, push, APIUrl, upgrade, isBusy }: UpdateListProp) 
   const [isExpanded, expand] = useState(false)
   const maxItemsShown = 10
   const areUpdatesMoreThanMaxItems = updates.length > maxItemsShown
+
+  const metaToComponent = ({ name, source, oldVersion, version }: QueueNodeMeta, index: number) => (
+    <Grid item key={index} style={{ width: '100%' }}>
+      <Paper className={classes.card}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Grid className={classes.gridItem} item xs={4}>
+            <div className={classes.metaHolder}>
+              <Img
+                className={classes.media}
+                src={`${APIUrl}/assets/packages/${name}.png`}
+                unloader={
+                  <img className={classes.media} src={dummyPackageImg} alt={'No Package Found'} />
+                }
+              />
+              <Typography variant="h5" className={classes.pkgName}>
+                {name}
+              </Typography>
+            </div>
+          </Grid>
+
+          <Grid className={classes.gridItem} item xs={4}>
+            <Typography variant="h5">{version}</Typography>
+          </Grid>
+          <Grid className={classes.gridItem} item xs={4}>
+            <Typography variant="h6">From: {oldVersion}</Typography>
+          </Grid>
+          <Grid className={classes.gridItem} item container xs={4} justify="space-around">
+            <Button
+              variant="outlined"
+              color="primary"
+              size="large"
+              onClick={() => push(`/package/${source === 'APT' ? 'apt' : 'snap'}/${name}`)}
+            >
+              More info
+            </Button>
+            <Button
+              variant="outlined"
+              disabled={isBusy}
+              color="primary"
+              className={classes.upgrade}
+              size="large"
+              onClick={() => {
+                enqueueSnackbar(`Package ${name}@${version} queued for upgrade`, {
+                  variant: 'success'
+                })
+                upgrade({ name, version, source: 'APT' })
+              }}
+            >
+              Upgrade
+            </Button>
+          </Grid>
+        </div>
+      </Paper>
+    </Grid>
+  )
+
   return (
     <>
       {areUpdatesMoreThanMaxItems ? (
@@ -75,86 +138,25 @@ const UpdateList = ({ updates, push, APIUrl, upgrade, isBusy }: UpdateListProp) 
       ) : undefined}
       <div>
         <Grid container spacing={3}>
-          {updates
-            .slice(0, isExpanded ? updates.length : maxItemsShown)
-            .map(({ name, version, oldVersion, source }, index) => {
-              return (
-                <Grid item key={index} style={{ width: '100%' }}>
-                  <Paper className={classes.card}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Grid className={classes.gridItem} item xs={4}>
-                        <div className={classes.metaHolder}>
-                          <Img
-                            className={classes.media}
-                            src={`${APIUrl}/assets/packages/${name}.png`}
-                            unloader={
-                              <img
-                                className={classes.media}
-                                src={dummyPackageImg}
-                                alt={'No Package Found'}
-                              />
-                            }
-                          />
-                          <Typography variant="h5" className={classes.pkgName}>
-                            {name}
-                          </Typography>
-                        </div>
-                      </Grid>
-
-                      <Grid className={classes.gridItem} item xs={4}>
-                        <Typography variant="h5">{version}</Typography>
-                      </Grid>
-                      <Grid className={classes.gridItem} item xs={4}>
-                        <Typography variant="h6">From: {oldVersion}</Typography>
-                      </Grid>
-                      <Grid
-                        className={classes.gridItem}
-                        item
-                        container
-                        xs={4}
-                        justify="space-around"
-                      >
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          size="large"
-                          onClick={() =>
-                            push(`/package/${source === 'APT' ? 'apt' : 'snap'}/${name}`)
-                          }
-                        >
-                          More info
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          disabled={isBusy}
-                          color="primary"
-                          className={classes.upgrade}
-                          size="large"
-                          onClick={() => {
-                            enqueueSnackbar(`Package ${name}@${version} queued for upgrade`, {
-                              variant: 'success'
-                            })
-                            upgrade({ name, version, source: 'APT' })
-                          }}
-                        >
-                          Upgrade
-                        </Button>
-                      </Grid>
-                    </div>
-                  </Paper>
-                </Grid>
-              )
-            })}
-          {!isExpanded && areUpdatesMoreThanMaxItems ? (
-            <IconButton
-              style={{ borderRadius: '4px' }}
-              onClick={() => expand(!isExpanded)}
-              aria-label="collapse"
-            >
-              <MoreHoriz />
-            </IconButton>
-          ) : undefined}
+          {updates.slice(0, maxItemsShown).map((meta, index) => metaToComponent(meta, index))}
         </Grid>
+        <Grid
+          className={cls(isExpanded ? classes.expanded : classes.notExpanded)}
+          container
+          spacing={3}
+          style={{ marginTop: 0 }}
+        >
+          {updates.slice(maxItemsShown).map((meta, index) => metaToComponent(meta, index))}
+        </Grid>
+        {!isExpanded && areUpdatesMoreThanMaxItems ? (
+          <IconButton
+            style={{ borderRadius: '4px' }}
+            onClick={() => expand(!isExpanded)}
+            aria-label="collapse"
+          >
+            <MoreHoriz />
+          </IconButton>
+        ) : null}
       </div>
     </>
   )
