@@ -3,6 +3,7 @@ import {
   Card,
   CardActions,
   CardContent,
+  Divider,
   Grid,
   makeStyles,
   Paper,
@@ -13,6 +14,7 @@ import React, { useState } from 'react'
 import { ReportInfo } from '../../actions/reviews'
 import { red } from '@material-ui/core/colors'
 import ReviewDialog from '../ReviewDialog'
+import cls from 'classnames'
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -43,6 +45,9 @@ const useStyles = makeStyles(theme => ({
   ban: {
     color: '#f44336',
     borderColor: '#f44336'
+  },
+  reviewed: {
+    opacity: 0.5
   }
 }))
 
@@ -52,25 +57,50 @@ type ReportProps = {
   destroyReviewComponent: (id: number) => void
 }
 
-const Report = ({ report, id, destroyReviewComponent }: ReportProps) => {
+const Report = ({
+  report: {
+    date,
+    packageName,
+    reportedUser,
+    commentary,
+    reportedBy,
+    reviewed,
+    review,
+    reviewedBy,
+    reviewedDate
+  },
+  id,
+  destroyReviewComponent
+}: ReportProps) => {
   const classes = useStyles()
   const [showReviewDialog, setShowReviewDialog] = useState(false)
   return (
     <>
       <Grid item>
-        <Card className={classes.card}>
+        <Card className={cls(classes.card, reviewed && classes.reviewed)}>
           <CardContent>
             <Paper className={classes.header} elevation={10}>
               <div className={classes.nameHolder}>
                 <ReportIcon />
                 <Typography className={classes.name} variant="h5">
-                  {report.packageName}
+                  {packageName}
                 </Typography>
                 <div style={{ marginLeft: 'auto' }}>
                   <Typography className={classes.reportedUser} variant="h5">
-                    {report.reportedUser}
+                    Reported User: {reportedUser}
                   </Typography>
-                  <Typography variant="h5">Reported by: {report.reportedBy}</Typography>
+                  <Typography className={classes.reportedUser} variant="h5">
+                    Date: {new Date(date * 1000).toLocaleString()}
+                  </Typography>
+                  <Typography variant="h5">Reported By: {reportedBy}</Typography>
+                  {reviewed && (
+                    <>
+                      <Typography variant="h5">Reviewed By: {reviewedBy}</Typography>
+                      <Typography variant="h5">
+                        Reviewed Date: {new Date(reviewedDate * 1000).toLocaleString()}
+                      </Typography>
+                    </>
+                  )}
                 </div>
               </div>
             </Paper>
@@ -81,19 +111,42 @@ const Report = ({ report, id, destroyReviewComponent }: ReportProps) => {
               component="p"
               noWrap
             >
-              {report.commentary}
+              <>
+                Commentary: {commentary}
+                {reviewed && (
+                  <>
+                    <Divider />
+                    Review: {review}
+                  </>
+                )}
+              </>
             </Typography>
           </CardContent>
           <CardActions className={classes.buttonsHolder}>
-            <Button variant="outlined" size="medium" onClick={() => setShowReviewDialog(true)}>
+            <Button
+              variant="outlined"
+              disabled={reviewed}
+              size="medium"
+              onClick={() => setShowReviewDialog(true)}
+            >
               Review
             </Button>
           </CardActions>
         </Card>
       </Grid>
-      {showReviewDialog && (
+      {showReviewDialog && !reviewed && (
         <ReviewDialog
-          report={report}
+          report={{
+            packageName,
+            reportedUser,
+            reportedBy,
+            date,
+            reviewed,
+            commentary,
+            review,
+            reviewedBy,
+            reviewedDate
+          }}
           onClose={() => {
             setShowReviewDialog(false)
           }}

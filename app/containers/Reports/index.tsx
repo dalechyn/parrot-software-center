@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { connect, ConnectedProps } from 'react-redux'
-import { makeStyles, Grid, CircularProgress } from '@material-ui/core'
+import { makeStyles, Grid, CircularProgress, Button } from '@material-ui/core'
 import { ReviewsActions } from '../../actions'
 import { ReportInfo } from '../../actions/reviews'
 import { unwrapResult } from '@reduxjs/toolkit'
@@ -24,16 +24,21 @@ type ReportsProps = ConnectedProps<typeof connector>
 
 const Reports = ({ getReports }: ReportsProps) => {
   const [reports, setReports] = useState(Array<ReportInfo>())
+  const [showReviewed, setShowReviewed] = useState(false)
   const [loading, setLoading] = useState(true)
   const classes = useStyles()
+
+  const loadReports = async () => {
+    setLoading(true)
+    const newReports = await getReports(showReviewed)
+    setLoading(false)
+    console.log(newReports)
+    setReports(unwrapResult(newReports))
+  }
+
   useEffect(() => {
-    ;(async () => {
-      const newReports = await getReports()
-      setLoading(false)
-      console.log(newReports)
-      setReports(unwrapResult(newReports))
-    })()
-  }, [])
+    loadReports()
+  }, [showReviewed])
 
   const destroyReportComponent = (id: number) => {
     // Immutability is first
@@ -44,18 +49,30 @@ const Reports = ({ getReports }: ReportsProps) => {
   return (
     <section className={classes.root}>
       <Grid container direction="column" justify="space-evenly" alignItems="center" spacing={2}>
-        {loading ? (
-          <CircularProgress />
-        ) : (
-          reports.map((report, i) => (
+        <Grid container justify="flex-start" style={{ width: '80vw' }}>
+          <Button size="large" variant="outlined" onClick={() => setShowReviewed(!showReviewed)}>
+            {showReviewed ? 'Hide Reviewed' : 'Show Reviewed'}
+          </Button>
+          <Button
+            size="large"
+            variant="contained"
+            color="primary"
+            style={{ marginLeft: '1rem' }}
+            onClick={() => loadReports()}
+          >
+            Refresh
+          </Button>
+          {loading && <CircularProgress />}
+        </Grid>
+        {!loading &&
+          reports?.map((report, i) => (
             <Report
               id={i}
               destroyReviewComponent={destroyReportComponent}
               report={report}
               key={`report-${i}`}
             />
-          ))
-        )}
+          ))}
       </Grid>
     </section>
   )

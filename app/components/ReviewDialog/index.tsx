@@ -29,10 +29,18 @@ type ReviewProps = ConnectedProps<typeof connector> & {
   onSubmit: () => void
 }
 
-const ReviewDialog = ({ onSubmit, onClose, report, reviewReport, login }: ReviewProps) => {
-  const { handleSubmit, control, register } = useForm<
-    ReportInfo & { deleteReview: boolean; ban: boolean }
-  >({
+const ReviewDialog = ({
+  onSubmit,
+  onClose,
+  report: { packageName, reportedBy, reportedUser },
+  reviewReport,
+  login
+}: ReviewProps) => {
+  const { handleSubmit, control, register } = useForm<{
+    review: string
+    deleteReview: boolean
+    ban: boolean
+  }>({
     defaultValues: { review: '', deleteReview: true, ban: false }
   })
   const { enqueueSnackbar } = useSnackbar()
@@ -41,11 +49,11 @@ const ReviewDialog = ({ onSubmit, onClose, report, reviewReport, login }: Review
       <form
         onSubmit={handleSubmit(async data => {
           await reviewReport({
-            ...report,
+            packageName,
+            reportedBy,
+            reportedUser,
             ...data,
-            reviewedDate: new Date().toISOString(),
-            reviewedBy: login,
-            reviewed: true
+            reviewedBy: login
           })
           enqueueSnackbar('Review sent!', { variant: 'success' })
           onSubmit()

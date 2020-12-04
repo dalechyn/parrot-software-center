@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 
 export type ReportInfo = {
+  date: number
   reportedUser: string
   commentary: string
   packageName: string
@@ -8,7 +9,7 @@ export type ReportInfo = {
   review: string
   reviewed: boolean
   reviewedBy: string
-  reviewedDate: string
+  reviewedDate: number
 }
 export const deleteReview = createAsyncThunk<
   void,
@@ -34,26 +35,30 @@ export const reportReview = createAsyncThunk<
   })
   if (!res.ok) throw new Error(res.statusText)
 })
-export const getReports = createAsyncThunk<ReportInfo[], void, { state: RootState }>(
+export const getReports = createAsyncThunk<ReportInfo[], boolean, { state: RootState }>(
   '@review/GET_REPORTS',
-  async (_: void, { getState }) => {
+  async (showReviewed: boolean, { getState }) => {
     const state = getState()
     const res = await fetch(`${state.settings.APIUrl}/reports`, {
       method: 'POST',
-      body: JSON.stringify({ token: state.auth.token })
+      body: JSON.stringify({ token: state.auth.token, showReviewed })
     })
     if (!res.ok) throw new Error(res.statusText)
     return ((await res.json()) as unknown) as ReportInfo[]
   }
 )
-export const reviewReport = createAsyncThunk<void, ReportInfo, { state: RootState }>(
-  '@review/REVIEW_REPORT',
-  async (report, { getState }) => {
-    const state = getState()
-    const res = await fetch(`${state.settings.APIUrl}/reviewReport`, {
-      method: 'POST',
-      body: JSON.stringify({ token: state.auth.token, ...report })
-    })
-    if (!res.ok) throw new Error(res.statusText)
-  }
-)
+export const reviewReport = createAsyncThunk<
+  void,
+  Pick<ReportInfo, 'packageName' | 'reportedBy' | 'reportedUser' | 'reviewedBy' | 'review'> & {
+    deleteReview: boolean
+    ban: boolean
+  },
+  { state: RootState }
+>('@review/REVIEW_REPORT', async (report, { getState }) => {
+  const state = getState()
+  const res = await fetch(`${state.settings.APIUrl}/reviewReport`, {
+    method: 'POST',
+    body: JSON.stringify({ token: state.auth.token, ...report })
+  })
+  if (!res.ok) throw new Error(res.statusText)
+})
