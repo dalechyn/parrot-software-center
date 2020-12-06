@@ -21,6 +21,7 @@ import { connect, ConnectedProps } from 'react-redux'
 import { unwrapResult } from '@reduxjs/toolkit'
 import { useForm } from 'react-hook-form'
 import { Visibility, VisibilityOff } from '@material-ui/icons'
+import { useTranslation } from 'react-i18next';
 
 const mapDispatchToProps = {
   login: AuthActions.login,
@@ -50,6 +51,8 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
   const { enqueueSnackbar } = useSnackbar()
   const { register, handleSubmit, errors, clearError } = useForm<FormData>()
 
+  const { t } = useTranslation();
+
   return (
     <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">
       <form
@@ -59,15 +62,13 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
               setLoading(true)
               const action = await loginAction({ login, password })
               unwrapResult(action)
-              enqueueSnackbar('Logged in successfully')
+              enqueueSnackbar(`${t('loginSuccess')}`)
               onClose()
             } else {
               setLoading(true)
               const action = await registerAction({ email, login, password })
               unwrapResult(action)
-              enqueueSnackbar(
-                'Registered successfully, confirm your account in a message we sent to the email'
-              )
+              enqueueSnackbar(`${t('registerSuccess')}`)
               onClose()
             }
           } catch (e) {
@@ -76,18 +77,18 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
           setLoading(false)
         })}
       >
-        <DialogTitle id="form-dialog-title">{registered ? 'Log in' : 'Register'}</DialogTitle>
+        <DialogTitle id="form-dialog-title">{registered ? `${t('login')}` : `${t('register')}`}</DialogTitle>
         <DialogContent>
           {!registered && (
             <TextField
               autoFocus
               margin="dense"
               name="email"
-              label="Email Address"
+              label={t('emailAddr')}
               onChange={() => setError('')}
               type="email"
               error={!!(errors.email || error)}
-              helperText={error ? error : errors.email && 'Wrong email format'}
+              helperText={error ? error : errors.email && `${t('wrongEmailFormat')}`}
               inputRef={register({ required: true, pattern: emailRegExp })}
               fullWidth
             />
@@ -96,11 +97,11 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
             autoFocus
             margin="dense"
             name="login"
-            label="Login"
+            label={t('login')}
             type="login"
             onChange={() => setError('')}
             error={!!(errors.login || error)}
-            helperText={error ? error : 'Login needs to have 3-20 symbols'}
+            helperText={error ? error : `${t('loginRequirement')}`}
             inputRef={register({ required: true, minLength: 3, maxLength: 20 })}
             fullWidth
           />
@@ -115,7 +116,7 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
-                    aria-label="toggle password visibility"
+                    aria-label={t('passVisibility')}
                     onClick={() => setShowPassword(!showPassword)}
                     onMouseDown={event => event.preventDefault()}
                   >
@@ -124,7 +125,7 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
                 </InputAdornment>
               }
             />
-            <FormHelperText>Password needs to have 6-20 symbols</FormHelperText>
+            <FormHelperText>{t('passSymbols')}</FormHelperText>
           </FormControl>
           <Link
             component="button"
@@ -138,16 +139,16 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
               setError('')
             }}
           >
-            {registered ? 'Not registered? Register now.' : 'Already registered? Login now.'}
+            {registered ? `${t('registerNow')}` : `${t('loginNow')}`}
           </Link>
         </DialogContent>
         <DialogActions>
           {loading && <CircularProgress />}
           <Button onClick={onClose} color="primary">
-            Cancel
+            {t('cancel')}
           </Button>
           <Button color="primary" type="submit">
-            {registered ? 'Login' : 'Register'}
+            {registered ? `${t('login')}` : `${t('register')}`}
           </Button>
         </DialogActions>
       </form>
