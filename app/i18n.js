@@ -33,7 +33,12 @@ const resources = {
             "loadCVE": "Load CVE Data (disabling may speed up the search)",
             "darkTheme": "Use Dark Theme",
             "save": "Save",
-            "close": "Close"
+            "close": "Close",
+            // RatingDialog
+            "reviewSent": "Your review is sent!",
+            "shareReview": "Share your review!",
+            "commentary": "Commentary",
+            "send": "Send"
         }
     },
     it: {
@@ -67,7 +72,12 @@ const resources = {
             "loadCVE": "Carica dati CVE (la disabilitazione può accelerare la ricerca)",
             "darkTheme": "Usa il tema dark",
             "save": "Salva",
-            "close": "Chiudi"
+            "close": "Chiudi",
+            // RatingDialog
+            "reviewSent": "La tua recensione è stata inviata!",
+            "shareReview": "Condividi la tua opinione!",
+            "commentary": "Commento",
+            "send": "Invia"
         }
     }
 };
@@ -85,3 +95,4 @@ i18next
 });
 
 export default i18next;
+

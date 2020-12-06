@@ -14,6 +14,7 @@ import { useSnackbar } from 'notistack'
 import { connect, ConnectedProps } from 'react-redux'
 import { useForm } from 'react-hook-form'
 import { Rating } from '@material-ui/lab'
+import { useTranslation } from 'react-i18next';
 
 const mapStateToProps = ({ auth: { token, login } }: RootState) => ({
   token,
@@ -42,6 +43,8 @@ const RatingDialog = ({ name, onClose, rating, token, rate, addFn }: RatingDialo
   const { enqueueSnackbar } = useSnackbar()
   const { register, handleSubmit, control } = useForm<FormData>()
 
+  const { t } = useTranslation();
+
   return (
     <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">
       <form
@@ -50,11 +53,11 @@ const RatingDialog = ({ name, onClose, rating, token, rate, addFn }: RatingDialo
           await rate({ name, token, rating, commentary })
           setLoading(false)
           addFn(rating, commentary)
-          enqueueSnackbar('Your review is sent!')
+          enqueueSnackbar(`${t('reviewSent')}`)
           onClose()
         })}
       >
-        <DialogTitle id="form-dialog-title">Share your review!</DialogTitle>
+        <DialogTitle id="form-dialog-title">{t('shareReview')}</DialogTitle>
         <DialogContent>
           <Controller name="rating" control={control} as={Rating} defaultValue={rating} />
           <TextField
@@ -62,7 +65,7 @@ const RatingDialog = ({ name, onClose, rating, token, rate, addFn }: RatingDialo
             multiline
             margin="dense"
             name="commentary"
-            label="Commentary"
+            label={t('commentary')}
             inputRef={register({ required: true, minLength: 3, maxLength: 256 })}
             rows={10}
             fullWidth
@@ -71,10 +74,10 @@ const RatingDialog = ({ name, onClose, rating, token, rate, addFn }: RatingDialo
         <DialogActions>
           {loading && <CircularProgress />}
           <Button onClick={onClose} color="primary">
-            Cancel
+            {t('cancel')}
           </Button>
           <Button color="primary" type="submit">
-            Send
+            {t('send')}
           </Button>
         </DialogActions>
       </form>
