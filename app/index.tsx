@@ -4,6 +4,7 @@ import { AppContainer as ReactHotAppContainer } from 'react-hot-loader'
 import { Provider } from 'react-redux'
 import store from './store'
 import './app.global.css'
+import './i18n' // import i18n.js
 
 const AppContainer = process.env.PLAIN_HMR ? Fragment : ReactHotAppContainer
 
