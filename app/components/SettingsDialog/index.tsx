@@ -13,6 +13,7 @@ import { connect, ConnectedProps } from 'react-redux'
 import { Controller, useForm } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 import { Settings } from '../../reducers/settings'
+import { useTranslation } from 'react-i18next';
 
 const mapStateToProps = ({ settings }: RootState) => ({ settings })
 
@@ -29,15 +30,16 @@ type SettingsDialogProps = ConnectedProps<typeof connector> & {
 const SettingsDialog = ({ onClose, save, settings }: SettingsDialogProps) => {
   const { handleSubmit, control } = useForm<Settings>({ defaultValues: settings })
   const { enqueueSnackbar } = useSnackbar()
+  const { t } = useTranslation();
   return (
     <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">
       <form
         onSubmit={handleSubmit(data => {
-          enqueueSnackbar('Settings saved!', { variant: 'success' })
+          enqueueSnackbar(`${t('settingSaved')}`, { variant: 'success' })
           save(data)
         })}
       >
-        <DialogTitle id="form-dialog-title">Settings</DialogTitle>
+        <DialogTitle id="form-dialog-title">{t('settings')}</DialogTitle>
         <DialogContent>
           <FormControlLabel
             control={
@@ -50,7 +52,7 @@ const SettingsDialog = ({ onClose, save, settings }: SettingsDialogProps) => {
               />
             }
             color="primary"
-            label="Load CVE Data (disabling may speed up the search)"
+            label={t('loadCVE')}
           />
           <FormControlLabel
             control={
@@ -63,15 +65,15 @@ const SettingsDialog = ({ onClose, save, settings }: SettingsDialogProps) => {
               />
             }
             color="primary"
-            label="Use Dark Theme"
+            label={t('darkTheme')}
           />
         </DialogContent>
         <DialogActions>
           <Button color="primary" type="submit">
-            Save
+            {t('save')}
           </Button>
           <Button onClick={onClose} color="primary">
-            Close
+            {t('close')}
           </Button>
         </DialogActions>
       </form>

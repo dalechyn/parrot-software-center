@@ -14,7 +14,12 @@ const resources = {
             "settings": "Settings",
             "login": "Log in",
             "logout": "Log out",
-            "pkgAvailable": "packages are available for update"
+            "pkgAvailable": "packages are available for update",
+            "settingSaved": "Setting saved!",
+            "loadCVE": "Load CVE Data (disabling may speed up the search)",
+            "darkTheme": "Use Dark Theme",
+            "save": "Save",
+            "close": "Close"
         }
     },
     it: {
@@ -28,7 +33,12 @@ const resources = {
             "settings": "Impostazioni",
             "login": "Log in",
             "logout": "Log out",
-            "pkgAvailable": "pacchetti disponibili per l'aggiornamento"
+            "pkgAvailable": "pacchetti disponibili per l'aggiornamento",
+            "settingSaved": "Impostazioni salvate!",
+            "loadCVE": "Carica dati CVE (la disabilitazione può accelerare la ricerca)",
+            "darkTheme": "Usa il tema dark",
+            "save": "Salva",
+            "close": "Chiudi"
         }
     }
 };
