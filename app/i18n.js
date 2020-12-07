@@ -38,7 +38,14 @@ const resources = {
             "reviewSent": "Your review is sent!",
             "shareReview": "Share your review!",
             "commentary": "Commentary",
-            "send": "Send"
+            "send": "Send",
+            // ReportDialog
+            "reportReview": "Report review",
+            "sentReport": "Your report is sent!",
+            "infoReport": "Report information",
+            // Review
+            "delete": "Delete",
+            "report": "Report"
         }
     },
     it: {
@@ -77,7 +84,14 @@ const resources = {
             "reviewSent": "La tua recensione è stata inviata!",
             "shareReview": "Condividi la tua opinione!",
             "commentary": "Commento",
-            "send": "Invia"
+            "send": "Invia",
+            // ReportDialog
+            "reportReview": "Segnala recensione",
+            "sentReport": "La tua segnalazione è stata inviata!",
+            "infoReport": "Info sulla segnalazione",
+            // Review
+            "delete": "Elimina",
+            "report": "Segnala"
         }
     }
 };
@@ -95,4 +109,3 @@ i18next
 });
 
 export default i18next;
-

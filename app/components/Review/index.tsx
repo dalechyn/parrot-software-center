@@ -12,6 +12,7 @@ import { Rating } from '@material-ui/lab'
 import { connect, ConnectedProps } from 'react-redux'
 import ReportDialog from '../ReportDialog'
 import { deleteReview } from '../../actions/reviews'
+import { useTranslation } from 'react-i18next';
 
 const mapDispatchToProps = {
   deleteReview
@@ -40,6 +41,9 @@ const Review = ({
   destroyReviewComponent
 }: ReviewProps) => {
   const [reportReviewShow, setReportReviewShow] = useState(false)
+
+  const { t } = useTranslation();
+
   return (
     <>
       <Card style={{ width: '100%' }}>
@@ -61,10 +65,10 @@ const Review = ({
                 })()
               }
             >
-              Delete
+              {t('delete')}
             </Button>
             <Button style={{ marginLeft: 'auto' }} onClick={() => setReportReviewShow(true)}>
-              Report
+              {t('report')}
             </Button>
           </CardActions>
         )}
