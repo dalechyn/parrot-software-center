@@ -13,7 +13,7 @@ import { connect, ConnectedProps } from 'react-redux'
 import { Controller, useForm } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 import { Settings } from '../../reducers/settings'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 
 const mapStateToProps = ({ settings }: RootState) => ({ settings })
 

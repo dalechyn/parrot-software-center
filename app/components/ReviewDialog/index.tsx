@@ -14,6 +14,7 @@ import { connect, ConnectedProps } from 'react-redux'
 import { Controller, useForm } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 import { ReportInfo } from '../../actions/reviews'
+import { useTranslation } from 'react-i18next'
 
 const mapStateToProps = ({ auth: { login } }: RootState) => ({ login })
 
@@ -36,6 +37,7 @@ const ReviewDialog = ({ onSubmit, onClose, report, reviewReport, login }: Review
     defaultValues: { review: '', deleteReview: true, ban: false }
   })
   const { enqueueSnackbar } = useSnackbar()
+  const { t } = useTranslation();
   return (
     <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">
       <form
@@ -47,11 +49,11 @@ const ReviewDialog = ({ onSubmit, onClose, report, reviewReport, login }: Review
             reviewedBy: login,
             reviewed: true
           })
-          enqueueSnackbar('Review sent!', { variant: 'success' })
+          enqueueSnackbar(`${t('sentReview')}`, { variant: 'success' })
           onSubmit()
         })}
       >
-        <DialogTitle id="form-dialog-title">Review</DialogTitle>
+        <DialogTitle id="form-dialog-title">{t('review')}</DialogTitle>
         <DialogContent>
           <div>
             <FormControlLabel
@@ -63,13 +65,13 @@ const ReviewDialog = ({ onSubmit, onClose, report, reviewReport, login }: Review
                   color="primary"
                 />
               }
-              label="Delete user review"
+              label={t('delUsrReview')}
             />
             <FormControlLabel
               control={
                 <Controller as={<Checkbox />} control={control} name="ban" color="primary" />
               }
-              label="Ban user"
+              label={t('banUsr')}
             />
           </div>
           <TextField
@@ -77,7 +79,7 @@ const ReviewDialog = ({ onSubmit, onClose, report, reviewReport, login }: Review
             multiline
             margin="dense"
             name="review"
-            label="Put your review here"
+            label={t('putReview')}
             inputRef={register({ required: true, minLength: 3, maxLength: 256 })}
             rows={10}
             fullWidth
@@ -85,10 +87,10 @@ const ReviewDialog = ({ onSubmit, onClose, report, reviewReport, login }: Review
         </DialogContent>
         <DialogActions>
           <Button color="primary" type="submit">
-            Send
+            {t('send')}
           </Button>
           <Button onClick={onClose} color="primary">
-            Cancel
+            {t('cancel')}
           </Button>
         </DialogActions>
       </form>

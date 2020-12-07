@@ -9,6 +9,7 @@ import { withRouter } from 'react-router'
 import { RouteComponentProps } from 'react-router-dom'
 import { QueueNodeMeta } from '../../actions/queue'
 import UpdateList from './UpdateList'
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   padded: {
@@ -34,6 +35,8 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
   const classes = useStyles()
   const [loading, setLoading] = useState(true)
   const [updates, setUpdates] = useState(Array<QueueNodeMeta>())
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     const f = async () => {
@@ -68,10 +71,10 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
           <Grid item xs>
             <h2>
               {updates.length !== 0
-                ? `${updates.length} updates available! Upgrade now!`
+                ? `${updates.length} ${t('update')}`
                 : packages.length === 0
-                ? 'Your system is up to date'
-                : `${packages.length} packages are waiting for upgrade! Upgrade now!`}
+                ? `${t('systemUpdated')}`
+                : `${packages.length} ${t('upgrade')}`}
             </h2>
           </Grid>
           {packages.length === 0 ||
@@ -100,7 +103,7 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
                   push('/queue')
                 }}
               >
-                Upgrade
+                {t('upgradeBtn')}
               </Button>
             </>
           ) : (

@@ -21,7 +21,7 @@ import { connect, ConnectedProps } from 'react-redux'
 import { unwrapResult } from '@reduxjs/toolkit'
 import { useForm } from 'react-hook-form'
 import { Visibility, VisibilityOff } from '@material-ui/icons'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 
 const mapDispatchToProps = {
   login: AuthActions.login,

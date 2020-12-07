@@ -10,7 +10,7 @@ import { Search } from '@material-ui/icons'
 import { AlertActions, AptActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
 
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles({
   root: {

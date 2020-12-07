@@ -45,7 +45,24 @@ const resources = {
             "infoReport": "Report information",
             // Review
             "delete": "Delete",
-            "report": "Report"
+            "report": "Report",
+            // ReviewDialog
+            "sentReview": "Review sent!",
+            "review": "Review",
+            "delUsrReview": "Delete user review",
+            "banUsr": "Ban user",
+            "putReview": "Put your review here",
+            // UpgradeFormIndex
+            "update": "updates available! Upgrade now!",
+            "systemUpdated": "Your system is up to date",
+            "upgrade": "packages are waiting for upgrade! Upgrade now!",
+            "upgradeBtn": "Upgrade",
+            // UpgradeFormUpdateList
+            "noPkgFound": "No Package Found",
+            "from": "From",
+            "moreInfo": "More info",
+            "package": "Package",
+            "queueUpgrade": "queued for upgrade",
         }
     },
     it: {
@@ -72,7 +89,7 @@ const resources = {
             "mirrors": "Mirrors",
             "settings": "Impostazioni",
             "login": "Accedi",
-            "logout": "Log out",
+            "logout": "Esci",
             "pkgAvailable": "pacchetti disponibili per l'aggiornamento",
             // SettingsDialog & Terminal
             "settingSaved": "Impostazioni salvate!",
@@ -91,7 +108,24 @@ const resources = {
             "infoReport": "Info sulla segnalazione",
             // Review
             "delete": "Elimina",
-            "report": "Segnala"
+            "report": "Segnala",
+            // ReviewDialog
+            "sentReview": "Recensione inviata!",
+            "review": "Recensione",
+            "delUsrReview": "Elimina la recensione dell'utente",
+            "banUsr": "Blocca l'utente",
+            "putReview": "Inserisci qui la tua recensione",
+            // UpgradeFormIndex
+            "update": "aggiornamenti disponibili! Aggiorna ora!",
+            "systemUpdated": "Il tuo sistema è aggiornato",
+            "upgrade": "pacchetti in attesa di una nuova versione! Aggiorna adesso!",
+            "upgradeBtn": "Aggiorna",
+            // UpgradeFormUpdateList
+            "noPkgFound": "Nessun pacchetto trovato",
+            "from": "Da",
+            "moreInfo": "Più informazioni",
+            "package": "Pacchetto",
+            "queueUpgrade": "in coda per l'aggiornamento",
         }
     }
 };

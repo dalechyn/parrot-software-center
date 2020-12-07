@@ -12,7 +12,7 @@ import { Rating } from '@material-ui/lab'
 import { connect, ConnectedProps } from 'react-redux'
 import ReportDialog from '../ReportDialog'
 import { deleteReview } from '../../actions/reviews'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 
 const mapDispatchToProps = {
   deleteReview

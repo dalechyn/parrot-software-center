@@ -12,7 +12,7 @@ import { useSnackbar } from 'notistack'
 import { connect, ConnectedProps } from 'react-redux'
 import { useForm } from 'react-hook-form'
 import { ReportInfo, reportReview } from '../../actions/reviews'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 
 const mapDispatchToProps = { reportReview }
 

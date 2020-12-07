@@ -9,6 +9,7 @@ import { connect, ConnectedProps } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router'
 import { useSnackbar } from 'notistack'
 import cls from 'classnames'
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -71,6 +72,7 @@ const UpdateList = ({ updates, push, APIUrl, upgrade, isBusy }: UpdateListProp) 
   const [isExpanded, expand] = useState(false)
   const maxItemsShown = 10
   const areUpdatesMoreThanMaxItems = updates.length > maxItemsShown
+  const { t } = useTranslation();
 
   const metaToComponent = ({ name, source, oldVersion, version }: QueueNodeMeta, index: number) => (
     <Grid item key={index} style={{ width: '100%' }}>
@@ -82,7 +84,7 @@ const UpdateList = ({ updates, push, APIUrl, upgrade, isBusy }: UpdateListProp) 
                 className={classes.media}
                 src={`${APIUrl}/assets/packages/${name}.png`}
                 unloader={
-                  <img className={classes.media} src={dummyPackageImg} alt={'No Package Found'} />
+                  <img className={classes.media} src={dummyPackageImg} alt={`${t('noPkgFound')}`} />
                 }
               />
               <Typography variant="h5" className={classes.pkgName}>
@@ -95,7 +97,7 @@ const UpdateList = ({ updates, push, APIUrl, upgrade, isBusy }: UpdateListProp) 
             <Typography variant="h5">{version}</Typography>
           </Grid>
           <Grid className={classes.gridItem} item xs={4}>
-            <Typography variant="h6">From: {oldVersion}</Typography>
+            <Typography variant="h6">{t('from')} {oldVersion}</Typography>
           </Grid>
           <Grid className={classes.gridItem} item container xs={4} justify="space-around">
             <Button
@@ -104,7 +106,7 @@ const UpdateList = ({ updates, push, APIUrl, upgrade, isBusy }: UpdateListProp) 
               size="large"
               onClick={() => push(`/package/${source === 'APT' ? 'apt' : 'snap'}/${name}`)}
             >
-              More info
+              {t('moreInfo')}
             </Button>
             <Button
               variant="outlined"
@@ -113,7 +115,7 @@ const UpdateList = ({ updates, push, APIUrl, upgrade, isBusy }: UpdateListProp) 
               className={classes.upgrade}
               size="large"
               onClick={() => {
-                enqueueSnackbar(`Package ${name}@${version} queued for upgrade`, {
+                enqueueSnackbar(`${t('package')} ${name}@${version} ${t('queueUpgrade')}`, {
                   variant: 'success'
                 })
                 upgrade({ name, version, source: 'APT' })

@@ -3,7 +3,7 @@ import { AlertActions } from '../../actions'
 import { Button, Grid, makeStyles, Typography } from '@material-ui/core'
 import { connect, ConnectedProps } from 'react-redux'
 import { grey } from '@material-ui/core/colors'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   root: {

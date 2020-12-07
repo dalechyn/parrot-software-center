@@ -33,7 +33,7 @@ import { unwrapResult } from '@reduxjs/toolkit'
 import AuthDialog from '../AuthDialog'
 import SettingsDialog from '../SettingsDialog'
 import useConstant from 'use-constant'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   drawer: { width: 250 },

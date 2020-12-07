@@ -14,7 +14,7 @@ import { useSnackbar } from 'notistack'
 import { connect, ConnectedProps } from 'react-redux'
 import { useForm } from 'react-hook-form'
 import { Rating } from '@material-ui/lab'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 
 const mapStateToProps = ({ auth: { token, login } }: RootState) => ({
   token,
