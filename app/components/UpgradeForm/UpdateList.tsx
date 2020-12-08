@@ -121,7 +121,7 @@ const UpdateList = ({ updates, push, APIUrl, upgrade, isBusy }: UpdateListProp) 
                 upgrade({ name, version, source: 'APT' })
               }}
             >
-              Upgrade
+              {t('upgradePkg')}
             </Button>
           </Grid>
         </div>

@@ -63,6 +63,22 @@ const resources = {
             "moreInfo": "More info",
             "package": "Package",
             "queueUpgrade": "queued for upgrade",
+            // Report
+            "reportedBy": "Reported by",
+            // SearchPreview
+            "monthCVEs": "This months CVEs",
+            "critical": "Critical",
+            "high": "High",
+            "medium": "Medium",
+            "low": "Low",
+            "dequeued": "dequeued",
+            "queuedUpgrade": "queued for upgrade",
+            "cancelUpgrade": "Cancel Upgrade",
+            "upgradePkg": "Upgrade",
+            "queuedDel": "queued for deletion",
+            "uninstall": "Uninstall",
+            "install": "Install",
+            "queueInst": "queued for installation",
         }
     },
     it: {
@@ -126,6 +142,21 @@ const resources = {
             "moreInfo": "Più informazioni",
             "package": "Pacchetto",
             "queueUpgrade": "in coda per l'aggiornamento",
+            // Report
+            "reportedBy": "Segnalato da",
+            // SearchPreview
+            "monthCVEs": "Le CVE di questo mese",
+            "critical": "Critico",
+            "high": "Alto",
+            "medium": "Medio",
+            "low": "Basso",
+            "dequeued": "rimosso dalla coda",
+            "queuedUpgrade": "in coda per l'aggiornamento",
+            "upgradePkg": "Aggiorna",
+            "queuedDel": "in coda per la rimozione",
+            "uninstall": "Disinstalla",
+            "install": "Installa",
+            "queuedInst": "in coda per l'installazione",
         }
     }
 };
