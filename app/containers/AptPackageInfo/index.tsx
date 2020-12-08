@@ -31,6 +31,7 @@ import { QueueNode } from '../Queue'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
 import { AptPackage, AptPackageOptionalFields, Review } from '../../actions/apt'
+import { useTranslation } from 'react-i18next';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -254,20 +255,22 @@ const PackageInfo = ({
     setReviews([...reviews, { author: login, rating, commentary }])
   }
 
+  const { t } = useTranslation();
+
   return loading ? (
     <PackageInfoSkeleton />
   ) : (
     <>
       <Paper elevation={8} className={classes.root}>
         <Button size="large" startIcon={<ArrowBack />} onClick={() => goBack()}>
-          Go Back
+          {t('goback')}
         </Button>
         <Paper className={classes.nameContainer} elevation={10}>
           <Img
             className={classes.media}
             src={`${APIUrl}/assets/packages/${name}.png`}
             unloader={
-              <img className={classes.media} src={dummyPackageImg} alt={'No Package Found'} />
+              <img className={classes.media} src={dummyPackageImg} alt={`${t('noPkgFound')}`} />
             }
           />
           <Typography style={{ color: green[400] }} variant="h5">
@@ -291,7 +294,7 @@ const PackageInfo = ({
             </>
           ) : (
             <Typography variant="h5" style={{ marginLeft: 'auto' }}>
-              This package is not available
+              {t('pkgNotAvailable')}
             </Typography>
           )}
         </Paper>
@@ -299,18 +302,18 @@ const PackageInfo = ({
           <>
             <Accordion disabled={!packageInfo} className={classes.panel} defaultExpanded>
               <AccordionSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
-                <Typography variant="h5">General info</Typography>
+                <Typography variant="h5">{t('generalInfo')}</Typography>
               </AccordionSummary>
               <AccordionDetails className={classes.grid}>
-                <Typography variant="h6">Version:</Typography>
+                <Typography variant="h6">{t('version')}:</Typography>
                 <Paper variant="outlined" className={classes.contentColumn}>
                   <Typography variant="body1">{version}</Typography>
                 </Paper>
-                <Typography variant="h6">Maintainer:</Typography>
+                <Typography variant="h6">{t('mantainer')}:</Typography>
                 <Paper variant="outlined" className={classes.contentColumn}>
                   <Typography variant="body1">{maintainer}</Typography>
                 </Paper>
-                <Typography variant="h6">Description:</Typography>
+                <Typography variant="h6">{t('description')}:</Typography>
                 <Paper variant="outlined" className={classes.contentColumn}>
                   <Typography variant="body1">{processDescription(description)}</Typography>
                 </Paper>
@@ -318,7 +321,7 @@ const PackageInfo = ({
             </Accordion>
             <Accordion disabled={!packageInfo && Object.keys(rest).length === 0}>
               <AccordionSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
-                <Typography variant="h5">Additional info</Typography>
+                <Typography variant="h5">{t('additionalInfo')}</Typography>
               </AccordionSummary>
               <AccordionDetails className={classes.grid}>
                 {depends && (
@@ -451,7 +454,7 @@ const PackageInfo = ({
               }}
             >
               <AccordionSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
-                <Typography variant="h5">Reviews</Typography>
+                <Typography variant="h5">{t('reviews')}</Typography>
               </AccordionSummary>
               <AccordionDetails style={{ justifyContent: 'center' }}>
                 {reviews?.map(({ author, rating, commentary }, k) => (
@@ -476,7 +479,7 @@ const PackageInfo = ({
                     disabled={isBusy}
                     className={cls(classes.button, classes.uninstall)}
                     onClick={() => {
-                      enqueueSnackbar(`Package ${name}@${version} dequeued`, {
+                      enqueueSnackbar(`${t('package')} ${name}@${version} ${t('dequeued')}`, {
                         variant: 'error'
                       })
                       dontUpgrade({ name, version, source: 'APT' })
@@ -484,7 +487,7 @@ const PackageInfo = ({
                     }}
                     size="large"
                   >
-                    Cancel upgrade
+                    {t('cancelUpgrade')}
                   </Button>
                 ) : (
                   <Button
@@ -494,14 +497,14 @@ const PackageInfo = ({
                     className={cls(classes.button, classes.upgrade)}
                     size="large"
                     onClick={() => {
-                      enqueueSnackbar(`Package ${name}@${version} queued for upgrade`, {
+                      enqueueSnackbar(`${t('package')} ${name}@${version} ${t('queuedUpgrade')}`, {
                         variant: 'success'
                       })
                       upgrade({ name, version, source: 'APT' })
                       setQueuedUpgrade(true)
                     }}
                   >
-                    Upgrade
+                    {t('upgradePkg')}
                   </Button>
                 ))}
               {installedOrQueried ? (
@@ -512,8 +515,8 @@ const PackageInfo = ({
                   onClick={() => {
                     enqueueSnackbar(
                       packages.find((el: QueueNode) => el.name === name)
-                        ? `Package ${name}@${version} dequeued`
-                        : `Package ${name}@${version} queued for deletion`,
+                        ? `${t('package')} ${name}@${version} ${t('dequeued')}`
+                        : `${t('package')} ${name}@${version} ${t('queuedDel')}`,
                       {
                         variant: 'error'
                       }
@@ -523,7 +526,7 @@ const PackageInfo = ({
                   }}
                   size="large"
                 >
-                  Uninstall
+                  ${t('uninstall')}
                 </Button>
               ) : (
                 <Button
@@ -535,8 +538,8 @@ const PackageInfo = ({
                   onClick={() => {
                     enqueueSnackbar(
                       packages.find((el: QueueNode) => el.name === name)
-                        ? `Package ${name}@${version} dequeued`
-                        : `Package ${name}@${version} queued for installation`,
+                        ? `${t('package')} ${name}@${version} ${t('dequeued')}`
+                        : `${t('package')} ${name}@${version} ${t('queuedInst')}`,
                       {
                         variant: 'info'
                       }
@@ -545,7 +548,7 @@ const PackageInfo = ({
                     setInstalled(true)
                   }}
                 >
-                  Install
+                  ${t('install')}
                 </Button>
               )}
             </AccordionActions>

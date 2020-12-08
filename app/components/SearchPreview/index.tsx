@@ -24,7 +24,7 @@ import { QueueActions } from '../../actions'
 import { QueueNode } from '../../containers/Queue'
 import { Rating } from '@material-ui/lab'
 import { PackagePreview } from '../../actions/apt'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   root: {

@@ -13,7 +13,7 @@ import React, { useState } from 'react'
 import { ReportInfo } from '../../actions/reviews'
 import { red } from '@material-ui/core/colors'
 import ReviewDialog from '../ReviewDialog'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   card: {

@@ -4,6 +4,7 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
     en: {
         translation: {
+            // ***************** Components *****************
             // SearchBar
             "searchPkg": "Search a package",
             // AuthDialog
@@ -79,10 +80,21 @@ const resources = {
             "uninstall": "Uninstall",
             "install": "Install",
             "queueInst": "queued for installation",
+            // ***************** Containers *****************
+            // AptPackageInfo
+            "goback": "Go Back",
+            "pkgNotAvailable": "This package is not available",
+            "generalInfo": "General info",
+            "version": "Version",
+            "mantainer": "Mantainer",
+            "description": "Description",
+            "additionalInfo": "Additional info",
+            "reviews": "Reviews",
         }
     },
     it: {
         translation: {
+            // ***************** Components *****************
             // SearchBar
             "searchPkg": "Cerca un pacchetto",
             // AuthDialog
@@ -152,11 +164,22 @@ const resources = {
             "low": "Basso",
             "dequeued": "rimosso dalla coda",
             "queuedUpgrade": "in coda per l'aggiornamento",
+            "cancelUpgrade": "Non aggiornare",
             "upgradePkg": "Aggiorna",
             "queuedDel": "in coda per la rimozione",
             "uninstall": "Disinstalla",
             "install": "Installa",
             "queuedInst": "in coda per l'installazione",
+            // ***************** Containers *****************
+            // AptPackageInfo
+            "goback": "Torna indietro",
+            "pkgNotAvailable": "Questo pacchetto non è disponibile",
+            "generalInfo": "Informazioni generali",
+            "version": "Versione",
+            "mantainer": "Mantainer",
+            "description": "Descrizione",
+            "additionalInfo": "Informazioni aggiuntive",
+            "reviews": "Recensioni",
         }
     }
 };
