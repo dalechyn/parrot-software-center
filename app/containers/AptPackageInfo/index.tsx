@@ -526,7 +526,7 @@ const PackageInfo = ({
                   }}
                   size="large"
                 >
-                  ${t('uninstall')}
+                  {t('uninstall')}
                 </Button>
               ) : (
                 <Button
@@ -548,7 +548,7 @@ const PackageInfo = ({
                     setInstalled(true)
                   }}
                 >
-                  ${t('install')}
+                  {t('install')}
                 </Button>
               )}
             </AccordionActions>
