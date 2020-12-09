@@ -90,6 +90,14 @@ const resources = {
             "description": "Description",
             "additionalInfo": "Additional info",
             "reviews": "Reviews",
+            // Mirrors
+            "loading": "Loading",
+            "errStatMirror": "Error parsing mirror statistics",
+            "fetchErr": "Fetching error. Are you connected to the internet?",
+            "serverErr": "Server error",
+            // Queue
+            "process": "Process",
+            "queueEmpty": "Queue is empty",
         }
     },
     it: {
@@ -112,7 +120,7 @@ const resources = {
             // Header
             "hide": "Nascondi",
             "home": "Home",
-            "queue": "Coda",
+            "queue": "Coda d'attesa",
             "reports": "Segnalazioni",
             "mirrors": "Mirrors",
             "settings": "Impostazioni",
@@ -180,6 +188,14 @@ const resources = {
             "description": "Descrizione",
             "additionalInfo": "Informazioni aggiuntive",
             "reviews": "Recensioni",
+            // Mirrors
+            "loading": "Caricamento",
+            "errStatMirror": "Errore durante l'analisi delle statistiche del mirror",
+            "fetchErr": "Errore nel recuperare i dati. Sei connesso ad internet?",
+            "serverErr": "Errore del server",
+            // Queue
+            "process": "Inizia",
+            "queueEmpty": "La coda d'attesa è vuota",
         }
     }
 };
