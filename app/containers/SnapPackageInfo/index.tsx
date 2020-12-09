@@ -33,6 +33,7 @@ import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
 import { Review, SnapPackage } from '../../actions/apt'
 import { shell } from 'electron'
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -206,13 +207,15 @@ const PackageInfo = ({
     setReviews([...reviews, { author: login, rating, commentary }])
   }
 
+  const { t } = useTranslation();
+
   return loading ? (
     <PackageInfoSkeleton />
   ) : (
     <>
       <Paper elevation={8} className={classes.root}>
         <Button size="large" startIcon={<ArrowBack />} onClick={() => goBack()}>
-          Go Back
+          {t('goback')}
         </Button>
         <Paper className={classes.nameContainer} elevation={10}>
           <Img
@@ -243,7 +246,7 @@ const PackageInfo = ({
             </>
           ) : (
             <Typography variant="h5" style={{ marginLeft: 'auto' }}>
-              This package is not available
+              {t('pkgNotAvailable')}
             </Typography>
           )}
         </Paper>
@@ -251,10 +254,10 @@ const PackageInfo = ({
           <>
             <Accordion disabled={!packageInfo} className={classes.panel} defaultExpanded>
               <AccordionSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
-                <Typography variant="h5">General info</Typography>
+                <Typography variant="h5">{t('generalInfo')}</Typography>
               </AccordionSummary>
               <AccordionDetails className={classes.grid}>
-                <Typography variant="h6">Version:</Typography>
+                <Typography variant="h6">{t('version')}:</Typography>
                 <Select
                   variant="outlined"
                   value={selectedVersion}
@@ -268,13 +271,13 @@ const PackageInfo = ({
                     </MenuItem>
                   ))}
                 </Select>
-                <Typography variant="h6">Maintainer:</Typography>
+                <Typography variant="h6">{t('mantainer')}:</Typography>
                 <Paper variant="outlined" className={classes.contentColumn}>
                   <Typography variant="body1">{publisher}</Typography>
                 </Paper>
                 {description && (
                   <>
-                    <Typography variant="h6">Description:</Typography>
+                    <Typography variant="h6">{t('description')}:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
                       <Typography variant="body1">{description}</Typography>
                     </Paper>
@@ -290,7 +293,7 @@ const PackageInfo = ({
                 )}
                 {summary && (
                   <>
-                    <Typography variant="h6">Summary:</Typography>
+                    <Typography variant="h6">{t('summary')}:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
                       <Typography variant="body1">{summary}</Typography>
                     </Paper>
@@ -312,7 +315,7 @@ const PackageInfo = ({
                 )}
                 {contact && (
                   <>
-                    <Typography variant="h6">Contact:</Typography>
+                    <Typography variant="h6">{t('contact')}:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
                       <Link
                         component="button"
@@ -326,7 +329,7 @@ const PackageInfo = ({
                 )}
                 {license && (
                   <>
-                    <Typography variant="h6">License:</Typography>
+                    <Typography variant="h6">{t('license')}:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
                       <Typography variant="body1">{license}</Typography>
                     </Paper>
@@ -334,7 +337,7 @@ const PackageInfo = ({
                 )}
                 {refreshDate && (
                   <>
-                    <Typography variant="h6">Refresh Date:</Typography>
+                    <Typography variant="h6">{t('refreshDate')}:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
                       <Typography variant="body1">{refreshDate}</Typography>
                     </Paper>
@@ -342,7 +345,7 @@ const PackageInfo = ({
                 )}
                 {tracking && (
                   <>
-                    <Typography variant="h6">Tracking:</Typography>
+                    <Typography variant="h6">{t('tracking')}:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
                       <Typography variant="body1">{tracking}</Typography>
                     </Paper>
@@ -352,7 +355,7 @@ const PackageInfo = ({
             </Accordion>
             <Accordion disabled={!screenshots || screenshots.length === 0}>
               <AccordionSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
-                <Typography variant="h5">Screenshots</Typography>
+                <Typography variant="h5">{t('screenshots')}</Typography>
               </AccordionSummary>
               <AccordionDetails style={{ justifyContent: 'center' }}>
                 <Box width="90%">
@@ -399,7 +402,7 @@ const PackageInfo = ({
                     disabled={isBusy}
                     className={cls(classes.button, classes.uninstall)}
                     onClick={() => {
-                      enqueueSnackbar(`Package ${name}@${selectedVersion.split(':')[1]} dequeued`, {
+                      enqueueSnackbar(`${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t('dequeued')}`, {
                         variant: 'error'
                       })
                       dontUpgrade({ name, version: selectedVersion, source: 'SNAP' })
@@ -407,7 +410,7 @@ const PackageInfo = ({
                     }}
                     size="large"
                   >
-                    Cancel upgrade
+                    {t('cancelUpgrade')}
                   </Button>
                 ) : (
                   <Button
@@ -418,7 +421,7 @@ const PackageInfo = ({
                     size="large"
                     onClick={() => {
                       enqueueSnackbar(
-                        `Package ${name}@${selectedVersion.split(':')[1]} queued for upgrade`,
+                        `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t('queuedUpgrade')}`,
                         {
                           variant: 'success'
                         }
@@ -438,8 +441,8 @@ const PackageInfo = ({
                   onClick={() => {
                     enqueueSnackbar(
                       packages.find((el: QueueNode) => el.name === name)
-                        ? `Package ${name}@${selectedVersion.split(':')[1]} dequeued`
-                        : `Package ${name}@${selectedVersion.split(':')[1]} queued for deletion`,
+                        ? `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t('dequeued')}`
+                        : `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t('queuedDel')}`,
                       {
                         variant: 'error'
                       }
@@ -449,7 +452,7 @@ const PackageInfo = ({
                   }}
                   size="large"
                 >
-                  Uninstall
+                  {t('uninstall')}
                 </Button>
               ) : (
                 <Button
@@ -461,10 +464,10 @@ const PackageInfo = ({
                   onClick={() => {
                     enqueueSnackbar(
                       packages.find((el: QueueNode) => el.name === name)
-                        ? `Package ${name}@${selectedVersion.split(':')[1]} dequeued`
-                        : `Package ${name}@${
+                        ? `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t('dequeued')}`
+                        : `${t('package')} ${name}@${
                             selectedVersion.split(':')[1]
-                          } queued for installation`,
+                          } ${t('queuedInst')}`,
                       {
                         variant: 'info'
                       }
@@ -473,7 +476,7 @@ const PackageInfo = ({
                     setInstalled(true)
                   }}
                 >
-                  Install
+                  {t('install')}
                 </Button>
               )}
             </AccordionActions>

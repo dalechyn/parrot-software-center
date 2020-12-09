@@ -90,6 +90,7 @@ const resources = {
             "description": "Description",
             "additionalInfo": "Additional info",
             "reviews": "Reviews",
+            "screenshots": "Screenshots",
             // Mirrors
             "loading": "Loading",
             "errStatMirror": "Error parsing mirror statistics",
@@ -98,6 +99,12 @@ const resources = {
             // Queue
             "process": "Process",
             "queueEmpty": "Queue is empty",
+            // SnapPackageInfo
+            "summary": "Summary",
+            "contact": "Contact",
+            "license": "License",
+            "refreshDate": "Refresh Date",
+            "tracking": "Tracking",
         }
     },
     it: {
@@ -188,6 +195,7 @@ const resources = {
             "description": "Descrizione",
             "additionalInfo": "Informazioni aggiuntive",
             "reviews": "Recensioni",
+            "screenshots": "Screenshots",
             // Mirrors
             "loading": "Caricamento",
             "errStatMirror": "Errore durante l'analisi delle statistiche del mirror",
@@ -196,6 +204,12 @@ const resources = {
             // Queue
             "process": "Inizia",
             "queueEmpty": "La coda d'attesa è vuota",
+            // SnapPackageInfo
+            "summary": "Riepilogo",
+            "contact": "Contatti",
+            "license": "Licenza",
+            "refreshDate": "Data di aggiornamento",
+            "tracking": "Monitoraggio",
         }
     }
 };

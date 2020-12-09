@@ -432,7 +432,7 @@ const PackageInfo = ({
             </Accordion>
             <Accordion disabled={screenshots.length === 0}>
               <AccordionSummary expandIcon={<ExpandMore />} aria-controls="panel1a-content">
-                <Typography variant="h5">Screenshots</Typography>
+                <Typography variant="h5">{t('screenshots')}</Typography>
               </AccordionSummary>
               <AccordionDetails style={{ justifyContent: 'center' }}>
                 <Box width="90%">

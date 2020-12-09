@@ -15,6 +15,7 @@ import { goBack } from 'connected-react-router'
 import { connect, ConnectedProps } from 'react-redux'
 import { withRouter } from 'react-router'
 import { RouteComponentProps } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -64,10 +65,11 @@ type PackageInfoSkeletonProps = ConnectedProps<typeof connector> & RouteComponen
 
 const PackageInfoSkeleton = ({ goBack }: PackageInfoSkeletonProps) => {
   const classes = useStyles()
+  const { t } = useTranslation();
   return (
     <Paper elevation={8} className={classes.root}>
       <Button size="large" startIcon={<ArrowBack />} onClick={() => goBack()}>
-        Go Back
+        {t('goback')}
       </Button>
       <Paper className={classes.nameContainer} elevation={10}>
         <Skeleton height={60} width={60} className={classes.media} variant="rect" />
@@ -79,14 +81,14 @@ const PackageInfoSkeleton = ({ goBack }: PackageInfoSkeletonProps) => {
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
-          <Typography variant="h5">General info</Typography>
+          <Typography variant="h5">{t('generalInfo')}</Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.grid}>
-          <Typography variant="h6">Version:</Typography>
+          <Typography variant="h6">{t('version')}:</Typography>
           <Skeleton variant="rect" className={classes.contentColumn} />
-          <Typography variant="h6">Maintainer:</Typography>
+          <Typography variant="h6">{t('mantainer')}:</Typography>
           <Skeleton variant="rect" className={classes.contentColumn} />
-          <Typography variant="h6">Description:</Typography>
+          <Typography variant="h6">{t('description')}:</Typography>
           <Skeleton variant="rect" height={200} className={classes.contentColumn} />
         </ExpansionPanelDetails>
       </ExpansionPanel>
@@ -96,7 +98,7 @@ const PackageInfoSkeleton = ({ goBack }: PackageInfoSkeletonProps) => {
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
-          <Typography variant="h5">Additional info</Typography>
+          <Typography variant="h5">{t('additionalInfo')}</Typography>
         </ExpansionPanelSummary>
       </ExpansionPanel>
       <ExpansionPanel disabled={true}>
@@ -105,7 +107,7 @@ const PackageInfoSkeleton = ({ goBack }: PackageInfoSkeletonProps) => {
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
-          <Typography variant="h5">Screenshots</Typography>
+          <Typography variant="h5">{t('screenshots')}</Typography>
         </ExpansionPanelSummary>
       </ExpansionPanel>
       <ExpansionPanelActions>

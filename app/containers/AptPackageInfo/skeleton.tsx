@@ -107,7 +107,7 @@ const PackageInfoSkeleton = ({ goBack }: PackageInfoSkeletonProps) => {
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
-          <Typography variant="h5">Screenshots</Typography>
+          <Typography variant="h5">{t('screenshots')}</Typography>
         </ExpansionPanelSummary>
       </ExpansionPanel>
       <ExpansionPanelActions>
