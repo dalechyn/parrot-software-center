@@ -7,10 +7,21 @@ i18next
 .use(HttpApi)
 .init({
     debug: true,
-    lng: "it",// currently how to change language
-    fallbackLng: "en",
+    defaultNS: "translation",
+    preload: ['en', 'it'],
+    lng: "it", // currently how to change language
+    fallbackLng: false,
+    supportedLngs: ["en", "it"],
+    backend: {
+        loadPath: './locales/{{lng}}/{{ns}}.json',
+        allowMultiLoading: true,
+    },
+    react: {
+        wait: true,
+        useSuspense: true,
+    },
     interpolation: {
-        escapeValue: false
+        escapeValue: false,
     }
 });
 
