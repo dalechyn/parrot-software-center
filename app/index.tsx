@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, Suspense } from 'react'
 import { render } from 'react-dom'
 import { AppContainer as ReactHotAppContainer } from 'react-hot-loader'
 import { Provider } from 'react-redux'
@@ -12,11 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // eslint-disable-next-line global-require
   const Root = require('./containers/Root').default
   render(
-    <AppContainer>
-      <Provider store={store}>
-        <Root />
-      </Provider>
-    </AppContainer>,
+    <Suspense fallback={<div>Loading...</div>}>
+      <AppContainer>
+        <Provider store={store}>
+          <Root useSuspense={true} />
+        </Provider>
+      </AppContainer>
+    </Suspense>,
     document.getElementById('root')
   )
 })
