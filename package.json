@@ -241,7 +241,8 @@
     "webpack-merge": "^4.2.2",
     "yarn": "^1.21.1",
     "i18next": "^19.8.4",
-    "react-i18next": "^11.7.4"
+    "react-i18next": "^11.7.4",
+    "i18next-http-backend": "^1.0.21"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.13.0",
