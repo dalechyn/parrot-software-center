@@ -14,6 +14,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 import { Settings } from '../../reducers/settings'
 import { useTranslation } from 'react-i18next'
+import LanguageSwitcher from '../LanguageSwitcher'
 
 const mapStateToProps = ({ settings }: RootState) => ({ settings })
 
@@ -67,6 +68,7 @@ const SettingsDialog = ({ onClose, save, settings }: SettingsDialogProps) => {
             color="primary"
             label={t('darkTheme')}
           />
+          <LanguageSwitcher />
         </DialogContent>
         <DialogActions>
           <Button color="primary" type="submit">

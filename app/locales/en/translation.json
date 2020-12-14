@@ -81,5 +81,8 @@
     "contact": "Contact",
     "license": "License",
     "refreshDate": "Refresh Date",
-    "tracking": "Tracking"
+    "tracking": "Tracking",
+    "changeLanguage": "Change language",
+    "english": "English",
+    "italian": "Italian"
 }

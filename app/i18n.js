@@ -8,13 +8,13 @@ i18next
 .init({
     debug: true,
     defaultNS: "translation",
-    preload: ['en', 'it'],
-    lng: "it", // currently how to change language
-    fallbackLng: false,
+    preload: ["en", "it"],
+    lng: "en",
+    fallbackLng: "en",
     supportedLngs: ["en", "it"],
     backend: {
         loadPath: './locales/{{lng}}/{{ns}}.json',
-        allowMultiLoading: true,
+        allowMultiLoading: false,
     },
     react: {
         wait: true,

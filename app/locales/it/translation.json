@@ -81,5 +81,8 @@
     "contact": "Contatti",
     "license": "Licenza",
     "refreshDate": "Data di aggiornamento",
-    "tracking": "Monitoraggio"
+    "tracking": "Monitoraggio",
+    "changeLanguage": "Cambia lingua",
+    "english": "Inglese",
+    "italian": "Italiano"
 }
