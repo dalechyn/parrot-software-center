@@ -75,7 +75,7 @@
   "errStatMirror": "Error parsing mirror statistics",
   "fetchErr": "Fetching error. Are you connected to the internet?",
   "serverErr": "Server error",
-  "process": "Process",
+  "start": "Start",
   "queueEmpty": "Queue is empty",
   "summary": "Summary",
   "contact": "Contact",
@@ -85,5 +85,6 @@
   "changeLanguage": "Change language",
   "english": "English",
   "italian": "Italian",
+  "russian": "Russian",
   "notFound": "Nothing found..."
 }

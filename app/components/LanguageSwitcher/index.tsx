@@ -30,6 +30,7 @@ export default function LanguageSwitcher() {
         >
           <MenuItem value="en">{t('english')}</MenuItem>
           <MenuItem value="it">{t('italian')}</MenuItem>
+          <MenuItem value="ru">{t('russian')}</MenuItem>
         </Select>
       </FormControl>
     </div>

@@ -75,7 +75,7 @@
   "errStatMirror": "Errore durante l'analisi delle statistiche del mirror",
   "fetchErr": "Errore nel recuperare i dati. Sei connesso ad internet?",
   "serverErr": "Errore del server",
-  "process": "Inizia",
+  "start": "Inizia",
   "queueEmpty": "La coda d'attesa è vuota",
   "summary": "Riepilogo",
   "contact": "Contatti",
@@ -85,5 +85,6 @@
   "changeLanguage": "Cambia lingua",
   "english": "Inglese",
   "italian": "Italiano",
+  "russian": "Russa",
   "notFound": "Nessun risultato..."
 }

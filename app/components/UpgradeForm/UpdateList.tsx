@@ -49,8 +49,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const mapStateToProps = ({ settings: { APIUrl }, queue: { isBusy } }: RootState) => ({
-  APIUrl,
+const mapStateToProps = ({ queue: { isBusy } }: RootState) => ({
   isBusy
 })
 
@@ -66,7 +65,7 @@ export type UpdateListInputProp = {
 }
 type UpdateListProp = ConnectedProps<typeof connector> & RouteComponentProps & UpdateListInputProp
 
-const UpdateList = ({ updates, push, APIUrl, upgrade, isBusy }: UpdateListProp) => {
+const UpdateList = ({ updates, push, upgrade, isBusy }: UpdateListProp) => {
   const classes = useStyles()
   const { enqueueSnackbar } = useSnackbar()
   const [isExpanded, expand] = useState(false)
@@ -80,13 +79,7 @@ const UpdateList = ({ updates, push, APIUrl, upgrade, isBusy }: UpdateListProp) 
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Grid className={classes.gridItem} item xs={4}>
             <div className={classes.metaHolder}>
-              <Img
-                className={classes.media}
-                src={`${APIUrl}/assets/packages/${name}.png`}
-                unloader={
-                  <img className={classes.media} src={dummyPackageImg} alt={`${t('noPkgFound')}`} />
-                }
-              />
+              <Img className={classes.media} src={dummyPackageImg} />
               <Typography variant="h5" className={classes.pkgName}>
                 {name}
               </Typography>
