@@ -84,5 +84,6 @@
     "tracking": "Tracking",
     "changeLanguage": "Change language",
     "english": "English",
-    "italian": "Italian"
+    "italian": "Italian",
+    "notFound": "Nothing found..."
 }

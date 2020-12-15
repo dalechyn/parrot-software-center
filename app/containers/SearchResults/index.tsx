@@ -11,6 +11,7 @@ import { replace } from 'connected-react-router'
 import SearchField from '../../components/SearchField'
 import { SearchPreview, SearchPreviewSkeleton } from '../../components'
 import { PackagePreview } from '../../actions/apt'
+import { useTranslation } from 'react-i18next'
 
 const componentsInPage = 5
 
@@ -107,6 +108,7 @@ const SearchResults = ({
   }
 
   const classes = useStyles()
+  const { t } = useTranslation()
 
   return (
     <section className={classes.root}>
@@ -146,7 +148,7 @@ const SearchResults = ({
         </Grid>
       </Grid>
       {!loading && previews.length === 5 && onlyNulls(previews) ? (
-        <Typography variant="h6">Nothing found...</Typography>
+        <Typography variant="h6">{t('notFound')}</Typography>
       ) : (
         <>
           <Pagination
