@@ -12,6 +12,7 @@ import { useSnackbar } from 'notistack'
 import { connect, ConnectedProps } from 'react-redux'
 import { useForm } from 'react-hook-form'
 import { ReportInfo, reportReview } from '../../actions/reviews'
+import { useTranslation } from 'react-i18next'
 
 const mapDispatchToProps = { reportReview }
 
@@ -31,6 +32,8 @@ const ReportDialog = ({ name, reportedUser, onClose, reportReview }: ReportDialo
     Pick<ReportInfo, 'reportedUser' | 'commentary' | 'packageName'>
   >()
 
+  const { t } = useTranslation()
+
   return (
     <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">
       <form
@@ -38,18 +41,18 @@ const ReportDialog = ({ name, reportedUser, onClose, reportReview }: ReportDialo
           setLoading(true)
           await reportReview({ reportedUser, commentary, packageName: name })
           setLoading(false)
-          enqueueSnackbar('Your report is sent!')
+          enqueueSnackbar(`${t('sentReport')}`)
           onClose()
         })}
       >
-        <DialogTitle id="form-dialog-title">Report review</DialogTitle>
+        <DialogTitle id="form-dialog-title">{t('reportReview')}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             multiline
             margin="dense"
             name="commentary"
-            label="Report information"
+            label={t('infoReport')}
             inputRef={register({ required: true, minLength: 3, maxLength: 256 })}
             rows={10}
             fullWidth
@@ -58,10 +61,10 @@ const ReportDialog = ({ name, reportedUser, onClose, reportReview }: ReportDialo
         <DialogActions>
           {loading && <CircularProgress />}
           <Button onClick={onClose} color="primary">
-            Cancel
+            {t('cancel')}
           </Button>
           <Button color="primary" type="submit">
-            Send
+            {t('send')}
           </Button>
         </DialogActions>
       </form>

@@ -24,6 +24,7 @@ import { QueueActions } from '../../actions'
 import { QueueNode } from '../../containers/Queue'
 import { Rating } from '@material-ui/lab'
 import { PackagePreview } from '../../actions/apt'
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -134,6 +135,8 @@ const SearchPreview = ({
   const [installedOrQueried, setInstalled] = useState(installed)
   const [queuedUpgrade, setQueuedUpgrade] = useState(upgradeQueued)
 
+  const { t } = useTranslation()
+
   return (
     <Grid item>
       <Card className={classes.root}>
@@ -148,7 +151,7 @@ const SearchPreview = ({
                 <Img
                   className={classes.media}
                   src={`${APIUrl}/assets/packages/${name}.png`}
-                  unloader={<img className={classes.media} src={icon} alt={'No Package Found'} />}
+                  unloader={<img className={classes.media} src={icon} alt={`${t('noPkgFound')}`} />}
                 />
                 <Typography className={classes.name} variant="h5">
                   {name}
@@ -173,26 +176,26 @@ const SearchPreview = ({
                     cveInfo.medium != 0 ||
                     cveInfo.low != 0) && (
                     <>
-                      <Chip label={'This month CVEs:'} />
+                      <Chip label={`${t('monthCVEs')}:`} />
                       {cveInfo.critical != 0 && (
                         <Chip
                           className={classnames(classes.cveCritical, classes.chipText)}
-                          label={`Critical: ${cveInfo.critical}`}
+                          label={`${t('critical')}: ${cveInfo.critical}`}
                         />
                       )}
                       {cveInfo.high != 0 && (
                         <Chip
                           className={classnames(classes.cveHigh, classes.chipText)}
-                          label={`High: ${cveInfo.high}`}
+                          label={`${t('high')}: ${cveInfo.high}`}
                         />
                       )}
                       {cveInfo.medium != 0 && (
                         <Chip
                           className={classnames(classes.cveMedium, classes.chipText)}
-                          label={`Medium: ${cveInfo.medium}`}
+                          label={`${t('medium')}: ${cveInfo.medium}`}
                         />
                       )}
-                      {cveInfo.low != 0 && <Chip label={`Low: ${cveInfo.low}`} />}
+                      {cveInfo.low != 0 && <Chip label={`${t('low')}: ${cveInfo.low}`} />}
                     </>
                   )}
                 </div>
@@ -216,7 +219,7 @@ const SearchPreview = ({
                 classes={{ outlined: classes.uninstall }}
                 disabled={isBusy}
                 onClick={() => {
-                  enqueueSnackbar(`Package ${name} dequeued`, {
+                  enqueueSnackbar(`${t('package')} ${name} ${t('dequeued')}`, {
                     variant: 'error'
                   })
                   dontUpgrade({ name, version, source: packageSource })
@@ -225,14 +228,14 @@ const SearchPreview = ({
                 variant="outlined"
                 size="medium"
               >
-                Cancel Upgrade
+                ${t('cancelUpgrade')}
               </Button>
             ) : (
               <Button
                 classes={{ outlined: classes.upgrade }}
                 disabled={isBusy}
                 onClick={() => {
-                  enqueueSnackbar(`Package ${name} queued for upgrade`, {
+                  enqueueSnackbar(`${t('package')} ${name} ${t('queuedUpgrade')}`, {
                     variant: 'success'
                   })
                   upgrade({ name, version, source: packageSource })
@@ -241,7 +244,7 @@ const SearchPreview = ({
                 variant="outlined"
                 size="medium"
               >
-                Upgrade
+                {t('upgradePkg')}
               </Button>
             ))}
 
@@ -252,8 +255,8 @@ const SearchPreview = ({
               onClick={() => {
                 enqueueSnackbar(
                   packages.find((el: QueueNode) => el.name === name)
-                    ? `Package ${name} dequeued`
-                    : `Package ${name} queued for deletion`,
+                    ? `${t('package')} ${name} ${t('dequeued')}`
+                    : `${t('package')} ${name} ${t('queuedDel')}`,
                   {
                     variant: 'error'
                   }
@@ -264,7 +267,7 @@ const SearchPreview = ({
               variant="outlined"
               size="medium"
             >
-              Uninstall
+              {t('uninstall')}
             </Button>
           ) : (
             <Button
@@ -273,8 +276,8 @@ const SearchPreview = ({
               onClick={() => {
                 enqueueSnackbar(
                   packages.find((el: QueueNode) => el.name === name)
-                    ? `Package ${name} dequeued`
-                    : `Package ${name} queued for installation`,
+                    ? `${t('package')} ${name} ${t('dequeued')}`
+                    : `${t('package')} ${name} ${t('queuedInst')}`,
                   {
                     variant: 'info'
                   }
@@ -285,7 +288,7 @@ const SearchPreview = ({
               variant="outlined"
               size="medium"
             >
-              Install
+              {t('install')}
             </Button>
           )}
         </CardActions>

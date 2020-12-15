@@ -5,7 +5,6 @@ import { Error } from '@material-ui/icons'
 import { Marker, MapContainer, Popup, TileLayer, useMapEvents } from 'react-leaflet'
 import MirrorDown from './assets/mirror_down.png'
 import MirrorUp from './assets/mirror_up.png'
-import MirrorEnabled from './assets/mirror_enabled.png'
 import cls from 'classnames'
 
 // https://github.com/PaulLeCam/react-leaflet/issues/255
@@ -17,6 +16,7 @@ import marker from 'leaflet/dist/images/marker-icon.png'
 import marker2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import { connect, ConnectedProps } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 
 // Uhmmm, nice typings man!
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -168,6 +168,8 @@ const Mirrors = ({ darkTheme }: MirrorProps) => {
   const [mirrors, setMirrors] = useState(Array<MirrorInfo>())
   const [viewPort, setViewPort] = useState({ center: new LatLng(50, 30), zoom: 3 })
 
+  const { t } = useTranslation()
+
   useEffect(() => {
     // loading .mirrorstats page
     ;(async () => {
@@ -204,7 +206,7 @@ const Mirrors = ({ darkTheme }: MirrorProps) => {
           <div className={classes.loadingTextHolder}>
             <CircularProgress />
             <Typography variant={'h5'} className={classes.loadingText}>
-              Loading...
+              {t('loading')}...
             </Typography>
           </div>
         </>
@@ -213,7 +215,7 @@ const Mirrors = ({ darkTheme }: MirrorProps) => {
           <div className={classes.loadingTextHolder}>
             <Error />
             <Typography variant={'h5'} className={classes.loadingText}>
-              Error parsing mirror statistics
+              {t('errStatMirror')}
             </Typography>
           </div>
         </>
@@ -222,7 +224,7 @@ const Mirrors = ({ darkTheme }: MirrorProps) => {
           <div className={classes.loadingTextHolder}>
             <Error />
             <Typography variant={'h5'} className={classes.loadingText}>
-              Fetching error. Are you connected to the internet?
+              {t('fetchErr')}
             </Typography>
           </div>
         </>
@@ -231,7 +233,7 @@ const Mirrors = ({ darkTheme }: MirrorProps) => {
           <div className={classes.loadingTextHolder}>
             <Error />
             <Typography variant={'h5'} className={classes.loadingText}>
-              Server error
+              {t('serverErr')}
             </Typography>
           </div>
         </>

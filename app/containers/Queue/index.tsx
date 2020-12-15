@@ -19,6 +19,7 @@ import { INSTALL, UNINSTALL, UPGRADE } from '../../actions/apt'
 import classnames from 'classnames'
 import { QueueNodeMeta } from '../../actions/queue'
 import { grey } from '@material-ui/core/colors'
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -116,6 +117,8 @@ const Queue = ({
     if (AptActions.perform.rejected.match(await aptProcess(packages))) setProcessing(false)
   }, [packages, setAlert])
 
+  const { t } = useTranslation()
+
   return (
     <Grid
       container
@@ -194,10 +197,10 @@ const Queue = ({
             disabled={globalProgress !== 0}
             onClick={processPackages}
           >
-            Process
+            {t('process')}
           </Button>
         ) : (
-          <Typography variant="h5">Queue is empty</Typography>
+          <Typography variant="h5">{t('queueEmpty')}</Typography>
         )}
       </Grid>
 

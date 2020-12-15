@@ -14,6 +14,7 @@ import React, { useState } from 'react'
 import { ReportInfo } from '../../actions/reviews'
 import { red } from '@material-ui/core/colors'
 import ReviewDialog from '../ReviewDialog'
+import { useTranslation } from 'react-i18next'
 import cls from 'classnames'
 
 const useStyles = makeStyles(theme => ({
@@ -74,6 +75,7 @@ const Report = ({
 }: ReportProps) => {
   const classes = useStyles()
   const [showReviewDialog, setShowReviewDialog] = useState(false)
+  const { t } = useTranslation()
   return (
     <>
       <Grid item>
@@ -92,15 +94,9 @@ const Report = ({
                   <Typography className={classes.reportedUser} variant="h5">
                     Date: {new Date(date * 1000).toLocaleString()}
                   </Typography>
-                  <Typography variant="h5">Reported By: {reportedBy}</Typography>
-                  {reviewed && (
-                    <>
-                      <Typography variant="h5">Reviewed By: {reviewedBy}</Typography>
-                      <Typography variant="h5">
-                        Reviewed Date: {new Date(reviewedDate * 1000).toLocaleString()}
-                      </Typography>
-                    </>
-                  )}
+                  <Typography variant="h5">
+                    {t('reportedBy')}: {reportedBy}
+                  </Typography>
                 </div>
               </div>
             </Paper>
@@ -129,7 +125,7 @@ const Report = ({
               size="medium"
               onClick={() => setShowReviewDialog(true)}
             >
-              Review
+              {t('review')}
             </Button>
           </CardActions>
         </Card>

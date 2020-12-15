@@ -3,6 +3,7 @@ import { AlertActions } from '../../actions'
 import { Button, Grid, makeStyles, Typography } from '@material-ui/core'
 import { connect, ConnectedProps } from 'react-redux'
 import { grey } from '@material-ui/core/colors'
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -35,6 +36,7 @@ const Terminal = ({ serveStream, setAlert, initialLine, onClose }: TerminalProps
   const [list, setList] = useState(Array<ReactNode>(initialLine))
   const [finished, setFinished] = useState(false)
   const classes = useStyles()
+  const { t } = useTranslation()
   useEffect(() => {
     const f = async () => {
       try {
@@ -67,7 +69,7 @@ const Terminal = ({ serveStream, setAlert, initialLine, onClose }: TerminalProps
       {finished && (
         <Grid className={classes.button} item xs={1}>
           <Button variant="contained" onClick={onClose}>
-            Close
+            {t('close')}
           </Button>
         </Grid>
       )}

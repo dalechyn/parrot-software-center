@@ -10,6 +10,8 @@ import { Search } from '@material-ui/icons'
 import { AlertActions, AptActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
 
+import { useTranslation } from 'react-i18next'
+
 const useStyles = makeStyles({
   root: {
     color: 'white',
@@ -38,6 +40,8 @@ const SearchBar = ({ clearAlert, push, fetchAutocompletion }: SearchBarProps) =>
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState(Array<string>())
   const [value, setValue] = useState('')
+
+  const { t } = useTranslation()
 
   const classes = useStyles()
 
@@ -110,7 +114,7 @@ const SearchBar = ({ clearAlert, push, fetchAutocompletion }: SearchBarProps) =>
           {...params}
           onKeyUp={handleKeyUp}
           onBlur={handleBlur}
-          label={<div style={{ display: 'inline-block', color: 'white' }}>Search a package</div>}
+          label={<div style={{ display: 'inline-block', color: 'white' }}>{t('searchPkg')}</div>}
           variant="outlined"
           size="small"
           inputProps={{ ...params.inputProps, autoComplete: 'new-password' }}

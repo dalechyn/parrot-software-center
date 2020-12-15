@@ -33,6 +33,7 @@ import { unwrapResult } from '@reduxjs/toolkit'
 import AuthDialog from '../AuthDialog'
 import SettingsDialog from '../SettingsDialog'
 import useConstant from 'use-constant'
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   drawer: { width: 250 },
@@ -84,6 +85,8 @@ const Header = ({
   const [settingsOpened, setSettingsOpened] = useState(false)
   const { enqueueSnackbar, closeSnackbar } = useSnackbar()
 
+  const { t } = useTranslation()
+
   const action = useConstant(
     () =>
       function Action(key: SnackbarKey) {
@@ -104,7 +107,7 @@ const Header = ({
     const f = async () => {
       const result = await checkUpdates()
 
-      enqueueSnackbar(`${unwrapResult(result).length} packages are available for update`, {
+      enqueueSnackbar(`${unwrapResult(result).length} ${t('pkgAvailable')}`, {
         anchorOrigin: {
           vertical: 'top',
           horizontal: 'right'
@@ -142,26 +145,26 @@ const Header = ({
       <Drawer classes={{ paper: classes.drawer }} open={drawerOpen} onClose={handleDrawerClose}>
         <div className={classes.drawerHeader}>
           <Button startIcon={<DrawerCloseIcon />} fullWidth onClick={handleDrawerClose}>
-            Hide
+            {t('hide')}
           </Button>
         </div>
         <Divider />
         <Button startIcon={<FeedIcon />} size="large" component={Link} to={'/'}>
-          Home
+          {t('home')}
         </Button>
         <Button startIcon={<QueueIcon />} size="large" component={Link} to={'/queue'}>
-          Queue
+          {t('queue')}
         </Button>
         {role === 'moderator' && (
           <Button startIcon={<AssessmentIcon />} size="large" component={Link} to={'/reports'}>
-            Reports
+            {t('reports')}
           </Button>
         )}
         <Button startIcon={<MapIcon />} size="large" component={Link} to={'/mirrors'}>
-          Mirrors
+          {t('mirrors')}
         </Button>
         <Button startIcon={<SettingsIcon />} onClick={() => setSettingsOpened(true)} size="large">
-          Settings
+          {t('settings')}
         </Button>
         <Divider />
         {token ? (
@@ -170,11 +173,11 @@ const Header = ({
             onClick={() => setUserInfo({ login: '', token: '', role: '' })}
             size="large"
           >
-            Log out
+            {t('logout')}
           </Button>
         ) : (
           <Button startIcon={<LoginIcon />} onClick={() => setAuthOpened(true)} size="large">
-            Log in
+            {t('login')}
           </Button>
         )}
         {authOpened && <AuthDialog onClose={() => setAuthOpened(false)} />}
