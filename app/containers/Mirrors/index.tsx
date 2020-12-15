@@ -160,7 +160,7 @@ const Mirrors = ({ darkTheme }: MirrorProps) => {
   const [mirrors, setMirrors] = useState(Array<MirrorInfo>())
   const [viewPort, setViewPort] = useState({ center: new LatLng(50, 30), zoom: 3 })
 
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   useEffect(() => {
     // loading .mirrorstats page

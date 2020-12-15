@@ -37,7 +37,7 @@ const ReviewDialog = ({ onSubmit, onClose, report, reviewReport, login }: Review
     defaultValues: { review: '', deleteReview: true, ban: false }
   })
   const { enqueueSnackbar } = useSnackbar()
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   return (
     <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">
       <form

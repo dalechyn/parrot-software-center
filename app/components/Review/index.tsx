@@ -42,7 +42,7 @@ const Review = ({
 }: ReviewProps) => {
   const [reportReviewShow, setReportReviewShow] = useState(false)
 
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   return (
     <>

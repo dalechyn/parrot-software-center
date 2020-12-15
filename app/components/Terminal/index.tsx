@@ -36,7 +36,7 @@ const Terminal = ({ serveStream, setAlert, initialLine, onClose }: TerminalProps
   const [list, setList] = useState(Array<ReactNode>(initialLine))
   const [finished, setFinished] = useState(false)
   const classes = useStyles()
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   useEffect(() => {
     const f = async () => {
       try {

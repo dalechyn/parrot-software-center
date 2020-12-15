@@ -31,7 +31,7 @@ import { QueueNode } from '../Queue'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
 import { AptPackage, AptPackageOptionalFields, Review } from '../../actions/apt'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -255,7 +255,7 @@ const PackageInfo = ({
     setReviews([...reviews, { author: login, rating, commentary }])
   }
 
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   return loading ? (
     <PackageInfoSkeleton />

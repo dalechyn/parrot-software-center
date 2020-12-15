@@ -31,7 +31,7 @@ type SettingsDialogProps = ConnectedProps<typeof connector> & {
 const SettingsDialog = ({ onClose, save, settings }: SettingsDialogProps) => {
   const { handleSubmit, control } = useForm<Settings>({ defaultValues: settings })
   const { enqueueSnackbar } = useSnackbar()
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   return (
     <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">
       <form

@@ -117,7 +117,7 @@ const Queue = ({
     if (AptActions.perform.rejected.match(await aptProcess(packages))) setProcessing(false)
   }, [packages, setAlert])
 
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   return (
     <Grid
@@ -200,7 +200,7 @@ const Queue = ({
             {t('process')}
           </Button>
         ) : (
-        <Typography variant="h5">{t('queueEmpty')}</Typography>
+          <Typography variant="h5">{t('queueEmpty')}</Typography>
         )}
       </Grid>
 

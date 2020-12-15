@@ -56,7 +56,7 @@ type ReportProps = {
 const Report = ({ report, id, destroyReviewComponent }: ReportProps) => {
   const classes = useStyles()
   const [showReviewDialog, setShowReviewDialog] = useState(false)
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   return (
     <>
       <Grid item>
@@ -72,7 +72,9 @@ const Report = ({ report, id, destroyReviewComponent }: ReportProps) => {
                   <Typography className={classes.reportedUser} variant="h5">
                     {report.reportedUser}
                   </Typography>
-                  <Typography variant="h5">{t('reportedBy')}: {report.reportedBy}</Typography>
+                  <Typography variant="h5">
+                    {t('reportedBy')}: {report.reportedBy}
+                  </Typography>
                 </div>
               </div>
             </Paper>

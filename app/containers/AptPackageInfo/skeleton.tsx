@@ -65,7 +65,7 @@ type PackageInfoSkeletonProps = ConnectedProps<typeof connector> & RouteComponen
 
 const PackageInfoSkeleton = ({ goBack }: PackageInfoSkeletonProps) => {
   const classes = useStyles()
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   return (
     <Paper elevation={8} className={classes.root}>
       <Button size="large" startIcon={<ArrowBack />} onClick={() => goBack()}>

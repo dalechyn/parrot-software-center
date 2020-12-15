@@ -51,7 +51,7 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
   const { enqueueSnackbar } = useSnackbar()
   const { register, handleSubmit, errors, clearError } = useForm<FormData>()
 
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   return (
     <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">
@@ -77,7 +77,9 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
           setLoading(false)
         })}
       >
-        <DialogTitle id="form-dialog-title">{registered ? `${t('login')}` : `${t('register')}`}</DialogTitle>
+        <DialogTitle id="form-dialog-title">
+          {registered ? `${t('login')}` : `${t('register')}`}
+        </DialogTitle>
         <DialogContent>
           {!registered && (
             <TextField

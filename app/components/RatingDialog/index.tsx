@@ -43,7 +43,7 @@ const RatingDialog = ({ name, onClose, rating, token, rate, addFn }: RatingDialo
   const { enqueueSnackbar } = useSnackbar()
   const { register, handleSubmit, control } = useForm<FormData>()
 
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   return (
     <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">

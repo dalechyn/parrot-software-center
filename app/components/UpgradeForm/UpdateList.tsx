@@ -72,7 +72,7 @@ const UpdateList = ({ updates, push, APIUrl, upgrade, isBusy }: UpdateListProp) 
   const [isExpanded, expand] = useState(false)
   const maxItemsShown = 10
   const areUpdatesMoreThanMaxItems = updates.length > maxItemsShown
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   const metaToComponent = ({ name, source, oldVersion, version }: QueueNodeMeta, index: number) => (
     <Grid item key={index} style={{ width: '100%' }}>
@@ -97,7 +97,9 @@ const UpdateList = ({ updates, push, APIUrl, upgrade, isBusy }: UpdateListProp) 
             <Typography variant="h5">{version}</Typography>
           </Grid>
           <Grid className={classes.gridItem} item xs={4}>
-            <Typography variant="h6">{t('from')} {oldVersion}</Typography>
+            <Typography variant="h6">
+              {t('from')} {oldVersion}
+            </Typography>
           </Grid>
           <Grid className={classes.gridItem} item container xs={4} justify="space-around">
             <Button

@@ -41,8 +41,7 @@ const SearchBar = ({ clearAlert, push, fetchAutocompletion }: SearchBarProps) =>
   const [options, setOptions] = useState(Array<string>())
   const [value, setValue] = useState('')
 
-  // using "useTranslation" hook
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   const classes = useStyles()
 

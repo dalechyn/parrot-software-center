@@ -32,7 +32,7 @@ const ReportDialog = ({ name, reportedUser, onClose, reportReview }: ReportDialo
     Pick<ReportInfo, 'reportedUser' | 'commentary' | 'packageName'>
   >()
 
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   return (
     <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">

@@ -135,7 +135,7 @@ const SearchPreview = ({
   const [installedOrQueried, setInstalled] = useState(installed)
   const [queuedUpgrade, setQueuedUpgrade] = useState(upgradeQueued)
 
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   return (
     <Grid item>

@@ -207,7 +207,7 @@ const PackageInfo = ({
     setReviews([...reviews, { author: login, rating, commentary }])
   }
 
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   return loading ? (
     <PackageInfoSkeleton />
@@ -402,9 +402,12 @@ const PackageInfo = ({
                     disabled={isBusy}
                     className={cls(classes.button, classes.uninstall)}
                     onClick={() => {
-                      enqueueSnackbar(`${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t('dequeued')}`, {
-                        variant: 'error'
-                      })
+                      enqueueSnackbar(
+                        `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t('dequeued')}`,
+                        {
+                          variant: 'error'
+                        }
+                      )
                       dontUpgrade({ name, version: selectedVersion, source: 'SNAP' })
                       setQueuedUpgrade(false)
                     }}
@@ -421,7 +424,9 @@ const PackageInfo = ({
                     size="large"
                     onClick={() => {
                       enqueueSnackbar(
-                        `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t('queuedUpgrade')}`,
+                        `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t(
+                          'queuedUpgrade'
+                        )}`,
                         {
                           variant: 'success'
                         }
@@ -441,8 +446,12 @@ const PackageInfo = ({
                   onClick={() => {
                     enqueueSnackbar(
                       packages.find((el: QueueNode) => el.name === name)
-                        ? `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t('dequeued')}`
-                        : `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t('queuedDel')}`,
+                        ? `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t(
+                            'dequeued'
+                          )}`
+                        : `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t(
+                            'queuedDel'
+                          )}`,
                       {
                         variant: 'error'
                       }
@@ -464,10 +473,12 @@ const PackageInfo = ({
                   onClick={() => {
                     enqueueSnackbar(
                       packages.find((el: QueueNode) => el.name === name)
-                        ? `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t('dequeued')}`
-                        : `${t('package')} ${name}@${
-                            selectedVersion.split(':')[1]
-                          } ${t('queuedInst')}`,
+                        ? `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t(
+                            'dequeued'
+                          )}`
+                        : `${t('package')} ${name}@${selectedVersion.split(':')[1]} ${t(
+                            'queuedInst'
+                          )}`,
                       {
                         variant: 'info'
                       }
