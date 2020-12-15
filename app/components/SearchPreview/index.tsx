@@ -91,10 +91,9 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const mapStateToProps = ({ queue: { packages, isBusy }, settings: { APIUrl } }: RootState) => ({
+const mapStateToProps = ({ queue: { packages, isBusy } }: RootState) => ({
   packages,
-  isBusy,
-  APIUrl
+  isBusy
 })
 
 const mapDispatchToProps = {
@@ -126,8 +125,7 @@ const SearchPreview = ({
   icon,
   rating,
   isBusy,
-  upgradeQueued,
-  APIUrl
+  upgradeQueued
 }: SearchPreviewProps) => {
   const classes = useStyles()
   const { enqueueSnackbar } = useSnackbar()
@@ -148,11 +146,7 @@ const SearchPreview = ({
           <CardContent>
             <Paper className={classes.header} elevation={10}>
               <div className={classes.nameHolder}>
-                <Img
-                  className={classes.media}
-                  src={`${APIUrl}/assets/packages/${name}.png`}
-                  unloader={<img className={classes.media} src={icon} alt={`${t('noPkgFound')}`} />}
-                />
+                <Img className={classes.media} src={icon} />
                 <Typography className={classes.name} variant="h5">
                   {name}
                 </Typography>
