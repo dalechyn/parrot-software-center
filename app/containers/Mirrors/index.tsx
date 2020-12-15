@@ -1,10 +1,11 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
-import { Button, CircularProgress, makeStyles, Typography } from '@material-ui/core'
+import { Button, CircularProgress, LinearProgress, makeStyles, Typography } from '@material-ui/core'
 import JSON5 from 'json5'
 import { Error } from '@material-ui/icons'
 import { Marker, MapContainer, Popup, TileLayer, useMapEvents } from 'react-leaflet'
 import MirrorDown from './assets/mirror_down.png'
 import MirrorUp from './assets/mirror_up.png'
+import MirrorEnabled from './assets/mirror_enabled.png'
 import cls from 'classnames'
 
 // https://github.com/PaulLeCam/react-leaflet/issues/255
@@ -58,6 +59,14 @@ const useStyles = makeStyles({
   popup: {
     display: 'flex',
     flexFlow: 'column',
+    alignItems: 'center'
+  },
+  reset: {
+    position: 'absolute',
+    display: 'flex',
+    zIndex: 1000,
+    top: 10,
+    right: 10,
     alignItems: 'center'
   }
 })
@@ -118,11 +127,11 @@ const MapChildren = ({ mirrors, darkTheme, setViewPort, ...props }: MapChildrenP
       }*/
           icon={divIcon({
             html: `<img src="${up ? MirrorUp : MirrorDown}"  alt="popup"/>`,
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
+            iconSize: [35, 45],
+            iconAnchor: [17, 45],
             popupAnchor: [1, -34],
             tooltipAnchor: [16, -28],
-            shadowSize: [41, 41]
+            shadowSize: [45, 45]
           })}
           key={`marker-${i}`}
           position={[lat, lon]}
@@ -183,6 +192,13 @@ const Mirrors = ({ darkTheme }: MirrorProps) => {
 
   return (
     <section className={classes.root}>
+      <div className={classes.reset}>
+        <div style={{ marginRight: 10 }}>
+          <Typography>Connected directly to Parrot CDN</Typography>
+          <LinearProgress />
+        </div>
+        <Button variant="outlined">Reset to defaults</Button>
+      </div>
       {statusCode === -1 ? (
         <>
           <div className={classes.loadingTextHolder}>
