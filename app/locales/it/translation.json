@@ -85,6 +85,8 @@
   "changeLanguage": "Cambia lingua",
   "english": "Inglese",
   "italian": "Italiano",
-  "russian": "Russa",
-  "notFound": "Nessun risultato..."
+  "russian": "Russo",
+  "notFound": "Nessun risultato...",
+  "connectedCDN": "Connesso direttamente alla Parrot CDN",
+  "resetDefault": "Ripristina le impostazioni predefinite"
 }

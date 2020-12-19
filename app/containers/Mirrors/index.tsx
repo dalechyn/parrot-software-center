@@ -196,10 +196,10 @@ const Mirrors = ({ darkTheme }: MirrorProps) => {
     <section className={classes.root}>
       <div className={classes.reset}>
         <div style={{ marginRight: 10 }}>
-          <Typography>Connected directly to Parrot CDN</Typography>
+          <Typography>{t('connectedCDN')}</Typography>
           <LinearProgress />
         </div>
-        <Button variant="outlined">Reset to defaults</Button>
+        <Button variant="outlined">{t('resetDefault')}</Button>
       </div>
       {statusCode === -1 ? (
         <>
