@@ -99,7 +99,7 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
             autoFocus
             margin="dense"
             name="login"
-            label={t('login')}
+            label={t('authLogin')}
             type="login"
             onChange={() => setError('')}
             error={!!(errors.login || error)}
@@ -108,7 +108,7 @@ const AuthDialog = ({ onClose, login: loginAction, register: registerAction }: A
             fullWidth
           />
           <FormControl fullWidth>
-            <InputLabel>Password</InputLabel>
+            <InputLabel>{t('password')}</InputLabel>
             <Input
               fullWidth
               name="password"

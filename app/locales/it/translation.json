@@ -19,6 +19,8 @@
   "settings": "Impostazioni",
   "login": "Accedi",
   "logout": "Esci",
+  "authLogin": "Login",
+  "password": "Password",
   "pkgAvailable": "pacchetti disponibili per l'aggiornamento",
   "settingSaved": "Impostazioni salvate!",
   "loadCVE": "Carica dati CVE (la disabilitazione può accelerare la ricerca)",

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { QueueNodeMeta, upgrade } from '../../actions/queue'
-import { Grid, Paper, Typography, makeStyles, IconButton, Button } from '@material-ui/core'
+import { Grid, Paper, Typography, makeStyles, IconButton, Button, Hidden } from '@material-ui/core'
 import { ExpandMore, ExpandLess, MoreHoriz } from '@material-ui/icons'
 import { Img } from 'react-image'
 import { push } from 'connected-react-router'
@@ -18,6 +18,8 @@ const useStyles = makeStyles(theme => ({
   media: {
     height: 30,
     width: 30,
+    marginTop: 'auto',
+    marginBottom: 'auto',
     marginRight: theme.spacing(2)
   },
   detailsLink: {
@@ -34,6 +36,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex'
   },
   upgrade: {
+    marginTop: theme.spacing(1),
     color: '#4caf50',
     borderColor: '#4caf50'
   },
@@ -74,55 +77,60 @@ const UpdateList = ({ updates, push, upgrade, isBusy }: UpdateListProp) => {
   const { t } = useTranslation()
 
   const metaToComponent = ({ name, source, oldVersion, version }: QueueNodeMeta, index: number) => (
-    <Grid item key={index} style={{ width: '100%' }}>
+    <Grid item key={index} style={{ width: '100%' }} justify="space-between">
       <Paper className={classes.card}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Grid className={classes.gridItem} item xs={4}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
+          <Grid className={classes.gridItem} item xs={8} md={4}>
             <div className={classes.metaHolder}>
               <Img className={classes.media} src={dummyPackageImg} />
-              <Typography variant="h5" className={classes.pkgName}>
+              <Typography variant="h5" noWrap className={classes.pkgName}>
                 {name}
               </Typography>
             </div>
           </Grid>
-
-          <Grid className={classes.gridItem} item xs={4}>
-            <Typography variant="h5">{version}</Typography>
-          </Grid>
-          <Grid className={classes.gridItem} item xs={4}>
-            <Typography variant="h6">
-              {t('from')} {oldVersion}
-            </Typography>
-          </Grid>
-          <Grid className={classes.gridItem} item container xs={4} justify="space-around">
-            <Button
-              variant="outlined"
-              color="primary"
-              size="large"
-              onClick={() => push(`/package/${source === 'APT' ? 'apt' : 'snap'}/${name}`)}
-            >
-              {t('moreInfo')}
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={isBusy}
-              color="primary"
-              className={classes.upgrade}
-              size="large"
-              onClick={() => {
-                enqueueSnackbar(`${t('package')} ${name}@${version} ${t('queueUpgrade')}`, {
-                  variant: 'success'
-                })
-                upgrade({ name, version, source: 'APT' })
-              }}
-            >
-              {t('upgradePkg')}
-            </Button>
+          <Hidden smDown>
+            <Grid className={classes.gridItem} item xs={4}>
+              <Typography variant="h5">{version}</Typography>
+            </Grid>
+            <Grid className={classes.gridItem} item xs={4}>
+              <Typography variant="h6">
+                {t('from')} {oldVersion}
+              </Typography>
+            </Grid>
+          </Hidden>
+          <Grid className={classes.gridItem} item container xs={4} md={4} justify="flex-end">
+            <div style={{ display: 'flex', flexFlow: 'column' }}>
+              <Button
+                variant="outlined"
+                color="primary"
+                size="large"
+                onClick={() => push(`/package/${source === 'APT' ? 'apt' : 'snap'}/${name}`)}
+              >
+                {t('moreInfo')}
+              </Button>
+              <Button
+                variant="outlined"
+                disabled={isBusy}
+                color="primary"
+                className={classes.upgrade}
+                size="large"
+                onClick={() => {
+                  enqueueSnackbar(`${t('package')} ${name}@${version} ${t('queueUpgrade')}`, {
+                    variant: 'success'
+                  })
+                  upgrade({ name, version, source: 'APT' })
+                }}
+              >
+                {t('upgradePkg')}
+              </Button>
+            </div>
           </Grid>
         </div>
       </Paper>
     </Grid>
   )
+
+  const updateComponents = updates.map((meta, index) => metaToComponent(meta, index))
 
   return (
     <>
@@ -133,17 +141,18 @@ const UpdateList = ({ updates, push, upgrade, isBusy }: UpdateListProp) => {
           </IconButton>
         </div>
       ) : undefined}
-      <div>
-        <Grid container spacing={3}>
-          {updates.slice(0, maxItemsShown).map((meta, index) => metaToComponent(meta, index))}
+      <>
+        <Grid container spacing={3} direction="column">
+          {updateComponents.slice(0, maxItemsShown)}
         </Grid>
         <Grid
           className={cls(isExpanded ? classes.expanded : classes.notExpanded)}
           container
+          direction="column"
           spacing={3}
           style={{ marginTop: 0 }}
         >
-          {updates.slice(maxItemsShown).map((meta, index) => metaToComponent(meta, index))}
+          {updateComponents.slice(maxItemsShown)}
         </Grid>
         {!isExpanded && areUpdatesMoreThanMaxItems ? (
           <IconButton
@@ -154,7 +163,7 @@ const UpdateList = ({ updates, push, upgrade, isBusy }: UpdateListProp) => {
             <MoreHoriz />
           </IconButton>
         ) : null}
-      </div>
+      </>
     </>
   )
 }

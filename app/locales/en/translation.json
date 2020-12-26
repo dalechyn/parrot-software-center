@@ -19,6 +19,8 @@
   "settings": "Settings",
   "login": "Log in",
   "logout": "Log out",
+  "authLogin": "Login",
+  "password": "Password",
   "pkgAvailable": "packages are available for update",
   "settingSaved": "Setting saved!",
   "loadCVE": "Load CVE Data (disabling may speed up the search)",

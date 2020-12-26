@@ -57,19 +57,13 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
     f()
   }, [])
   return (
-    <Grid
-      container
-      direction="column"
-      alignItems="center"
-      component={Paper}
-      className={classes.padded}
-    >
+    <Grid container direction="column" alignItems="center" className={classes.padded}>
       {loading ? (
         <CircularProgress />
       ) : (
         <>
           <Grid item xs>
-            <h2>
+            <h2 style={{ textAlign: 'center' }}>
               {updates.length !== 0
                 ? `${updates.length} ${t('update')}`
                 : packages.length === 0
