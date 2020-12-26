@@ -88,5 +88,7 @@
   "english": "English",
   "italian": "Italian",
   "russian": "Russian",
-  "notFound": "Nothing found..."
+  "notFound": "Nothing found...",
+  "connectedCDN": "Connected directly to Parrot CDN",
+  "resetDefault": "Reset to defaults"
 }
