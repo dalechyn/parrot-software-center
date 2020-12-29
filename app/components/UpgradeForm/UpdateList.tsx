@@ -77,7 +77,7 @@ const UpdateList = ({ updates, push, upgrade, isBusy }: UpdateListProp) => {
   const { t } = useTranslation()
 
   const metaToComponent = ({ name, source, oldVersion, version }: QueueNodeMeta, index: number) => (
-    <Grid item key={index} style={{ width: '100%' }} justify="space-between">
+    <Grid item key={index} style={{ width: '100%' }}>
       <Paper className={classes.card}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
           <Grid className={classes.gridItem} item xs={8} md={4}>

@@ -77,7 +77,7 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
           ) ? (
             <>
               {updates.length !== 0 && (
-                <Paper style={{ padding: '1rem' }} elevation={10}>
+                <Paper style={{ padding: '1rem', width: '100%' }} elevation={10}>
                   <UpdateList updates={updates} />
                 </Paper>
               )}

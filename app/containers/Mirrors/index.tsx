@@ -90,8 +90,45 @@ type MapChildrenProps = {
   setViewPort: Dispatch<SetStateAction<ViewPort>>
 }
 
+// returns two functions - first calls function only once, second reloads the caller
+function refreshableOnce(f: () => void) {
+  let localF: Function | null = f.bind({})
+
+  return [
+    () => {
+      if (localF) {
+        localF()
+        localF = null
+      }
+    },
+    () => {
+      if (!localF) {
+        localF = f.bind({})
+      }
+    }
+  ]
+}
+
+const [callOnce, reload] = refreshableOnce(() => {
+  const leafletContainer = document.querySelector('div.leaflet-container') as HTMLElement
+  const style = document.createElement('style')
+  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+  // @ts-ignore
+  style.cssText = 'text/css'
+  style.appendChild(
+    document.createTextNode(`
+      .leaflet-control-zoom-in { background-color: #272727 !important; color: white !important;
+        border-bottom-color: #424242 !important; }
+      .leaflet-control-zoom-out { background-color: #272727 !important; color: white !important; }
+      .leaflet-popup-content-wrapper { border-radius: 5px !important; background-color: #272727 !important; color: white !important; }
+      .leaflet-popup-tip { background-color: #272727 !important; }`)
+  )
+  leafletContainer.appendChild(style)
+})
+
 const MapChildren = ({ mirrors, darkTheme, setViewPort, ...props }: MapChildrenProps) => {
   const classes = useStyles()
+
   const map = useMapEvents({
     zoom: () => {
       setViewPort({ center: map.getCenter(), zoom: map.getZoom() })
@@ -100,9 +137,16 @@ const MapChildren = ({ mirrors, darkTheme, setViewPort, ...props }: MapChildrenP
       setViewPort({ zoom: map.getZoom(), center: map.getCenter() })
     }
   })
+
+  // Unfortunately React Leaflet did not provide any correct way to inject classnames in inner elements
+  // so we have to dig them up
+  if (darkTheme) callOnce()
+  else reload()
+
   return (
     <>
       <TileLayer
+        className="tile-layer-shit"
         attribution={`&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors ${
           darkTheme ? '&copy; <a href="http://cartodb.com/attributions">CartoDB</a>' : ''
         }`}
