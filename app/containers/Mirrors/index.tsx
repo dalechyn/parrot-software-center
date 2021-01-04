@@ -109,6 +109,8 @@ function refreshableOnce(f: () => void) {
   ]
 }
 
+// inject styles into leaflet-container which will be then recreated if user changes theme
+// i would like to omit such implementation but leaflet does not provide classname propagation
 const [callOnce, reload] = refreshableOnce(() => {
   const leafletContainer = document.querySelector('div.leaflet-container') as HTMLElement
   const style = document.createElement('style')
@@ -123,7 +125,7 @@ const [callOnce, reload] = refreshableOnce(() => {
       .leaflet-popup-content-wrapper { border-radius: 5px !important; background-color: #272727 !important; color: white !important; }
       .leaflet-popup-tip { background-color: #272727 !important; }`)
   )
-  leafletContainer.appendChild(style)
+  leafletContainer?.appendChild(style)
 })
 
 const MapChildren = ({ mirrors, darkTheme, setViewPort, ...props }: MapChildrenProps) => {
@@ -146,7 +148,6 @@ const MapChildren = ({ mirrors, darkTheme, setViewPort, ...props }: MapChildrenP
   return (
     <>
       <TileLayer
-        className="tile-layer-shit"
         attribution={`&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors ${
           darkTheme ? '&copy; <a href="http://cartodb.com/attributions">CartoDB</a>' : ''
         }`}
@@ -160,15 +161,6 @@ const MapChildren = ({ mirrors, darkTheme, setViewPort, ...props }: MapChildrenP
 
       {mirrors.map(({ lat, lon, id, up }, i) => (
         <Marker
-          /*icon={
-        <img
-          src={up ? MirrorUp : MirrorDown}
-          height={43}
-          width={32}
-          className={classes.marker}
-          alt=""
-        />
-      }*/
           icon={divIcon({
             html: `<img src="${up ? MirrorUp : MirrorDown}"  alt="popup"/>`,
             iconSize: [35, 45],

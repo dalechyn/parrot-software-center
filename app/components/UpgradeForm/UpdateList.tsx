@@ -80,7 +80,7 @@ const UpdateList = ({ updates, push, upgrade, isBusy }: UpdateListProp) => {
     <Grid item key={index} style={{ width: '100%' }}>
       <Paper className={classes.card}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
-          <Grid className={classes.gridItem} item xs={8} md={4}>
+          <Grid className={classes.gridItem} item xs={8} md={6}>
             <div className={classes.metaHolder}>
               <Img className={classes.media} src={dummyPackageImg} />
               <Typography variant="h5" noWrap className={classes.pkgName}>
@@ -89,16 +89,16 @@ const UpdateList = ({ updates, push, upgrade, isBusy }: UpdateListProp) => {
             </div>
           </Grid>
           <Hidden smDown>
-            <Grid className={classes.gridItem} item xs={4}>
+            <Grid className={classes.gridItem} item xs={3} lg={4}>
               <Typography variant="h5">{version}</Typography>
             </Grid>
-            <Grid className={classes.gridItem} item xs={4}>
+            <Grid className={classes.gridItem} item xs={3} lg={4}>
               <Typography variant="h6">
                 {t('from')} {oldVersion}
               </Typography>
             </Grid>
           </Hidden>
-          <Grid className={classes.gridItem} item container xs={4} md={4} justify="flex-end">
+          <Grid className={classes.gridItem} item container xs={3} lg={4} justify="flex-end">
             <div style={{ display: 'flex', flexFlow: 'column' }}>
               <Button
                 variant="outlined"
