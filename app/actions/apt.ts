@@ -665,3 +665,15 @@ export const rate = createAsyncThunk<
     body: JSON.stringify(rateInfo)
   })
 })
+
+export const resetMirror = createAsyncThunk('@apt/resetMirror', async () => {
+  await prExec(
+    `pkexec sh -c "echo deb https://deb.parrosec.org/parrot/ rolling main contrib non-free'\n'deb https://deb.parrosec.org/parrot/ rolling-security main contrib non-free > /etc/apt/sources.list.d/parrot.list"`
+  )
+})
+
+export const changeMirror = createAsyncThunk<void, string>('@apt/changeMirror', async url => {
+  await prExec(
+    `pkexec sh -c "echo deb ${url} rolling main contrib non-free'\n'deb ${url} rolling-security main contrib non-free > /etc/apt/sources.list.d/parrot.list"`
+  )
+})

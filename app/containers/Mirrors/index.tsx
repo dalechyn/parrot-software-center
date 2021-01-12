@@ -3,6 +3,7 @@ import { Button, CircularProgress, LinearProgress, makeStyles, Typography } from
 import { Circle, MapContainer, Popup, TileLayer, useMapEvents } from 'react-leaflet'
 import cls from 'classnames'
 import geoip from 'geoip-lite'
+import { AptActions } from '../../actions'
 import { lookup } from 'dns'
 
 // https://github.com/PaulLeCam/react-leaflet/issues/255
@@ -237,6 +238,7 @@ type MapChildrenProps = {
   mirrors: MirrorInfo[]
   darkTheme: boolean
   setViewPort: Dispatch<SetStateAction<ViewPort>>
+  changeMirror: (url: string) => void
 }
 
 // returns two functions - first calls function only once, second reloads the caller
@@ -277,7 +279,13 @@ const [callOnce, reload] = refreshableOnce(() => {
   leafletContainer?.appendChild(style)
 })
 
-const MapChildren = ({ mirrors, darkTheme, setViewPort, ...props }: MapChildrenProps) => {
+const MapChildren = ({
+  mirrors,
+  darkTheme,
+  setViewPort,
+  changeMirror,
+  ...props
+}: MapChildrenProps) => {
   const classes = useStyles()
 
   const map = useMapEvents({
@@ -308,7 +316,7 @@ const MapChildren = ({ mirrors, darkTheme, setViewPort, ...props }: MapChildrenP
         {...props}
       />
 
-      {mirrors.map(({ lat, lon, id, commentary, area }, i) => (
+      {mirrors.map(({ lat, lon, id, commentary, area, url }, i) => (
         <Circle key={`circle-${i}`} center={[lat, lon]} radius={area}>
           <Popup>
             <div className={classes.popup}>
@@ -318,7 +326,7 @@ const MapChildren = ({ mirrors, darkTheme, setViewPort, ...props }: MapChildrenP
                 <b>Description:</b> {commentary}
               </div>
               <div>
-                <Button color="secondary" variant="outlined">
+                <Button onClick={() => changeMirror(url)} color="secondary" variant="outlined">
                   Switch
                 </Button>
               </div>
@@ -336,11 +344,16 @@ const bounds = L.latLngBounds(corner1, corner2)
 
 const mapStateToProps = ({ settings: { darkTheme } }: RootState) => ({ darkTheme })
 
-const connector = connect(mapStateToProps)
+const mapDispatchToProps = {
+  resetMirror: AptActions.resetMirror,
+  changeMirror: AptActions.changeMirror
+}
+
+const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type MirrorProps = ConnectedProps<typeof connector>
 
-const Mirrors = ({ darkTheme }: MirrorProps) => {
+const Mirrors = ({ darkTheme, resetMirror, changeMirror }: MirrorProps) => {
   const classes = useStyles()
   const [loading, setLoading] = useState(true)
   const [loadingText, setLoadingText] = useState('')
@@ -382,7 +395,9 @@ const Mirrors = ({ darkTheme }: MirrorProps) => {
           <Typography>{t('connectedCDN')}</Typography>
           <LinearProgress />
         </div>
-        <Button variant="outlined">{t('resetDefault')}</Button>
+        <Button variant="outlined" onClick={() => resetMirror()}>
+          {t('resetDefault')}
+        </Button>
       </div>
       {loading ? (
         <>
@@ -406,7 +421,12 @@ const Mirrors = ({ darkTheme }: MirrorProps) => {
           maxBounds={bounds}
           minZoom={2.0}
         >
-          <MapChildren mirrors={mirrors} darkTheme={true} setViewPort={setViewPort} />
+          <MapChildren
+            mirrors={mirrors}
+            darkTheme={true}
+            setViewPort={setViewPort}
+            changeMirror={changeMirror}
+          />
         </MapContainer>
       ) : (
         <MapContainer
@@ -419,7 +439,12 @@ const Mirrors = ({ darkTheme }: MirrorProps) => {
           maxBounds={bounds}
           minZoom={2.0}
         >
-          <MapChildren mirrors={mirrors} darkTheme={false} setViewPort={setViewPort} />
+          <MapChildren
+            mirrors={mirrors}
+            darkTheme={false}
+            setViewPort={setViewPort}
+            changeMirror={changeMirror}
+          />
         </MapContainer>
       )}
     </section>
