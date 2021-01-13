@@ -17,6 +17,7 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import { connect, ConnectedProps } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { promisify } from 'util'
+import { unwrapResult } from '@reduxjs/toolkit'
 
 // Uhmmm, nice typings man!
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -239,6 +240,7 @@ type MapChildrenProps = {
   darkTheme: boolean
   setViewPort: Dispatch<SetStateAction<ViewPort>>
   changeMirror: (url: string) => void
+  currentMirror: string
 }
 
 // returns two functions - first calls function only once, second reloads the caller
@@ -284,6 +286,7 @@ const MapChildren = ({
   darkTheme,
   setViewPort,
   changeMirror,
+  currentMirror,
   ...props
 }: MapChildrenProps) => {
   const classes = useStyles()
@@ -317,7 +320,12 @@ const MapChildren = ({
       />
 
       {mirrors.map(({ lat, lon, id, commentary, area, url }, i) => (
-        <Circle key={`circle-${i}`} center={[lat, lon]} radius={area}>
+        <Circle
+          key={`circle-${i}`}
+          center={[lat, lon]}
+          radius={area}
+          pathOptions={currentMirror === id ? { color: 'green' } : undefined}
+        >
           <Popup>
             <div className={classes.popup}>
               <div>
@@ -325,11 +333,13 @@ const MapChildren = ({
                 <br />
                 <b>Description:</b> {commentary}
               </div>
-              <div>
-                <Button onClick={() => changeMirror(url)} color="secondary" variant="outlined">
-                  Switch
-                </Button>
-              </div>
+              {currentMirror !== id && (
+                <div>
+                  <Button onClick={() => changeMirror(url)} color="secondary" variant="outlined">
+                    Switch
+                  </Button>
+                </div>
+              )}
             </div>
           </Popup>
         </Circle>
@@ -346,18 +356,20 @@ const mapStateToProps = ({ settings: { darkTheme } }: RootState) => ({ darkTheme
 
 const mapDispatchToProps = {
   resetMirror: AptActions.resetMirror,
-  changeMirror: AptActions.changeMirror
+  changeMirror: AptActions.changeMirror,
+  readMirror: AptActions.readMirror
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type MirrorProps = ConnectedProps<typeof connector>
 
-const Mirrors = ({ darkTheme, resetMirror, changeMirror }: MirrorProps) => {
+const Mirrors = ({ darkTheme, resetMirror, changeMirror, readMirror }: MirrorProps) => {
   const classes = useStyles()
   const [loading, setLoading] = useState(true)
   const [loadingText, setLoadingText] = useState('')
   const [mirrors, setMirrors] = useState(Array<MirrorInfo>())
+  const [currentMirrorInfo, setCurrentMirrorInfo] = useState({ id: '', text: '', detected: false })
   const [viewPort, setViewPort] = useState({ center: new LatLng(50, 30), zoom: 3 })
 
   const { t } = useTranslation()
@@ -384,6 +396,19 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror }: MirrorProps) => {
       )
 
       setLoadingText('Scanning current mirror policy...')
+      try {
+        const readUrl = unwrapResult(await readMirror())
+        const mirrorId = mirrorsURLs.find(({ url }) => url === readUrl)?.id
+        setCurrentMirrorInfo(
+          mirrorId
+            ? { id: mirrorId, text: `Connected to ${mirrorId}`, detected: true }
+            : { id: '', text: `Current mirror can't be detected`, detected: false }
+        )
+        if (readUrl?.startsWith('https://deb.parrotsec.org/'))
+          setCurrentMirrorInfo({ id: '', text: 'Connected to Parrot CDN', detected: true })
+      } catch {
+        setCurrentMirrorInfo({ id: '', text: `Current mirror can't be detected`, detected: false })
+      }
       setLoading(false)
     })()
   }, [])
@@ -392,8 +417,8 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror }: MirrorProps) => {
     <section className={classes.root}>
       <div className={classes.reset}>
         <div style={{ marginRight: 10 }}>
-          <Typography>{t('connectedCDN')}</Typography>
-          <LinearProgress />
+          <Typography>{currentMirrorInfo.text}</Typography>
+          {currentMirrorInfo.detected && <LinearProgress />}
         </div>
         <Button variant="outlined" onClick={() => resetMirror()}>
           {t('resetDefault')}
@@ -424,6 +449,7 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror }: MirrorProps) => {
           <MapChildren
             mirrors={mirrors}
             darkTheme={true}
+            currentMirror={currentMirrorInfo.id}
             setViewPort={setViewPort}
             changeMirror={changeMirror}
           />
@@ -441,6 +467,7 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror }: MirrorProps) => {
         >
           <MapChildren
             mirrors={mirrors}
+            currentMirror={currentMirrorInfo.id}
             darkTheme={false}
             setViewPort={setViewPort}
             changeMirror={changeMirror}

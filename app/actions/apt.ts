@@ -6,6 +6,7 @@ import { QueueNode } from '../containers/Queue'
 import leven from 'leven'
 import { CVEEndpoint } from '../components/SearchPreviewList'
 import { pop, QueueNodeMeta } from './queue'
+import { promises as fs } from 'fs'
 
 export const INSTALL = 'install'
 export const UPGRADE = '--only-upgrade install'
@@ -666,9 +667,15 @@ export const rate = createAsyncThunk<
   })
 })
 
+export const readMirror = createAsyncThunk('@apt/readMirror', async () => {
+  const file = await fs.readFile('/etc/apt/sources.list.d/parrot.list', 'utf-8')
+  const execRes = /(https?:\/\/.*) rolling/.exec(file)
+  return execRes ? execRes[1] : null
+})
+
 export const resetMirror = createAsyncThunk('@apt/resetMirror', async () => {
   await prExec(
-    `pkexec sh -c "echo deb https://deb.parrosec.org/parrot/ rolling main contrib non-free'\n'deb https://deb.parrosec.org/parrot/ rolling-security main contrib non-free > /etc/apt/sources.list.d/parrot.list"`
+    `pkexec sh -c "echo deb https://deb.parrotsec.org/parrot/ rolling main contrib non-free'\n'deb https://deb.parrotsec.org/parrot/ rolling-security main contrib non-free > /etc/apt/sources.list.d/parrot.list"`
   )
 })
 
