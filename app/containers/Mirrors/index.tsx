@@ -239,47 +239,10 @@ type MapChildrenProps = {
   mirrors: MirrorInfo[]
   darkTheme: boolean
   setViewPort: Dispatch<SetStateAction<ViewPort>>
-  changeMirror: (url: string) => void
   currentMirror: string
+  changeMirror: MirrorProps['changeMirror']
+  refreshCurrentMirror: () => Promise<void>
 }
-
-// returns two functions - first calls function only once, second reloads the caller
-function refreshableOnce(f: () => void) {
-  let localF: Function | null = f.bind({})
-
-  return [
-    () => {
-      if (localF) {
-        localF()
-        localF = null
-      }
-    },
-    () => {
-      if (!localF) {
-        localF = f.bind({})
-      }
-    }
-  ]
-}
-
-// inject styles into leaflet-container which will be then recreated if user changes theme
-// i would like to omit such implementation but leaflet does not provide classname propagation
-const [callOnce, reload] = refreshableOnce(() => {
-  const leafletContainer = document.querySelector('div.leaflet-container') as HTMLElement
-  const style = document.createElement('style')
-  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-  // @ts-ignore
-  style.cssText = 'text/css'
-  style.appendChild(
-    document.createTextNode(`
-      .leaflet-control-zoom-in { background-color: #272727 !important; color: white !important;
-        border-bottom-color: #424242 !important; }
-      .leaflet-control-zoom-out { background-color: #272727 !important; color: white !important; }
-      .leaflet-popup-content-wrapper { border-radius: 5px !important; background-color: #272727 !important; color: white !important; }
-      .leaflet-popup-tip { background-color: #272727 !important; }`)
-  )
-  leafletContainer?.appendChild(style)
-})
 
 const MapChildren = ({
   mirrors,
@@ -287,6 +250,7 @@ const MapChildren = ({
   setViewPort,
   changeMirror,
   currentMirror,
+  refreshCurrentMirror,
   ...props
 }: MapChildrenProps) => {
   const classes = useStyles()
@@ -299,11 +263,6 @@ const MapChildren = ({
       setViewPort({ zoom: map.getZoom(), center: map.getCenter() })
     }
   })
-
-  // Unfortunately React Leaflet did not provide any correct way to inject classnames in inner elements
-  // so we have to dig them up
-  if (darkTheme) callOnce()
-  else reload()
 
   return (
     <>
@@ -335,7 +294,14 @@ const MapChildren = ({
               </div>
               {currentMirror !== id && (
                 <div>
-                  <Button onClick={() => changeMirror(url)} color="secondary" variant="outlined">
+                  <Button
+                    onClick={async () => {
+                      unwrapResult(await changeMirror(url))
+                      await refreshCurrentMirror()
+                    }}
+                    color="secondary"
+                    variant="outlined"
+                  >
                     Switch
                   </Button>
                 </div>
@@ -374,53 +340,82 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror, readMirror }: MirrorPro
 
   const { t } = useTranslation()
 
+  const refreshCurrentMirror = async () => {
+    setLoading(true)
+    try {
+      const readUrl = unwrapResult(await readMirror())
+      const mirrorId = mirrorsURLs.find(({ url }) => url === readUrl)?.id
+      setCurrentMirrorInfo(
+        mirrorId
+          ? { id: mirrorId, text: `Connected to ${mirrorId}`, detected: true }
+          : { id: '', text: `Current mirror can't be detected`, detected: false }
+      )
+      if (readUrl?.startsWith('https://deb.parrotsec.org/'))
+        setCurrentMirrorInfo({ id: '', text: 'Connected to Parrot CDN', detected: true })
+    } catch {
+      setCurrentMirrorInfo({ id: '', text: `Current mirror can't be detected`, detected: false })
+    }
+    setLoading(false)
+  }
+
   useEffect(() => {
+    let active = true
     ;(async () => {
       setLoadingText('Scanning mirrors...')
-      setMirrors(
-        (
-          await Promise.all(
-            mirrorsURLs.map(async mirror => {
-              try {
-                const resolvedIP = await promiseLookup(mirror.url.split('/')[2], { all: false })
-                const geoInfo = geoip.lookup(resolvedIP.address)
-                if (!geoInfo) return null
-                return { ...mirror, lat: geoInfo.ll[0], lon: geoInfo.ll[1], area: geoInfo.area }
-              } catch {
-                console.log('dns resolution failed')
-                return null
-              }
+
+      const resolveMirrorsInfoPromises = []
+      for (const mirror of mirrorsURLs) {
+        try {
+          const resolvedIP = await promiseLookup(mirror.url.split('/')[2], { all: false })
+          if (!active) return
+          const geoInfo = geoip.lookup(resolvedIP.address)
+          if (geoInfo)
+            resolveMirrorsInfoPromises.push({
+              ...mirror,
+              lat: geoInfo.ll[0],
+              lon: geoInfo.ll[1],
+              area: geoInfo.area
             })
-          )
-        ).filter(el => el) as MirrorInfo[]
-      )
+        } catch {
+          console.log(`dns resolution failed: ${mirror}`)
+        }
+      }
+
+      const data = await Promise.all(resolveMirrorsInfoPromises)
+      if (!active) return
+      setMirrors(data.filter(el => el) as MirrorInfo[])
 
       setLoadingText('Scanning current mirror policy...')
-      try {
-        const readUrl = unwrapResult(await readMirror())
-        const mirrorId = mirrorsURLs.find(({ url }) => url === readUrl)?.id
-        setCurrentMirrorInfo(
-          mirrorId
-            ? { id: mirrorId, text: `Connected to ${mirrorId}`, detected: true }
-            : { id: '', text: `Current mirror can't be detected`, detected: false }
-        )
-        if (readUrl?.startsWith('https://deb.parrotsec.org/'))
-          setCurrentMirrorInfo({ id: '', text: 'Connected to Parrot CDN', detected: true })
-      } catch {
-        setCurrentMirrorInfo({ id: '', text: `Current mirror can't be detected`, detected: false })
+      await refreshCurrentMirror()
+      return () => {
+        active = false
       }
-      setLoading(false)
     })()
   }, [])
 
   return (
     <section className={classes.root}>
+      {darkTheme && (
+        <style>
+          {`.leaflet-control-zoom-in { background-color: #272727 !important; color: white !important;
+        border-bottom-color: #424242 !important; }
+        .leaflet-control-zoom-out { background-color: #272727 !important; color: white !important; }
+        .leaflet-popup-content-wrapper { border-radius: 5px !important; background-color: #272727 !important; color: white !important; }
+        .leaflet-popup-tip { background-color: #272727 !important; }`}
+        </style>
+      )}
       <div className={classes.reset}>
         <div style={{ marginRight: 10 }}>
           <Typography>{currentMirrorInfo.text}</Typography>
           {currentMirrorInfo.detected && <LinearProgress />}
         </div>
-        <Button variant="outlined" onClick={() => resetMirror()}>
+        <Button
+          variant="outlined"
+          onClick={async () => {
+            unwrapResult(await resetMirror())
+            await refreshCurrentMirror()
+          }}
+        >
           {t('resetDefault')}
         </Button>
       </div>
@@ -452,6 +447,7 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror, readMirror }: MirrorPro
             currentMirror={currentMirrorInfo.id}
             setViewPort={setViewPort}
             changeMirror={changeMirror}
+            refreshCurrentMirror={refreshCurrentMirror}
           />
         </MapContainer>
       ) : (
@@ -471,6 +467,7 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror, readMirror }: MirrorPro
             darkTheme={false}
             setViewPort={setViewPort}
             changeMirror={changeMirror}
+            refreshCurrentMirror={refreshCurrentMirror}
           />
         </MapContainer>
       )}

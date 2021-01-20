@@ -31,7 +31,6 @@ const Root = ({ darkTheme }: RootProps) => {
           secondary: {
             main: blue[300]
           },
-
           type: darkTheme ? 'dark' : 'light'
         },
         typography: {
@@ -64,7 +63,6 @@ const Root = ({ darkTheme }: RootProps) => {
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <CircularProgress />
                 <Typography variant="h5" style={{ marginLeft: 10 }}>
-                  {' '}
                   Loading localization files
                 </Typography>
               </div>

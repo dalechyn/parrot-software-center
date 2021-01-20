@@ -104,9 +104,11 @@ const Header = ({
   )
 
   useEffect(() => {
+    let active = true
     const f = async () => {
       const result = await checkUpdates()
 
+      if (!active) return
       enqueueSnackbar(`${unwrapResult(result).length} ${t('pkgAvailable')}`, {
         anchorOrigin: {
           vertical: 'top',
@@ -116,6 +118,9 @@ const Header = ({
       })
     }
     f()
+    return () => {
+      active = false
+    }
   }, [])
   const handleDrawerOpen = () => setDrawer(true)
   const handleDrawerClose = () => setDrawer(false)

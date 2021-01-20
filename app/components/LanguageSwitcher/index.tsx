@@ -28,9 +28,9 @@ export default function LanguageSwitcher() {
           onChange={e => i18n.changeLanguage(e.target.value as string)}
           label={t('changeLanguage')}
         >
-          <MenuItem value="en">{t('english')}</MenuItem>
-          <MenuItem value="it">{t('italian')}</MenuItem>
-          <MenuItem value="ru">{t('russian')}</MenuItem>
+          <MenuItem value="en_US">{t('english')}</MenuItem>
+          <MenuItem value="it_IT">{t('italian')}</MenuItem>
+          <MenuItem value="ru_RU">{t('russian')}</MenuItem>
         </Select>
       </FormControl>
     </div>

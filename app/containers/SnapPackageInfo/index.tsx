@@ -163,9 +163,11 @@ const PackageInfo = ({
   useEffect(() => {
     setAvailable(true)
     setLoading(true)
+    let active = true
     const f = async () => {
       try {
         const res = unwrapResult(await fetchSnapPackage(name))
+        if (!active) return
         setPackageInfo(res)
         selectVersion(`${res.tracks[0]}`)
       } catch {
@@ -174,6 +176,9 @@ const PackageInfo = ({
       setLoading(false)
     }
     f()
+    return () => {
+      active = false
+    }
   }, [name])
 
   useEffect(() => {

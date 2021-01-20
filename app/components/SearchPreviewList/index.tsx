@@ -34,11 +34,8 @@ const SearchPreviewList = ({ previews }: SearchPreviewListProps) => {
   useEffect(() => {
     setPreviewNodes([])
     setLoaded(false)
-    const f = async () => {
-      setPreviewNodes(previews.map(p => <SearchPreview key={p.name} {...p} />))
-      setLoaded(true)
-    }
-    f()
+    setPreviewNodes(previews.map(p => <SearchPreview key={p.name} {...p} />))
+    setLoaded(true)
   }, [previews])
 
   return loaded ? (

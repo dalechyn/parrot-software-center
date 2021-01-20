@@ -1,9 +1,9 @@
 import {
   Button,
-  ExpansionPanel,
-  ExpansionPanelActions,
-  ExpansionPanelDetails,
-  ExpansionPanelSummary,
+  Accordion,
+  AccordionActions,
+  AccordionDetails,
+  AccordionSummary,
   makeStyles,
   Paper,
   Typography
@@ -75,44 +75,44 @@ const PackageInfoSkeleton = ({ goBack }: PackageInfoSkeletonProps) => {
         <Skeleton height={60} width={60} className={classes.media} variant="rect" />
         <Skeleton width={250} variant="rect" />
       </Paper>
-      <ExpansionPanel disabled={true} className={classes.panel} defaultExpanded>
-        <ExpansionPanelSummary
+      <Accordion disabled={true} className={classes.panel} defaultExpanded>
+        <AccordionSummary
           expandIcon={<ExpandMore />}
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
           <Typography variant="h5">{t('generalInfo')}</Typography>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.grid}>
+        </AccordionSummary>
+        <AccordionDetails className={classes.grid}>
           <Typography variant="h6">{t('version')}:</Typography>
           <Skeleton variant="rect" className={classes.contentColumn} />
           <Typography variant="h6">{t('mantainer')}:</Typography>
           <Skeleton variant="rect" className={classes.contentColumn} />
           <Typography variant="h6">{t('description')}:</Typography>
           <Skeleton variant="rect" height={200} className={classes.contentColumn} />
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-      <ExpansionPanel disabled={true}>
-        <ExpansionPanelSummary
+        </AccordionDetails>
+      </Accordion>
+      <Accordion disabled={true}>
+        <AccordionSummary
           expandIcon={<ExpandMore />}
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
           <Typography variant="h5">{t('additionalInfo')}</Typography>
-        </ExpansionPanelSummary>
-      </ExpansionPanel>
-      <ExpansionPanel disabled={true}>
-        <ExpansionPanelSummary
+        </AccordionSummary>
+      </Accordion>
+      <Accordion disabled={true}>
+        <AccordionSummary
           expandIcon={<ExpandMore />}
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
           <Typography variant="h5">{t('screenshots')}</Typography>
-        </ExpansionPanelSummary>
-      </ExpansionPanel>
-      <ExpansionPanelActions>
+        </AccordionSummary>
+      </Accordion>
+      <AccordionActions>
         <Skeleton variant="rect" height={35} width={90} />
-      </ExpansionPanelActions>
+      </AccordionActions>
     </Paper>
   )
 }

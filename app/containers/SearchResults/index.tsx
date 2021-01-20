@@ -72,9 +72,10 @@ const SearchResults = ({
   useEffect(() => {
     let active = true
     const f = async () => {
-      if (!active) return
       try {
-        setLength(unwrapResult(await fetchPreviews({ name: initialName, chunk: page, filter })))
+        const data = unwrapResult(await fetchPreviews({ name: initialName, chunk: page, filter }))
+        if (!active) return
+        setLength(data)
       } catch (e) {
         setAlert(e.message)
       }

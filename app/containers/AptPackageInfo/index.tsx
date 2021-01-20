@@ -213,15 +213,21 @@ const PackageInfo = ({
   useEffect(() => {
     setAvailable(true)
     setLoading(true)
+    let active = true
     const f = async () => {
       try {
-        setPackageInfo(unwrapResult(await fetchAptPackage(name)))
+        const data = unwrapResult(await fetchAptPackage(name))
+        if (!active) return
+        setPackageInfo(data)
       } catch {
         setAvailable(false)
       }
       setLoading(false)
     }
     f()
+    return () => {
+      active = false
+    }
   }, [name])
 
   useEffect(() => {

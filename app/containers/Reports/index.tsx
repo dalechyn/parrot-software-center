@@ -28,16 +28,18 @@ const Reports = ({ getReports }: ReportsProps) => {
   const [loading, setLoading] = useState(true)
   const classes = useStyles()
 
-  const loadReports = async () => {
-    setLoading(true)
-    const newReports = await getReports(showReviewed)
-    setLoading(false)
-    console.log(newReports)
-    setReports(unwrapResult(newReports))
-  }
-
   useEffect(() => {
-    loadReports()
+    let active = true
+    ;(async () => {
+      setLoading(true)
+      const newReports = await getReports(showReviewed)
+      if (!active) return
+      setLoading(false)
+      setReports(unwrapResult(newReports))
+      return () => {
+        active = false
+      }
+    })()
   }, [showReviewed])
 
   const destroyReportComponent = (id: number) => {
@@ -58,7 +60,12 @@ const Reports = ({ getReports }: ReportsProps) => {
             variant="contained"
             color="primary"
             style={{ marginLeft: '1rem' }}
-            onClick={() => loadReports()}
+            onClick={async () => {
+              setLoading(true)
+              const newReports = await getReports(showReviewed)
+              setLoading(false)
+              setReports(unwrapResult(newReports))
+            }}
           >
             Refresh
           </Button>

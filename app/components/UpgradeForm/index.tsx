@@ -39,22 +39,26 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
   const { t } = useTranslation()
 
   useEffect(() => {
+    let active = true
     const f = async () => {
       try {
-        setUpdates(
-          unwrapResult(await checkUpdates()).filter(({ name, source, version }) =>
-            packages.every(
-              ({ name: packageName, source: packageSource, version: packageVersion }) =>
-                packageName !== name && packageSource !== source && packageVersion !== version
-            )
+        const data = unwrapResult(await checkUpdates()).filter(({ name, source, version }) =>
+          packages.every(
+            ({ name: packageName, source: packageSource, version: packageVersion }) =>
+              packageName !== name && packageSource !== source && packageVersion !== version
           )
         )
+        if (!active) return
+        setUpdates(data)
       } catch (e) {
         setUpdates([])
       }
       setLoading(false)
     }
     f()
+    return () => {
+      active = false
+    }
   }, [])
   return (
     <Grid container direction="column" alignItems="center" className={classes.padded}>

@@ -11,9 +11,9 @@ i18next
     debug: true,
     defaultNS: 'translation',
     ns: ['translation'],
-    preload: ['en', 'it', 'ru'],
-    fallbackLng: 'en',
-    supportedLngs: ['en', 'it', 'ru'],
+    preload: ['en_US', 'it_IT', 'ru_RU'],
+    fallbackLng: 'en_US',
+    supportedLngs: ['en_US', 'it_IT', 'ru_RU'],
     nonExplicitSupportedLngs: true,
     backend: {
       loadPath: './locales/{{lng}}/{{ns}}.json',
