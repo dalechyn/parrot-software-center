@@ -68,7 +68,7 @@
   "pkgNotAvailable": "Questo pacchetto non è disponibile",
   "generalInfo": "Informazioni generali",
   "version": "Versione",
-  "mantainer": "Mantainer",
+  "maintainer": "Maintainer",
   "description": "Descrizione",
   "additionalInfo": "Informazioni aggiuntive",
   "reviews": "Recensioni",
@@ -90,5 +90,14 @@
   "russian": "Russo",
   "notFound": "Nessun risultato...",
   "connectedCDN": "Connesso direttamente alla Parrot CDN",
-  "resetDefault": "Ripristina le impostazioni predefinite"
+  "resetDefault": "Ripristina le impostazioni predefinite",
+  "installChip": "Installa",
+  "uninstallChip": "Disinstalla",
+  "upgradeChip": "Aggiorna",
+  "process": "Processi",
+  "mirrorsConnectedTo": "Collegato al",
+  "mirrorsCantBeDetected": "Il mirror corrente non può essere rilevato",
+  "mirrorsConnectedToCDN": "Collegato al Parrot CDN",
+  "mirrorsScanningMirrors": "Mirrors di scansione",
+  "mirrorsScanningPolicy": "Scansione della policy di mirror corrente"
 }

@@ -20,6 +20,7 @@ import classnames from 'classnames'
 import { QueueNodeMeta } from '../../actions/queue'
 import { grey } from '@material-ui/core/colors'
 import { useTranslation } from 'react-i18next'
+import { TFunction } from 'i18next'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -56,20 +57,20 @@ export type QueueNode = QueueNodeMeta & {
   flag: typeof INSTALL | typeof UNINSTALL | typeof UPGRADE | null
 }
 
-const flagMap: Record<string, Partial<typeof Chip>> = {
+const flagMap = (t: TFunction): Record<string, Partial<typeof Chip>> => ({
   [INSTALL]: {
-    label: 'Install +',
+    label: `${t('installChip')} +`,
     color: 'primary'
   },
   [UNINSTALL]: {
-    label: 'Uninstall -',
+    label: `${t('uninstallChip')} -`,
     color: 'secondary'
   },
   [UPGRADE]: {
-    label: 'Upgrade ↑',
+    label: `${t('upgradeChip')} ↑`,
     color: 'primary'
   }
-}
+})
 
 type PackageChipProps = {
   classes: {
@@ -78,7 +79,8 @@ type PackageChipProps = {
 } & Partial<Pick<QueueNode, 'flag'>>
 
 const PackageChip = ({ flag, classes }: PackageChipProps) => {
-  return flag ? <Chip className={classes.chip} size="medium" {...flagMap[flag]} /> : null
+  const { t } = useTranslation()
+  return flag ? <Chip className={classes.chip} size="medium" {...flagMap(t)[flag]} /> : null
 }
 
 const mapStateToProps = ({ queue: { packages, globalProgress, isBusy, length } }: RootState) => ({

@@ -347,13 +347,13 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror, readMirror }: MirrorPro
       const mirrorId = mirrorsURLs.find(({ url }) => url === readUrl)?.id
       setCurrentMirrorInfo(
         mirrorId
-          ? { id: mirrorId, text: `Connected to ${mirrorId}`, detected: true }
-          : { id: '', text: `Current mirror can't be detected`, detected: false }
+          ? { id: mirrorId, text: `${t('mirrorsConnectedTo')} ${mirrorId}`, detected: true }
+          : { id: '', text: t('mirrorsCantBeDetected'), detected: false }
       )
       if (readUrl?.startsWith('https://deb.parrotsec.org/'))
-        setCurrentMirrorInfo({ id: '', text: 'Connected to Parrot CDN', detected: true })
+        setCurrentMirrorInfo({ id: '', text: t('mirrorsConnectedToCDN'), detected: true })
     } catch {
-      setCurrentMirrorInfo({ id: '', text: `Current mirror can't be detected`, detected: false })
+      setCurrentMirrorInfo({ id: '', text: t('mirrorsCantBeDetected'), detected: false })
     }
     setLoading(false)
   }
@@ -361,31 +361,39 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror, readMirror }: MirrorPro
   useEffect(() => {
     let active = true
     ;(async () => {
-      setLoadingText('Scanning mirrors...')
-
-      const resolveMirrorsInfoPromises = []
-      for (const mirror of mirrorsURLs) {
-        try {
+      let i = 0
+      const resolveMirrorsInfoPromises = mirrorsURLs.map(mirror =>
+        (async () => {
           const resolvedIP = await promiseLookup(mirror.url.split('/')[2], { all: false })
-          if (!active) return
+          if (!active) {
+            console.debug('Request canceled')
+            throw null
+          }
           const geoInfo = geoip.lookup(resolvedIP.address)
-          if (geoInfo)
-            resolveMirrorsInfoPromises.push({
+          setLoadingText(`${t('mirrorsScanningMirrors')} (${i++}/${mirrorsURLs.length})...`)
+          if (geoInfo) {
+            return {
               ...mirror,
               lat: geoInfo.ll[0],
               lon: geoInfo.ll[1],
               area: geoInfo.area
-            })
-        } catch {
-          console.log(`dns resolution failed: ${mirror}`)
-        }
-      }
+            }
+          }
+          console.debug(`DNS resolution failed: ${mirror.url}`)
+          throw null
+        })()
+      )
 
-      const data = await Promise.all(resolveMirrorsInfoPromises)
+      const data = await Promise.allSettled(resolveMirrorsInfoPromises)
       if (!active) return
-      setMirrors(data.filter(el => el) as MirrorInfo[])
+      setMirrors(
+        data.reduce(
+          (acc, el) => (el.status === 'fulfilled' ? [...acc, el.value] : acc),
+          Array<MirrorInfo>()
+        )
+      )
 
-      setLoadingText('Scanning current mirror policy...')
+      setLoadingText(t('mirrorsScanningPolicy'))
       await refreshCurrentMirror()
       return () => {
         active = false
@@ -409,15 +417,17 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror, readMirror }: MirrorPro
           <Typography>{currentMirrorInfo.text}</Typography>
           {currentMirrorInfo.detected && <LinearProgress />}
         </div>
-        <Button
-          variant="outlined"
-          onClick={async () => {
-            unwrapResult(await resetMirror())
-            await refreshCurrentMirror()
-          }}
-        >
-          {t('resetDefault')}
-        </Button>
+        {!loading && (
+          <Button
+            variant="outlined"
+            onClick={async () => {
+              unwrapResult(await resetMirror())
+              await refreshCurrentMirror()
+            }}
+          >
+            {t('resetDefault')}
+          </Button>
+        )}
       </div>
       {loading ? (
         <>

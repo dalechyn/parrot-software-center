@@ -13,13 +13,14 @@ import {
   Toolbar,
   Typography,
   makeStyles,
-  Collapse
+  Collapse,
+  Badge
 } from '@material-ui/core'
 import {
   Menu as MenuIcon,
   ChevronLeft as DrawerCloseIcon,
   ImportContacts as FeedIcon,
-  Queue as QueueIcon,
+  Reorder as QueueIcon,
   Explore as MapIcon,
   VpnKey as LoginIcon,
   Settings as SettingsIcon,
@@ -57,8 +58,9 @@ const mapStateToProps = ({
   auth: { token, role },
   router: {
     location: { pathname }
-  }
-}: RootState) => ({ alert, token, role, pathname })
+  },
+  queue: { packages }
+}: RootState) => ({ alert, token, role, pathname, queueLength: packages.length })
 
 const mapDispatchToProps = {
   clear: AlertActions.clear,
@@ -77,7 +79,8 @@ const Header = ({
   token,
   role,
   setUserInfo,
-  pathname
+  pathname,
+  queueLength
 }: HeaderProps) => {
   const classes = useStyles()
   const [drawerOpen, setDrawer] = useState(false)
@@ -157,7 +160,16 @@ const Header = ({
         <Button startIcon={<FeedIcon />} size="large" component={Link} to={'/'}>
           {t('home')}
         </Button>
-        <Button startIcon={<QueueIcon />} size="large" component={Link} to={'/queue'}>
+        <Button
+          startIcon={
+            <Badge badgeContent={queueLength} color="primary">
+              <QueueIcon />
+            </Badge>
+          }
+          size="large"
+          component={Link}
+          to={'/queue'}
+        >
           {t('queue')}
         </Button>
         {role === 'moderator' && (

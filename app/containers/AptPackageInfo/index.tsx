@@ -30,7 +30,7 @@ import { shell } from 'electron'
 import { QueueNode } from '../Queue'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
-import { AptPackage, AptPackageOptionalFields, Review } from '../../actions/apt'
+import { AptPackage, AptPackageOptionalFields } from '../../actions/apt'
 import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
@@ -180,6 +180,7 @@ const PackageInfo = ({
   const [available, setAvailable] = useState(true)
   const processPackageRelations = createPackageRelationsProcessor(push)
 
+  // TODO: Get rid of ...rest destructurization and type all fields by hand
   const {
     version,
     maintainer,
@@ -197,17 +198,17 @@ const PackageInfo = ({
     homepage,
     upgradable,
     screenshots,
-    reviews: _b,
-    installed: _c,
-    upgradeQueued: _d,
-    rating: _f,
+    reviews: initialReviews,
+    installed,
+    upgradeQueued,
+    rating: initialRating,
     ...rest
   } = packageInfo
 
-  const [installedOrQueried, setInstalled] = useState(false)
-  const [queuedUpgrade, setQueuedUpgrade] = useState(false)
-  const [rating, setRating] = useState(0)
-  const [reviews, setReviews] = useState(Array<Review>())
+  const [installedOrQueried, setInstalled] = useState(installed)
+  const [queuedUpgrade, setQueuedUpgrade] = useState(upgradeQueued)
+  const [rating, setRating] = useState(initialRating)
+  const [reviews, setReviews] = useState(initialReviews)
   const [reviewsExpanded, setReviewsExpanded] = useState(false)
 
   useEffect(() => {
@@ -315,7 +316,7 @@ const PackageInfo = ({
                 <Paper variant="outlined" className={classes.contentColumn}>
                   <Typography variant="body1">{version}</Typography>
                 </Paper>
-                <Typography variant="h6">{t('mantainer')}:</Typography>
+                <Typography variant="h6">{t('maintainer')}:</Typography>
                 <Paper variant="outlined" className={classes.contentColumn}>
                   <Typography variant="body1">{maintainer}</Typography>
                 </Paper>

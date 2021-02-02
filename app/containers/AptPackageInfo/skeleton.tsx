@@ -86,7 +86,7 @@ const PackageInfoSkeleton = ({ goBack }: PackageInfoSkeletonProps) => {
         <AccordionDetails className={classes.grid}>
           <Typography variant="h6">{t('version')}:</Typography>
           <Skeleton variant="rect" className={classes.contentColumn} />
-          <Typography variant="h6">{t('mantainer')}:</Typography>
+          <Typography variant="h6">{t('maintainer')}:</Typography>
           <Skeleton variant="rect" className={classes.contentColumn} />
           <Typography variant="h6">{t('description')}:</Typography>
           <Skeleton variant="rect" height={200} className={classes.contentColumn} />

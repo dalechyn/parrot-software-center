@@ -68,7 +68,7 @@
   "pkgNotAvailable": "Данный пакет недоступен",
   "generalInfo": "Общая информация",
   "version": "Версия",
-  "mantainer": "Упаковал",
+  "maintainer": "Упаковал",
   "description": "Описание",
   "additionalInfo": "Дополнительная информация",
   "reviews": "Отзывы",
@@ -88,5 +88,15 @@
   "english": "Английский",
   "italian": "Итальянский",
   "russian": "Русский",
-  "notFound": "Ничего не найдено..."
+  "notFound": "Ничего не найдено...",
+  "installChip": "Установить",
+  "uninstallChip": "Удалить",
+  "upgradeChip": "Обновить",
+  "process": "Обработать",
+  "mirrorsConnectedTo": "Подключен к",
+  "mirrorsCantBeDetected": "Зеркало не может быть определено",
+  "mirrorsConnectedToCDN": "Подключен к Parrot CDN",
+  "mirrorsScanningMirrors": "Сканирую зеркала",
+  "mirrorsScanningPolicy": "Сканирую текущие настройки зеркала",
+  "resetDefault": "Сбросить настройки"
 }
