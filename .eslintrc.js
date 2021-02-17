@@ -1,8 +1,11 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
+    project: `${__dirname}/tsconfig.json`,
     sourceType: 'module',
     ecmaVersion: 2020,
+    tsconfigRootDir: __dirname,
+    createDefaultProgram: true,
     ecmaFeatures: {
       experimentalObjectRestSpread: true,
       jsx: true
@@ -10,6 +13,7 @@ module.exports = {
   },
   plugins: ['@typescript-eslint'],
   extends: [
+    'erb',
     'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
     'prettier/@typescript-eslint',
@@ -29,7 +33,8 @@ module.exports = {
       }
     ],
     'react/prop-types': 'off',
-    '@typescript-eslint/explicit-function-return-type': 'off'
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    'import/no-extraneous-dependencies': 'off'
   },
   settings: {
     react: {
@@ -39,7 +44,7 @@ module.exports = {
       // See https://github.com/benmosher/eslint-plugin-import/issues/1396#issuecomment-575727774 for line below
       node: {},
       webpack: {
-        config: require.resolve('./configs/webpack.config.eslint.js')
+        config: require.resolve('./.erb/configs/webpack.config.eslint.js')
       }
     }
   }

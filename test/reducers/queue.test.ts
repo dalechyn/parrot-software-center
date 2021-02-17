@@ -1,7 +1,7 @@
-import reducer from '../../app/reducers/queue'
-import { QueueNode } from '../../app/containers/Queue'
-import * as QueueActions from '../../app/actions/queue'
-import { INSTALL, UNINSTALL } from '../../app/actions/apt'
+import reducer from '../../src/reducers/queue'
+import { QueueNode } from '../../src/containers/Queue'
+import * as QueueActions from '../../src/actions/queue'
+import { INSTALL, UNINSTALL } from '../../src/actions/apt'
 
 const initialState = {
   packages: Array<QueueNode>(),
