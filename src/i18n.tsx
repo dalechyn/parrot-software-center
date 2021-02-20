@@ -16,7 +16,7 @@ i18next
     supportedLngs: ['en_US', 'it_IT', 'ru_RU'],
     nonExplicitSupportedLngs: true,
     backend: {
-      loadPath: './locales/{{lng}}/{{ns}}.json',
+      loadPath: `${__dirname}/../assets/locales/{{lng}}/{{ns}}.json`,
       allowMultiLoading: false
     },
     react: {
