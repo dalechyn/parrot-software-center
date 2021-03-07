@@ -99,5 +99,7 @@
   "mirrorsCantBeDetected": "Current mirror can't be detected",
   "mirrorsConnectedToCDN": "Connected to Parrot CDN",
   "mirrorsScanningMirrors": "Scanning mirrors",
-  "mirrorsScanningPolicy": "Scanning current mirror policy"
+  "mirrorsScanningPolicy": "Scanning current mirror policy",
+  "reportedUser": "Reported User",
+  "date": "Date"
 }

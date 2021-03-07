@@ -34,6 +34,7 @@ module.exports = {
     ],
     'react/prop-types': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/no-shadow': 'off',
     'import/no-extraneous-dependencies': 'off'
   },
   settings: {

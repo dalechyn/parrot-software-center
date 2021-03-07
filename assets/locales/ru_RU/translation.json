@@ -98,5 +98,7 @@
   "mirrorsConnectedToCDN": "Подключен к Parrot CDN",
   "mirrorsScanningMirrors": "Сканирую зеркала",
   "mirrorsScanningPolicy": "Сканирую текущие настройки зеркала",
-  "resetDefault": "Сбросить настройки"
+  "resetDefault": "Сбросить настройки",
+  "reportedUser": "Пользователь",
+  "date": "Дата"
 }

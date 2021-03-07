@@ -10,9 +10,9 @@ import {
 } from '@material-ui/core'
 import { Rating } from '@material-ui/lab'
 import { connect, ConnectedProps } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import ReportDialog from '../ReportDialog'
 import { deleteReview } from '../../actions/reviews'
-import { useTranslation } from 'react-i18next'
 
 const mapDispatchToProps = {
   deleteReview
@@ -55,8 +55,8 @@ const Review = ({
         <CardContent>
           <Typography>{commentary}</Typography>
         </CardContent>
-        {role === 'moderator' && (
-          <CardActions>
+        <CardActions>
+          {role === 'moderator' && (
             <Button
               onClick={() =>
                 (async () => {
@@ -67,11 +67,11 @@ const Review = ({
             >
               {t('delete')}
             </Button>
-            <Button style={{ marginLeft: 'auto' }} onClick={() => setReportReviewShow(true)}>
-              {t('report')}
-            </Button>
-          </CardActions>
-        )}
+          )}
+          <Button style={{ marginLeft: 'auto' }} onClick={() => setReportReviewShow(true)}>
+            {t('report')}
+          </Button>
+        </CardActions>
       </Card>
       {reportReviewShow && (
         <ReportDialog

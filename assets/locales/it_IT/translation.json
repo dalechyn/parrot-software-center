@@ -99,5 +99,7 @@
   "mirrorsCantBeDetected": "Il mirror corrente non può essere rilevato",
   "mirrorsConnectedToCDN": "Collegato al Parrot CDN",
   "mirrorsScanningMirrors": "Mirrors di scansione",
-  "mirrorsScanningPolicy": "Scansione della policy di mirror corrente"
+  "mirrorsScanningPolicy": "Scansione della policy di mirror corrente",
+  "reportedUser": "Utente Segnalato",
+  "date": "Data"
 }

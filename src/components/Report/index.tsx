@@ -11,11 +11,11 @@ import {
 } from '@material-ui/core'
 import { Report as ReportIcon } from '@material-ui/icons'
 import React, { useState } from 'react'
-import { ReportInfo } from '../../actions/reviews'
 import { red } from '@material-ui/core/colors'
-import ReviewDialog from '../ReviewDialog'
 import { useTranslation } from 'react-i18next'
 import cls from 'classnames'
+import ReviewDialog from '../ReviewDialog'
+import { ReportInfo } from '../../actions/reviews'
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -89,10 +89,10 @@ const Report = ({
                 </Typography>
                 <div style={{ marginLeft: 'auto' }}>
                   <Typography className={classes.reportedUser} variant="h5">
-                    Reported User: {reportedUser}
+                    {t('reportedUser')}: {reportedUser}
                   </Typography>
                   <Typography className={classes.reportedUser} variant="h5">
-                    Date: {new Date(date * 1000).toLocaleString()}
+                    {t('date')}: {new Date(date * 1000).toLocaleString()}
                   </Typography>
                   <Typography variant="h5">
                     {t('reportedBy')}: {reportedBy}
@@ -108,7 +108,7 @@ const Report = ({
               noWrap
             >
               <>
-                Commentary: {commentary}
+                {t('commentary')}: {commentary}
                 {reviewed && (
                   <>
                     <Divider />
