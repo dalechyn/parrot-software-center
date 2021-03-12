@@ -15,7 +15,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "geoip-lite": "^1.4.2"
+    "geoip-lite": "^1.4.2",
+    "keytar": "^7.4.0"
   },
   "devDependencies": {
     "@types/geoip-lite": "^1.4.1"

@@ -21,19 +21,19 @@ import { Rating } from '@material-ui/lab'
 import Slider from 'react-slick'
 import { ArrowBack, ExpandMore } from '@material-ui/icons'
 import { blue, green, grey } from '@material-ui/core/colors'
-import dummyPackageImg from '../../assets/package.png'
 import { Img } from 'react-image'
 import { useSnackbar } from 'notistack'
 import cls from 'classnames'
-import { AptActions, QueueActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
-import PackageInfoSkeleton from './skeleton'
-import { QueueNode } from '../Queue'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
-import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
-import { Review, SnapPackage } from '../../actions/apt'
 import { shell } from 'electron'
 import { useTranslation } from 'react-i18next'
+import { AptActions, QueueActions } from '../../actions'
+import PackageInfoSkeleton from './skeleton'
+import { QueueNode } from '../Queue'
+import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
+import { getRating, Review, SnapPackage } from '../../actions/apt'
+import dummyPackageImg from '../../assets/package.png'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -97,12 +97,13 @@ const useStyles = makeStyles(theme => ({
 const mapStateToProps = ({
   settings: { APIUrl },
   queue: { packages, isBusy },
-  auth: { token, role, login }
-}: RootState) => ({ APIUrl, packages, isBusy, token, role, login })
+  auth: { accessToken, role, login }
+}: RootState) => ({ APIUrl, packages, isBusy, token: accessToken, role, login })
 
 const mapDispatchToProps = {
   goBack,
   push,
+  getRating,
   install: QueueActions.install,
   uninstall: QueueActions.uninstall,
   dontUpgrade: QueueActions.dontUpgrade,
@@ -125,6 +126,7 @@ const PackageInfo = ({
   match,
   APIUrl,
   isBusy,
+  getRating,
   token,
   fetchSnapPackage,
   login
@@ -208,8 +210,12 @@ const PackageInfo = ({
     if (newReviews.length === 0) setReviewsExpanded(false)
   }
 
-  const addReviewComponent = (rating: number, commentary: string) => {
-    setReviews([...reviews, { author: login, rating, commentary }])
+  const addReviewComponent = async (rating: number, commentary: string) => {
+    setRating(unwrapResult(await getRating(name)))
+    setReviews([
+      ...reviews.filter(el => el.author !== login),
+      { author: login, rating, commentary }
+    ])
   }
 
   const { t } = useTranslation()
@@ -227,7 +233,7 @@ const PackageInfo = ({
             className={classes.media}
             src={`${APIUrl}/assets/packages/${name}.png`}
             unloader={
-              <img className={classes.media} src={dummyPackageImg} alt={'No Package Found'} />
+              <img className={classes.media} src={dummyPackageImg} alt="No Package Found" />
             }
           />
           <Typography style={{ color: green[400] }} variant="h5">

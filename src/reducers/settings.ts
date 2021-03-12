@@ -1,6 +1,6 @@
 import fs from 'fs'
-import { SettingsActions } from '../actions'
 import { createReducer } from '@reduxjs/toolkit'
+import { SettingsActions } from '../actions'
 
 export interface Settings {
   loadCVEs: boolean
@@ -8,7 +8,7 @@ export interface Settings {
   APIUrl: string
 }
 
-const HOME = process.env.HOME
+const { HOME } = process.env
 const PSCDir = `${HOME}/.parrotstore`
 
 let initialSettings: Settings

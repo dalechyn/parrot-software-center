@@ -27,14 +27,14 @@ import {
   Assessment as AssessmentIcon
 } from '@material-ui/icons'
 import Alert from '@material-ui/lab/Alert'
-import SearchBar from '../SearchBar'
-import { AlertActions, AptActions, AuthActions } from '../../actions'
 import { SnackbarKey, useSnackbar } from 'notistack'
 import { unwrapResult } from '@reduxjs/toolkit'
-import AuthDialog from '../AuthDialog'
-import SettingsDialog from '../SettingsDialog'
 import useConstant from 'use-constant'
 import { useTranslation } from 'react-i18next'
+import SearchBar from '../SearchBar'
+import { AlertActions, AptActions, AuthActions } from '../../actions'
+import AuthDialog from '../AuthDialog'
+import SettingsDialog from '../SettingsDialog'
 
 const useStyles = makeStyles(theme => ({
   drawer: { width: 250 },
@@ -55,12 +55,12 @@ const useStyles = makeStyles(theme => ({
 
 const mapStateToProps = ({
   alert,
-  auth: { token, role },
+  auth: { accessToken, role },
   router: {
     location: { pathname }
   },
   queue: { packages }
-}: RootState) => ({ alert, token, role, pathname, queueLength: packages.length })
+}: RootState) => ({ alert, token: accessToken, role, pathname, queueLength: packages.length })
 
 const mapDispatchToProps = {
   clear: AlertActions.clear,
@@ -157,7 +157,7 @@ const Header = ({
           </Button>
         </div>
         <Divider />
-        <Button startIcon={<FeedIcon />} size="large" component={Link} to={'/'}>
+        <Button startIcon={<FeedIcon />} size="large" component={Link} to="/">
           {t('home')}
         </Button>
         <Button
@@ -168,16 +168,16 @@ const Header = ({
           }
           size="large"
           component={Link}
-          to={'/queue'}
+          to="/queue"
         >
           {t('queue')}
         </Button>
         {role === 'moderator' && (
-          <Button startIcon={<AssessmentIcon />} size="large" component={Link} to={'/reports'}>
+          <Button startIcon={<AssessmentIcon />} size="large" component={Link} to="/reports">
             {t('reports')}
           </Button>
         )}
-        <Button startIcon={<MapIcon />} size="large" component={Link} to={'/mirrors'}>
+        <Button startIcon={<MapIcon />} size="large" component={Link} to="/mirrors">
           {t('mirrors')}
         </Button>
         <Button startIcon={<SettingsIcon />} onClick={() => setSettingsOpened(true)} size="large">
@@ -187,7 +187,7 @@ const Header = ({
         {token ? (
           <Button
             startIcon={<LoginIcon />}
-            onClick={() => setUserInfo({ login: '', token: '', role: '' })}
+            onClick={() => setUserInfo({ login: '', accessToken: '', refreshToken: '', role: '' })}
             size="large"
           >
             {t('logout')}

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { connect, ConnectedProps } from 'react-redux'
 import { makeStyles, Grid, CircularProgress, Button } from '@material-ui/core'
+import { unwrapResult } from '@reduxjs/toolkit'
 import { ReviewsActions } from '../../actions'
 import { ReportInfo } from '../../actions/reviews'
-import { unwrapResult } from '@reduxjs/toolkit'
 import Report from '../../components/Report'
 
 const useStyles = makeStyles(theme => ({

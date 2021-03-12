@@ -1,4 +1,6 @@
 import { createAction, createAsyncThunk } from '@reduxjs/toolkit'
+import keytar from 'keytar'
+import os from 'os'
 
 type AuthInfo = {
   login: string
@@ -8,7 +10,8 @@ type AuthInfo = {
 
 type UserInfo = {
   login: string
-  token: string
+  accessToken: string
+  refreshToken: string
   role: string
 }
 
@@ -24,11 +27,16 @@ export const login = createAsyncThunk<void, AuthInfo, { state: RootState }>(
       if (res.status === 403)
         throw new Error(`This account is not confirmed. Follow email instructions to confirm it.`)
       else if (res.status === 401) throw new Error('Login and password are not accepted.')
-      else if (res.status == 400) throw new Error('Username with that login does not exist')
+      else if (res.status === 400) throw new Error('Username with that login does not exist')
       else throw new Error(res.statusText)
     }
     const userInfo = await res.json()
     dispatch(setUserInfo({ ...userInfo, login }))
+    await keytar.setPassword(
+      'parrot-software-center-refresh',
+      os.userInfo().username,
+      userInfo.refreshToken
+    )
   }
 )
 export const register = createAsyncThunk<void, AuthInfo, { state: RootState }>(

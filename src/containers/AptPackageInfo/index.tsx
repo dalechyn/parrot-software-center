@@ -19,19 +19,19 @@ import { Rating } from '@material-ui/lab'
 import Slider from 'react-slick'
 import { ArrowBack, ExpandMore } from '@material-ui/icons'
 import { blue, green, grey } from '@material-ui/core/colors'
-import dummyPackageImg from '../../assets/package.png'
 import { Img } from 'react-image'
 import { useSnackbar } from 'notistack'
 import cls from 'classnames'
-import { AptActions, QueueActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
-import PackageInfoSkeleton from './skeleton'
 import { shell } from 'electron'
-import { QueueNode } from '../Queue'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
-import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
-import { AptPackage, AptPackageOptionalFields } from '../../actions/apt'
 import { useTranslation } from 'react-i18next'
+import { AptActions, QueueActions } from '../../actions'
+import PackageInfoSkeleton from './skeleton'
+import { QueueNode } from '../Queue'
+import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
+import { AptPackage, AptPackageOptionalFields, getRating } from '../../actions/apt'
+import dummyPackageImg from '../../assets/package.png'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -98,7 +98,7 @@ const processDescription = (str: string) => {
   const upperCased = cleared.charAt(0).toUpperCase() + cleared.slice(1)
   const firstSentenceDotted = upperCased.replace(/\n/, '.\n')
   const lines = firstSentenceDotted.split('\n')
-  lines[0] = lines[0] + '\n'
+  lines[0] += '\n'
   return lines.join('')
 }
 
@@ -123,7 +123,7 @@ const createPackageRelationsProcessor = (innerPush: typeof push) => (
                 >
                   {name}
                 </Link>
-                {' ' + rest.join('')}
+                {` ${rest.join('')}`}
                 {arr.length > 1 && orI !== arr.length - 1 && ' | '}
               </>
             )
@@ -137,8 +137,8 @@ const createPackageRelationsProcessor = (innerPush: typeof push) => (
 const mapStateToProps = ({
   settings: { APIUrl },
   queue: { packages, isBusy },
-  auth: { token, role, login }
-}: RootState) => ({ APIUrl, packages, isBusy, token, role, login })
+  auth: { accessToken, role, login }
+}: RootState) => ({ APIUrl, packages, isBusy, token: accessToken, role, login })
 
 const mapDispatchToProps = {
   goBack,
@@ -147,7 +147,8 @@ const mapDispatchToProps = {
   uninstall: QueueActions.uninstall,
   dontUpgrade: QueueActions.dontUpgrade,
   upgrade: QueueActions.upgrade,
-  fetchAptPackage: AptActions.fetchAptPackage
+  fetchAptPackage: AptActions.fetchAptPackage,
+  getRating
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
@@ -164,6 +165,7 @@ const PackageInfo = ({
   push,
   upgrade,
   match,
+  getRating,
   APIUrl,
   isBusy,
   token,
@@ -258,8 +260,12 @@ const PackageInfo = ({
     if (newReviews.length === 0) setReviewsExpanded(false)
   }
 
-  const addReviewComponent = (rating: number, commentary: string) => {
-    setReviews([...reviews, { author: login, rating, commentary }])
+  const addReviewComponent = async (rating: number, commentary: string) => {
+    setRating(unwrapResult(await getRating(name)))
+    setReviews([
+      ...reviews.filter(el => el.author !== login),
+      { author: login, rating, commentary }
+    ])
   }
 
   const { t } = useTranslation()

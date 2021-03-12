@@ -16,8 +16,8 @@ import { useForm } from 'react-hook-form'
 import { Rating } from '@material-ui/lab'
 import { useTranslation } from 'react-i18next'
 
-const mapStateToProps = ({ auth: { token, login } }: RootState) => ({
-  token,
+const mapStateToProps = ({ auth: { accessToken, login } }: RootState) => ({
+  token: accessToken,
   login
 })
 

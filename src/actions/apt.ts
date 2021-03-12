@@ -1,20 +1,21 @@
 import { ChildProcess, exec } from 'child_process'
-import { createAsyncThunk, Dispatch } from '@reduxjs/toolkit'
+import { createAsyncThunk, Dispatch, unwrapResult } from '@reduxjs/toolkit'
 import { promisify } from 'util'
-import { AlertActions, PreviewsActions } from '../actions'
-import { QueueNode } from '../containers/Queue'
 import leven from 'leven'
+import { promises as fs } from 'fs'
+import { AlertActions, PreviewsActions } from '.'
+import { QueueNode } from '../containers/Queue'
 import { CVEEndpoint } from '../components/SearchPreviewList'
 import { pop, QueueNodeMeta } from './queue'
-import { promises as fs } from 'fs'
+
+import dummyPackageImg from '../assets/package.png'
+import { fetchAuthorized } from './fetch'
 
 export const INSTALL = 'install'
 export const UPGRADE = '--only-upgrade install'
 export const UNINSTALL = 'remove'
 const PSC_FINISHED = '__PSC_FINISHED'
 const prExec = promisify(exec)
-
-import dummyPackageImg from '../assets/package.png'
 
 export type Review = {
   author: string
@@ -169,7 +170,7 @@ const snapPkgRegex = {
   storeUrl: /^store-url: +(.*)/m,
   contact: /^contact: +(.*)/m,
   license: /^license: +(.*)/m,
-  description: /^description: \|\n((?:  .*\n)+)/m,
+  description: /^description: \|\n((?: {2}.*\n)+)/m,
   snapId: /^snap-id: +(.*)/m,
   refreshDate: /^refresh-date: (.*)/m,
   channels: /^channels:\n((?:.*\n)+)/m,
@@ -202,13 +203,15 @@ export const perform = createAsyncThunk(
     const prepared = packages
       .map(
         ({ flag, name, source, version }: QueueNode) =>
-          (source === 'APT'
-            ? `LANG=C DEBIAN_FRONTEND=noninteractive apt-get ${flag} -y ${name}${
-                flag === INSTALL ? `=${version}` : ''
-              } || exit 1`
-            : `LANG=C snap ${flag === UPGRADE ? 'refresh' : flag} ${name}${
-                flag === INSTALL ? ` --channel=${version.split(':')[0]}` : ''
-              } || exit 1`) + `;echo ${PSC_FINISHED}`
+          `${
+            source === 'APT'
+              ? `LANG=C DEBIAN_FRONTEND=noninteractive apt-get ${flag} -y ${name}${
+                  flag === INSTALL ? `=${version}` : ''
+                } || exit 1`
+              : `LANG=C snap ${flag === UPGRADE ? 'refresh' : flag} ${name}${
+                  flag === INSTALL ? ` --channel=${version.split(':')[0]}` : ''
+                } || exit 1`
+          };echo ${PSC_FINISHED}`
       )
       .join(';')
     try {
@@ -333,7 +336,7 @@ export const fetchPreviews = createAsyncThunk<
             // Removed redundant apt search message
             .split('\n\n')
             .reduce((result, str) => {
-              const match = /([a-z0-9.+-]+)\/((?:[a-z0-9.+-]+,?)+) (?:[0-9]:)?([a-zA-Z0-9-.~+-]+) ([a-z0-9-+]*)(?: ?\[.*\])?\n  (.*)/m.exec(
+              const match = /([a-z0-9.+-]+)\/((?:[a-z0-9.+-]+,?)+) (?:[0-9]:)?([a-zA-Z0-9-.~+-]+) ([a-z0-9-+]*)(?: ?\[.*\])?\n {2}(.*)/m.exec(
                 str
               )
               if (!match || !match[1] || !match[3] || !match[5])
@@ -383,7 +386,7 @@ export const fetchPreviews = createAsyncThunk<
         : [])
     ].sort((a, b) => leven(a.name, packageName) - leven(b.name, packageName))
 
-    const length = names.length
+    const { length } = names
     const slicedRawPreviews = names.slice((chunk - 1) * 5, chunk * 5)
 
     for (let i = 4; i >= slicedRawPreviews.length; i--) {
@@ -566,6 +569,15 @@ export const fetchSnapPackage = createAsyncThunk<SnapPackage, string, { state: R
   }
 )
 
+export const getRating = createAsyncThunk<number, string, { state: RootState }>(
+  '@apt/GET_RATING',
+  async (packageName, { getState }) => {
+    const state = getState()
+    const res = await fetch(`${state.settings.APIUrl}/ratings/${packageName}`)
+    return (await res.json()).rating
+  }
+)
+
 export const fetchAptPackage = createAsyncThunk<AptPackage, string, { state: RootState }>(
   '@apt/FETCH_APT_PACKAGE',
   async (packageName, { getState, dispatch }) => {
@@ -660,11 +672,16 @@ export const rate = createAsyncThunk<
   void,
   { name: string; token: string; commentary: string; rating: number },
   { state: RootState }
->('@apt/RATE', async (rateInfo, { getState }) => {
-  await fetch(`${getState().settings.APIUrl}/rate`, {
-    method: 'PUT',
-    body: JSON.stringify(rateInfo)
-  })
+>('@apt/RATE', async (rateInfo, { getState, dispatch }) => {
+  const wrapped = await dispatch(
+    fetchAuthorized({
+      input: `${getState().settings.APIUrl}/rate`,
+      method: 'PUT',
+      payload: rateInfo
+    })
+  )
+  const res = unwrapResult(wrapped)
+  if (!res.ok) throw new Error(res.statusText)
 })
 
 export const readMirror = createAsyncThunk('@apt/readMirror', async () => {
