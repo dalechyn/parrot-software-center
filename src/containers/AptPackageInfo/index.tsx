@@ -28,10 +28,11 @@ import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AptActions, QueueActions } from '../../actions'
 import PackageInfoSkeleton from './skeleton'
-import { QueueNode } from '../Queue'
 import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
-import { AptPackage, AptPackageOptionalFields, getRating } from '../../actions/apt'
+import { getRating } from '../../actions/apt'
 import dummyPackageImg from '../../assets/package.png'
+import { AptPackage, AptPackageOptionalFields } from '../../types/apt'
+import { QueueNode } from '../../types/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -92,8 +93,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const processDescription = (str: string) => {
-  if (!str) return
+const processDescription = (str: string): string => {
   const cleared = str.replace(/^ \./gm, '\n').replace(/^ /gm, '')
   const upperCased = cleared.charAt(0).toUpperCase() + cleared.slice(1)
   const firstSentenceDotted = upperCased.replace(/\n/, '.\n')
@@ -114,6 +114,7 @@ const createPackageRelationsProcessor = (innerPush: typeof push) => (
             const [name, ...rest] = orConflicts.split(' ')
             return (
               <>
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <Link
                   component="button"
                   variant="body1"
@@ -184,11 +185,11 @@ const PackageInfo = ({
 
   // TODO: Get rid of ...rest destructurization and type all fields by hand
   const {
+    name: dontUse,
     version,
     maintainer,
     description,
     source,
-    name: _a,
     depends,
     recommends,
     replaces,
@@ -231,7 +232,7 @@ const PackageInfo = ({
     return () => {
       active = false
     }
-  }, [name])
+  }, [fetchAptPackage, name])
 
   useEffect(() => {
     setInstalled(packageInfo.installed)
@@ -242,7 +243,10 @@ const PackageInfo = ({
 
   const { enqueueSnackbar } = useSnackbar()
 
-  const onRatingChange = (_event: React.ChangeEvent<{}>, value: number | null) => {
+  const onRatingChange = (
+    _event: React.ChangeEvent<Record<string, unknown>>,
+    value: number | null
+  ) => {
     if (!value) return
     if (!token) {
       setAuthOpened(true)
@@ -326,10 +330,14 @@ const PackageInfo = ({
                 <Paper variant="outlined" className={classes.contentColumn}>
                   <Typography variant="body1">{maintainer}</Typography>
                 </Paper>
-                <Typography variant="h6">{t('description')}:</Typography>
-                <Paper variant="outlined" className={classes.contentColumn}>
-                  <Typography variant="body1">{processDescription(description)}</Typography>
-                </Paper>
+                {description && (
+                  <>
+                    <Typography variant="h6">{t('description')}:</Typography>
+                    <Paper variant="outlined" className={classes.contentColumn}>
+                      <Typography variant="body1">{processDescription(description)}</Typography>
+                    </Paper>
+                  </>
+                )}
               </AccordionDetails>
             </Accordion>
             <Accordion disabled={!packageInfo && Object.keys(rest).length === 0}>
@@ -398,6 +406,7 @@ const PackageInfo = ({
                     <Typography variant="h6">Homepage:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
                       <Typography variant="body1">
+                        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                         <Link
                           component="button"
                           variant="body1"
@@ -414,6 +423,7 @@ const PackageInfo = ({
                     <Typography variant="h6">Bugs:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
                       <Typography variant="body1">
+                        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                         <Link
                           component="button"
                           variant="body1"

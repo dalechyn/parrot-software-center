@@ -33,8 +33,15 @@ module.exports = {
       }
     ],
     'react/prop-types': 'off',
+    'react/jsx-props-no-spreading': 'off',
+    'react/no-array-index-key': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-shadow': 'off',
+    'no-plusplus': 'off',
+    'no-nested-ternary': 'off',
+    'no-console': 'off',
+    'import/prefer-default-export': 'off',
     'import/no-extraneous-dependencies': 'off'
   },
   settings: {

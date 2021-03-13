@@ -8,13 +8,13 @@ import {
   DialogTitle,
   FormControlLabel
 } from '@material-ui/core'
-import { SettingsActions } from '../../actions'
 import { connect, ConnectedProps } from 'react-redux'
 import { Controller, useForm } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
-import { Settings } from '../../reducers/settings'
 import { useTranslation } from 'react-i18next'
+import { SettingsActions } from '../../actions'
 import LanguageSwitcher from '../LanguageSwitcher'
+import { Settings } from '../../types/settings'
 
 const mapStateToProps = ({ settings }: RootState) => ({ settings })
 
@@ -33,7 +33,7 @@ const SettingsDialog = ({ onClose, save, settings }: SettingsDialogProps) => {
   const { enqueueSnackbar } = useSnackbar()
   const { t } = useTranslation()
   return (
-    <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">
+    <Dialog open onClose={onClose} aria-labelledby="form-dialog-title">
       <form
         onSubmit={handleSubmit(data => {
           enqueueSnackbar(`${t('settingSaved')}`, { variant: 'success' })

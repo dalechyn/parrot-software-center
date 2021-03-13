@@ -4,20 +4,21 @@ import { connect, ConnectedProps } from 'react-redux'
 import { Checkbox, FormControlLabel, Grid, makeStyles, Typography } from '@material-ui/core'
 import { Pagination } from '@material-ui/lab'
 
-import { AptActions, AlertActions } from '../../actions'
 import { unwrapResult } from '@reduxjs/toolkit'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { replace } from 'connected-react-router'
+import { useTranslation } from 'react-i18next'
 import SearchField from '../../components/SearchField'
 import { SearchPreview, SearchPreviewSkeleton } from '../../components'
-import { PackagePreview } from '../../actions/apt'
-import { useTranslation } from 'react-i18next'
+import { AptActions, AlertActions } from '../../actions'
+import { PackagePreview } from '../../types/apt'
 
 const componentsInPage = 5
 
 // Array.prototype.every iterates only on occupied elements, not all, so we have
 // to check it out manually
 const onlyNulls = (arr: Array<PackagePreview | null | undefined>) => {
+  // eslint-disable-next-line no-restricted-syntax
   for (const el of arr) if (el !== null) return false
   return true
 }
@@ -64,7 +65,7 @@ const SearchResults = ({
   const [loading, setLoading] = useState(false)
 
   const { name: initialName, page: initialPage } = match.params
-  const [page, scroll] = useState(initialPage ? parseInt(initialPage) : 1)
+  const [page, scroll] = useState(initialPage ? parseInt(initialPage, 10) : 1)
   const [length, setLength] = useState(0)
   const [filter, setFilter] = useState({ apt: true, snap: true })
 
@@ -87,7 +88,7 @@ const SearchResults = ({
     return () => {
       active = false
     }
-  }, [page])
+  }, [fetchPreviews, filter, initialName, page, setAlert])
 
   const pageChange = (_: ChangeEvent<unknown>, n: number) => {
     if (n === page) return

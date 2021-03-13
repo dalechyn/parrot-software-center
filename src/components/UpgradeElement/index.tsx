@@ -1,12 +1,13 @@
-import { QueueNodeMeta, upgrade } from '../../actions/queue'
 import { Button, Grid, Hidden, makeStyles, Paper, Typography } from '@material-ui/core'
 import { Img } from 'react-image'
-import dummyPackageImg from '../../assets/package.png'
 import React from 'react'
 import { useSnackbar } from 'notistack'
 import { useTranslation } from 'react-i18next'
 import { push } from 'connected-react-router'
 import { connect, ConnectedProps } from 'react-redux'
+import dummyPackageImg from '../../assets/package.png'
+import { upgrade } from '../../actions/queue'
+import { QueueNodeMeta } from '../../types/queue'
 
 const useStyles = makeStyles(theme => ({
   card: {

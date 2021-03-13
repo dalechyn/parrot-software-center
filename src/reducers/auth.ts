@@ -8,7 +8,13 @@ const refreshTokens = async () => {
     keytar.getPassword('parrot-software-center-access', os.userInfo().username),
     keytar.getPassword('parrot-software-center-refresh', os.userInfo().username)
   ])
-  if (refreshToken) AuthActions.setUserInfo({ login: '', refreshToken, accessToken, role: '' })
+  if (refreshToken)
+    AuthActions.setUserInfo({
+      login: '',
+      refreshToken: refreshToken ?? '',
+      accessToken: accessToken ?? '',
+      role: ''
+    })
 }
 
 export default createReducer({ accessToken: '', refreshToken: '', login: '', role: '' }, builder =>

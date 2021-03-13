@@ -20,11 +20,11 @@ import {
   Typography
 } from '@material-ui/core'
 import { amber, blue, grey, orange, red } from '@material-ui/core/colors'
-import { QueueActions } from '../../actions'
-import { QueueNode } from '../../containers/Queue'
 import { Rating } from '@material-ui/lab'
-import { PackagePreview } from '../../actions/apt'
 import { useTranslation } from 'react-i18next'
+import { QueueActions } from '../../actions'
+import { PackagePreview } from '../../types/apt'
+import { QueueNode } from '../../types/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -165,31 +165,31 @@ const SearchPreview = ({
               </div>
               {cveInfo && (
                 <div className={classes.cve}>
-                  {(cveInfo.critical != 0 ||
-                    cveInfo.high != 0 ||
-                    cveInfo.medium != 0 ||
-                    cveInfo.low != 0) && (
+                  {(cveInfo.critical !== 0 ||
+                    cveInfo.high !== 0 ||
+                    cveInfo.medium !== 0 ||
+                    cveInfo.low !== 0) && (
                     <>
                       <Chip label={`${t('monthCVEs')}:`} />
-                      {cveInfo.critical != 0 && (
+                      {cveInfo.critical !== 0 && (
                         <Chip
                           className={classnames(classes.cveCritical, classes.chipText)}
                           label={`${t('critical')}: ${cveInfo.critical}`}
                         />
                       )}
-                      {cveInfo.high != 0 && (
+                      {cveInfo.high !== 0 && (
                         <Chip
                           className={classnames(classes.cveHigh, classes.chipText)}
                           label={`${t('high')}: ${cveInfo.high}`}
                         />
                       )}
-                      {cveInfo.medium != 0 && (
+                      {cveInfo.medium !== 0 && (
                         <Chip
                           className={classnames(classes.cveMedium, classes.chipText)}
                           label={`${t('medium')}: ${cveInfo.medium}`}
                         />
                       )}
-                      {cveInfo.low != 0 && <Chip label={`${t('low')}: ${cveInfo.low}`} />}
+                      {cveInfo.low !== 0 && <Chip label={`${t('low')}: ${cveInfo.low}`} />}
                     </>
                   )}
                 </div>

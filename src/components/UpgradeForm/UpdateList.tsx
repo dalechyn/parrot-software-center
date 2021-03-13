@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { QueueNodeMeta } from '../../actions/queue'
 import { Grid, makeStyles, IconButton } from '@material-ui/core'
 import { ExpandMore, ExpandLess, MoreHoriz } from '@material-ui/icons'
 import { RouteComponentProps, withRouter } from 'react-router'
 import cls from 'classnames'
 import UpgradeElement from '../UpgradeElement'
+import { QueueNodeMeta } from '../../types/queue'
 
 const useStyles = makeStyles(theme => ({
   detailsLink: {
@@ -35,7 +35,7 @@ const UpdateList = ({ updates: initialUpdates }: UpdateListProp) => {
     updates.map((meta, index) => (
       <UpgradeElement
         {...meta}
-        key={index}
+        key={`updgrade-element-${index}`}
         removeFunction={() => setUpdates([...updates.slice(0, index), ...updates.slice(index + 1)])}
       />
     ))
@@ -43,13 +43,12 @@ const UpdateList = ({ updates: initialUpdates }: UpdateListProp) => {
   const maxItemsShown = 10
   const areUpdatesMoreThanMaxItems = updates.length > maxItemsShown
 
-  //updates.reduce((acc, meta, index) => packages.any(queueEl => queueEl.name === meta.name ) ? acc : [...acc, metaToComponent(meta, index)])
   useEffect(() => {
     setUpdateComponents(
       updates.map((meta, index) => (
         <UpgradeElement
           {...meta}
-          key={index}
+          key={`updgrade-element-${index}`}
           removeFunction={() =>
             setUpdates([...updates.slice(0, index), ...updates.slice(index + 1)])
           }

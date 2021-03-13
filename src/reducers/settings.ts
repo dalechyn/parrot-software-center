@@ -1,12 +1,7 @@
 import fs from 'fs'
 import { createReducer } from '@reduxjs/toolkit'
 import { SettingsActions } from '../actions'
-
-export interface Settings {
-  loadCVEs: boolean
-  darkTheme: boolean
-  APIUrl: string
-}
+import { Settings } from '../types/settings'
 
 const { HOME } = process.env
 const PSCDir = `${HOME}/.parrotstore`

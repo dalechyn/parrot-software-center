@@ -1,5 +1,5 @@
 import { createAction } from '@reduxjs/toolkit'
-import { PackagePreview } from './apt'
+import { PackagePreview } from '../types/apt'
 
 export const setPreview = createAction<{ preview: PackagePreview | null; index: number }>(
   '@previews/SET_PREVIEWS'

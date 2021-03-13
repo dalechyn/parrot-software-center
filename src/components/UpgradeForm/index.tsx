@@ -1,15 +1,15 @@
 import { Button, CircularProgress, Grid, makeStyles, Paper } from '@material-ui/core'
 import { unwrapResult } from '@reduxjs/toolkit'
 import React, { useEffect, useState } from 'react'
-import { AptActions, QueueActions } from '../../actions'
 import { connect, ConnectedProps } from 'react-redux'
 import { CheckCircleOutline as SuccessIcon } from '@material-ui/icons'
 import { push } from 'connected-react-router'
 import { withRouter } from 'react-router'
 import { RouteComponentProps } from 'react-router-dom'
-import { QueueNodeMeta } from '../../actions/queue'
-import UpdateList from './UpdateList'
 import { useTranslation } from 'react-i18next'
+import { AptActions, QueueActions } from '../../actions'
+import UpdateList from './UpdateList'
+import { QueueNodeMeta } from '../../types/queue'
 
 const useStyles = makeStyles(theme => ({
   padded: {
@@ -59,7 +59,7 @@ const UpgradeForm = ({ checkUpdates, upgrade, push, packages }: UpgradeFormProps
     return () => {
       active = false
     }
-  }, [])
+  }, [checkUpdates, packages])
   return (
     <Grid container direction="column" alignItems="center" className={classes.padded}>
       {loading ? (

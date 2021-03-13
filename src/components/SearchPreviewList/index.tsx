@@ -1,7 +1,7 @@
-import { SearchPreview, SearchPreviewSkeleton } from '../index'
 import React, { ReactNode, useEffect, useState } from 'react'
 import { Grid, makeStyles } from '@material-ui/core'
-import { PackagePreview } from '../../actions/apt'
+import { SearchPreview, SearchPreviewSkeleton } from '../index'
+import { PackagePreview } from '../../types/apt'
 
 export interface CVEInfoType {
   low: number

@@ -30,10 +30,11 @@ import { shell } from 'electron'
 import { useTranslation } from 'react-i18next'
 import { AptActions, QueueActions } from '../../actions'
 import PackageInfoSkeleton from './skeleton'
-import { QueueNode } from '../Queue'
 import { AuthDialog, RatingDialog, ReviewRating } from '../../components'
-import { getRating, Review, SnapPackage } from '../../actions/apt'
+import { getRating } from '../../actions/apt'
 import dummyPackageImg from '../../assets/package.png'
+import { Review, SnapPackage } from '../../types/apt'
+import { QueueNode } from '../../types/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -192,7 +193,10 @@ const PackageInfo = ({
 
   const { enqueueSnackbar } = useSnackbar()
 
-  const onRatingChange = (_event: React.ChangeEvent<{}>, value: number | null) => {
+  const onRatingChange = (
+    _event: React.ChangeEvent<Record<string, unknown>>,
+    value: number | null
+  ) => {
     if (!value) return
     if (!token) {
       setAuthOpened(true)
@@ -314,6 +318,7 @@ const PackageInfo = ({
                   <>
                     <Typography variant="h6">Store-URL:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
+                      {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                       <Link
                         component="button"
                         variant="body1"
@@ -328,6 +333,7 @@ const PackageInfo = ({
                   <>
                     <Typography variant="h6">{t('contact')}:</Typography>
                     <Paper variant="outlined" className={classes.contentColumn}>
+                      {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                       <Link
                         component="button"
                         variant="body1"

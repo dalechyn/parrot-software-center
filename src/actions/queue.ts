@@ -1,11 +1,5 @@
 import { createAction } from '@reduxjs/toolkit'
-
-export type QueueNodeMeta = {
-  name: string
-  version: string
-  oldVersion?: string
-  source: 'APT' | 'SNAP'
-}
+import { QueueNodeMeta } from '../types/queue'
 
 export const swap = createAction<{
   first: number

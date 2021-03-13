@@ -1,6 +1,6 @@
 import { createReducer } from '@reduxjs/toolkit'
 import { PreviewsActions } from '../actions'
-import { PackagePreview } from '../actions/apt'
+import { PackagePreview } from '../types/apt'
 
 export default createReducer(Array<PackagePreview | null | undefined>(), builder =>
   builder

@@ -2,25 +2,24 @@ import React, { useCallback, useState } from 'react'
 import { connect, ConnectedProps } from 'react-redux'
 import {
   Button,
-  Container,
-  List,
   Chip,
+  Container,
+  Grid,
   IconButton,
   LinearProgress,
-  Paper,
-  Typography,
+  List,
+  ListItem,
   makeStyles,
-  Grid,
-  ListItem
+  Paper,
+  Typography
 } from '@material-ui/core'
-import { ArrowUpward, ArrowDownward, Delete } from '@material-ui/icons'
-import { AlertActions, QueueActions, AptActions } from '../../actions'
-import { INSTALL, UNINSTALL, UPGRADE } from '../../actions/apt'
+import { ArrowDownward, ArrowUpward, Delete } from '@material-ui/icons'
 import classnames from 'classnames'
-import { QueueNodeMeta } from '../../actions/queue'
 import { grey } from '@material-ui/core/colors'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
+import { AlertActions, AptActions, QueueActions } from '../../actions'
+import { INSTALL, QueueNode, UNINSTALL, UPGRADE } from '../../types/queue'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -52,10 +51,6 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(2)
   }
 }))
-
-export type QueueNode = QueueNodeMeta & {
-  flag: typeof INSTALL | typeof UNINSTALL | typeof UPGRADE | null
-}
 
 const flagMap = (t: TFunction): Record<string, Partial<typeof Chip>> => ({
   [INSTALL]: {
@@ -106,7 +101,6 @@ const Queue = ({
   globalProgress,
   swap,
   remove,
-  setAlert,
   aptProcess,
   isBusy,
   length
@@ -117,7 +111,7 @@ const Queue = ({
   const processPackages = useCallback(async () => {
     setProcessing(true)
     if (AptActions.perform.rejected.match(await aptProcess(packages))) setProcessing(false)
-  }, [packages, setAlert])
+  }, [aptProcess, packages])
 
   const { t } = useTranslation()
 

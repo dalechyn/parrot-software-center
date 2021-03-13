@@ -1,8 +1,7 @@
+import { createReducer } from '@reduxjs/toolkit'
 import * as QueueActions from '../actions/queue'
 import * as AptActions from '../actions/apt'
-import { INSTALL, UNINSTALL, UPGRADE } from '../actions/apt'
-import { createReducer } from '@reduxjs/toolkit'
-import { QueueNode } from '../containers/Queue'
+import { INSTALL, QueueNode, UNINSTALL, UPGRADE } from '../types/queue'
 
 export default createReducer(
   {

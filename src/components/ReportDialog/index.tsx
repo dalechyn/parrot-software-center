@@ -11,8 +11,8 @@ import {
 import { useSnackbar } from 'notistack'
 import { connect, ConnectedProps } from 'react-redux'
 import { useForm } from 'react-hook-form'
-import { ReportInfo, reportReview } from '../../actions/reviews'
 import { useTranslation } from 'react-i18next'
+import { ReportInfo, reportReview } from '../../actions/reviews'
 
 const mapDispatchToProps = { reportReview }
 
@@ -35,7 +35,7 @@ const ReportDialog = ({ name, reportedUser, onClose, reportReview }: ReportDialo
   const { t } = useTranslation()
 
   return (
-    <Dialog open={true} onClose={onClose} aria-labelledby="form-dialog-title">
+    <Dialog open onClose={onClose} aria-labelledby="form-dialog-title">
       <form
         onSubmit={handleSubmit(async ({ commentary }) => {
           setLoading(true)

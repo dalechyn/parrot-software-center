@@ -3,129 +3,25 @@ import { createAsyncThunk, Dispatch, unwrapResult } from '@reduxjs/toolkit'
 import { promisify } from 'util'
 import leven from 'leven'
 import { promises as fs } from 'fs'
-import { AlertActions, PreviewsActions } from '.'
-import { QueueNode } from '../containers/Queue'
+import * as AlertActions from './alert'
+import * as PreviewsActions from './previews'
 import { CVEEndpoint } from '../components/SearchPreviewList'
-import { pop, QueueNodeMeta } from './queue'
+import { pop } from './queue'
 
 import dummyPackageImg from '../assets/package.png'
 import { fetchAuthorized } from './fetch'
+import {
+  AptPackage,
+  AptPkgRegexOptional,
+  AptPkgRegexRequired,
+  PackagePreview,
+  PackageSource,
+  SnapPackage
+} from '../types/apt'
+import { INSTALL, QueueNode, QueueNodeMeta, UPGRADE } from '../types/queue'
 
-export const INSTALL = 'install'
-export const UPGRADE = '--only-upgrade install'
-export const UNINSTALL = 'remove'
 const PSC_FINISHED = '__PSC_FINISHED'
 const prExec = promisify(exec)
-
-export type Review = {
-  author: string
-  rating: number
-  commentary: string
-}
-
-export type CVEInfo = {
-  critical: number
-  high: number
-  medium: number
-  low: number
-}
-
-export type Sources = 'APT' | 'SNAP'
-
-export type PackageSource = {
-  packageSource: Sources
-}
-export type AptPackageRequiredFields = {
-  name: string
-  version: string
-  maintainer: string
-  description: string
-}
-
-export type AptPackageOptionalFields = Partial<{
-  section: string
-  priority: string
-  essential: string
-  architecture: string
-  origin: string
-  bugs: string
-  homepage: string
-  tag: string
-  source: string
-  depends: string
-  preDepends: string
-  recommends: string
-  suggests: string
-  breaks: string
-  conflicts: string
-  replaces: string
-  provides: string
-  installedSize: string
-  downloadSize: string
-  aptManualInstalled: string
-  aptSources: string
-}>
-
-export type PackageStatus = {
-  installed: boolean
-  upgradable: boolean
-  upgradeQueued: boolean
-} & Partial<Pick<QueueNode, 'flag'>>
-
-export type PackagePreview = {
-  name: string
-  description: string
-  cveInfo: CVEInfo
-  icon: string
-  version: string
-} & PackageStatus &
-  Pick<PackageEssentials, 'rating'> &
-  PackageSource
-
-export type PackageEssentials = {
-  reviews: Review[]
-  screenshots: string[]
-  rating: number
-}
-
-export type AptPackage = AptPackageRequiredFields &
-  AptPackageOptionalFields &
-  PackageStatus &
-  PackageEssentials
-
-export type SnapChannel = {
-  risk: string
-  branch?: string
-  version: string
-}
-
-export type SnapTrack = {
-  name: string
-  channels: SnapChannel[]
-}
-
-export type SnapPackage = {
-  name: string
-  summary: string
-  publisher: string
-  storeUrl: string
-  contact: string
-  license: string
-  description: string
-  snapId: string
-  refreshDate?: string
-  tracking?: string
-  tracks: string[]
-} & PackageEssentials &
-  PackageStatus
-
-type AptPkgRegexRequired = {
-  [K in keyof AptPackageRequiredFields]: RegExp
-}
-
-type AptPkgRegexOptional = {
-  [K in keyof Required<AptPackageOptionalFields>]: RegExp
-}
 
 const aptPkgRegex: {
   required: AptPkgRegexRequired
@@ -230,10 +126,11 @@ export const checkUpdates = createAsyncThunk('@apt/CHECK_UPDATES', async () => {
     const regex = /^([a-z0-9.+-]+)\/(?:[a-z-],?)+ (?:[0-9]:)?((?:[0-9]{1,4}:)?(?:(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?)) [a-z0-9]+ \[upgradable from: (?:[0-9]:)?((?:[0-9]{1,4}:)?(?:(?:[A-Za-z0-9~.]+)(?:-(?:[A-Za-z0-9~.]+))?))\]/gm
 
     const res: QueueNodeMeta[] = []
-    let match: RegExpExecArray | null
-    while ((match = regex.exec(stdout)))
+    let match = regex.exec(stdout)
+    while (match) {
       res.push({ name: match[1], version: match[2], oldVersion: match[3], source: 'APT' })
-
+      match = regex.exec(stdout)
+    }
     return res.filter(
       (x, i) => i === res.findIndex(el => x.name === el.name && x.source === el.source)
     )
@@ -253,7 +150,6 @@ const redhatCVEEndpoint: CVEEndpoint = {
     const json = await res.json()
 
     if (Array.isArray(json))
-      // eslint-disable-next-line @typescript-eslint/camelcase
       json.forEach(({ cvss3_score: score }) => {
         if (score >= 0 && score < 4) low++
         else if (score < 7) medium++
@@ -431,7 +327,9 @@ export const fetchPreviews = createAsyncThunk<
                 preview.upgradable = true
               }
             }
-          } catch {}
+          } catch {
+            console.debug('SNAP refresh failed')
+          }
         }
 
         try {
@@ -517,7 +415,7 @@ export const fetchSnapPackage = createAsyncThunk<SnapPackage, string, { state: R
         .map(({ channel, version }) => `${channel}:${version}`)
 
       const foundPackage = queue.packages.find(
-        (pkg: QueueNode) => packageName === pkg.name && pkg.source == 'SNAP'
+        (pkg: QueueNode) => packageName === pkg.name && pkg.source === 'SNAP'
       )
       if (foundPackage) {
         newPackage.flag = foundPackage.flag
@@ -536,7 +434,9 @@ export const fetchSnapPackage = createAsyncThunk<SnapPackage, string, { state: R
           if (stdout.length !== 0 || stderr.length === 0) {
             newPackage.upgradable = true
           }
-        } catch (e) {}
+        } catch (e) {
+          console.debug('SNAP refresh failed')
+        }
       }
 
       try {
@@ -549,7 +449,9 @@ export const fetchSnapPackage = createAsyncThunk<SnapPackage, string, { state: R
       try {
         const reviewsResponse = await fetch(`${settings.APIUrl}/reviews/${packageName}`)
         newPackage.reviews = await reviewsResponse.json()
-      } catch {}
+      } catch {
+        console.debug('/reviews unreachable')
+      }
 
       try {
         newPackage.screenshots = [
@@ -560,7 +462,9 @@ export const fetchSnapPackage = createAsyncThunk<SnapPackage, string, { state: R
             (s: { small_image_url: string; large_image_url: string }) => s.large_image_url
           )
         ]
-      } catch (e) {}
+      } catch (e) {
+        console.debug('/screenshots unreachable')
+      }
       return newPackage
     } catch (e) {
       dispatch(AlertActions.set(e.message))
@@ -602,6 +506,7 @@ export const fetchAptPackage = createAsyncThunk<AptPackage, string, { state: Roo
         !Object.keys(aptPkgRegex.required).every(prop => {
           const key = prop as keyof typeof aptPkgRegex.required
           const match = aptPkgRegex.required[key].exec(aptResult)
+          // eslint-disable-next-line prefer-destructuring
           if (match) newPackage[key] = match[1]
           else console.warn(`Missing ${key}`)
           return match
@@ -612,6 +517,7 @@ export const fetchAptPackage = createAsyncThunk<AptPackage, string, { state: Roo
       Object.keys(aptPkgRegex.optional).forEach(prop => {
         const key = prop as keyof Omit<typeof aptPkgRegex.optional, 'source'>
         const match = aptPkgRegex.optional[key].exec(aptResult)
+        // eslint-disable-next-line prefer-destructuring
         if (match) newPackage[key] = match[1]
         else console.warn(`Missing ${key}`)
       })
@@ -637,7 +543,9 @@ export const fetchAptPackage = createAsyncThunk<AptPackage, string, { state: Roo
             const [current, candidate] = stdout.split('\n').slice(0, 2)
             if (current !== candidate) newPackage.upgradable = true
           }
-        } catch (e) {}
+        } catch (e) {
+          console.debug('APT policy failed')
+        }
       }
 
       try {
@@ -650,7 +558,9 @@ export const fetchAptPackage = createAsyncThunk<AptPackage, string, { state: Roo
       try {
         const reviewsResponse = await fetch(`${settings.APIUrl}/reviews/${packageName}`)
         newPackage.reviews = await reviewsResponse.json()
-      } catch {}
+      } catch {
+        console.debug('/reviews unreachable')
+      }
 
       try {
         newPackage.screenshots = (
@@ -658,7 +568,9 @@ export const fetchAptPackage = createAsyncThunk<AptPackage, string, { state: Roo
         ).screenshots.map(
           (s: { small_image_url: string; large_image_url: string }) => s.large_image_url
         )
-      } catch (e) {}
+      } catch (e) {
+        console.debug('/screenshots unreachable')
+      }
 
       return newPackage
     } catch (e) {
