@@ -368,7 +368,7 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror, readMirror }: MirrorPro
           const resolvedIP = await promiseLookup(mirror.url.split('/')[2], { all: false })
           if (!active) {
             console.debug('Request canceled')
-            throw null
+            throw new Error('Request canceled')
           }
           const geoInfo = geoip.lookup(resolvedIP.address)
           setLoadingText(`${t('mirrorsScanningMirrors')} (${i++}/${mirrorsURLs.length})...`)
@@ -381,7 +381,7 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror, readMirror }: MirrorPro
             }
           }
           console.debug(`DNS resolution failed: ${mirror.url}`)
-          throw null
+          throw new Error(`DNS resolution failed: ${mirror.url}`)
         })()
       )
 
@@ -396,10 +396,10 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror, readMirror }: MirrorPro
 
       setLoadingText(t('mirrorsScanningPolicy'))
       await refreshCurrentMirror()
-      return () => {
-        active = false
-      }
     })()
+    return () => {
+      active = false
+    }
   }, [])
 
   return (

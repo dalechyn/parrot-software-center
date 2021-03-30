@@ -32,10 +32,11 @@ export const login = createAsyncThunk<void, AuthInfo, { state: RootState }>(
     }
     const userInfo = await res.json()
     dispatch(setUserInfo({ ...userInfo, login }))
+    console.log('username', os.userInfo().username, userInfo.refreshToken)
     await keytar.setPassword(
-      'parrot-software-center-refresh',
+      'parrot-software-center',
       os.userInfo().username,
-      userInfo.refreshToken
+      JSON.stringify({ ...userInfo, login })
     )
   }
 )
@@ -51,5 +52,16 @@ export const register = createAsyncThunk<void, AuthInfo, { state: RootState }>(
         throw new Error('There is already an account with that email or username')
       else throw new Error(res.statusText)
     }
+  }
+)
+export const getLocalUserInfo = createAsyncThunk<void, void, { state: RootState }>(
+  '@auth/GET_LOCAL_USER_INFO',
+  async (_, { dispatch }) => {
+    const userInfoSerialized = await keytar.getPassword(
+      'parrot-software-center',
+      os.userInfo().username
+    )
+    if (!userInfoSerialized) throw new Error('No local user info was found')
+    dispatch(setUserInfo(JSON.parse(userInfoSerialized)))
   }
 )

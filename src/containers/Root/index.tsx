@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { hot } from 'react-hot-loader/root'
 import {
   CircularProgress,
@@ -11,16 +11,19 @@ import { SnackbarProvider } from 'notistack'
 import { connect, ConnectedProps } from 'react-redux'
 import { blue } from '@material-ui/core/colors'
 import { useTranslation } from 'react-i18next'
+import { AuthActions } from '../../actions'
 import { Header } from '../../components'
 import Routes from './Routes'
 
 const mapStateToProps = ({ settings: { darkTheme } }: RootState) => ({ darkTheme })
 
-const connector = connect(mapStateToProps)
+const mapDispatchToProps = { getLocalUserInfo: AuthActions.getLocalUserInfo }
+
+const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type RootProps = ConnectedProps<typeof connector>
 
-const Root = ({ darkTheme }: RootProps) => {
+const Root = ({ darkTheme, getLocalUserInfo }: RootProps) => {
   const theme = useMemo(
     () =>
       createMuiTheme({
@@ -37,6 +40,10 @@ const Root = ({ darkTheme }: RootProps) => {
       }),
     [darkTheme]
   )
+
+  useEffect(() => {
+    getLocalUserInfo()
+  }, [getLocalUserInfo])
 
   const { ready } = useTranslation()
   return (
