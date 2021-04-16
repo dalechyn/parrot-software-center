@@ -400,7 +400,7 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror, readMirror }: MirrorPro
     return () => {
       active = false
     }
-  }, [])
+  }, [refreshCurrentMirror, t])
 
   return (
     <section className={classes.root}>

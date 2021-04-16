@@ -1,7 +1,7 @@
 {
   "name": "parrot-software-center",
   "productName": "parrot-software-center",
-  "version": "0.2.2",
+  "version": "1.0.0",
   "description": "Parrot Software Center application for ParrotOS",
   "main": "./main.prod.js",
   "author": {
