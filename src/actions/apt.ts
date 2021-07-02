@@ -32,7 +32,7 @@ const aptPkgRegex: {
     version: /^Version: ((?<epoch>[0-9]{1,4}:)?(?<upstream>[A-Za-z0-9~.]+)(?:-(?<debian>[A-Za-z0-9~.]+))?)/m,
     // eslint-disable-next-line no-control-regex
     maintainer: /^Maintainer: (.*)/m,
-    description: /^Description-(?:[a-z]{2}): (.*(?:\n \S.*)*)/m
+    description: /^Description: (.*(?:\n \S.*)*)/m
   },
   optional: {
     section: /^Section: ([a-z]+)/m,

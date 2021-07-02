@@ -28,7 +28,6 @@ export default merge(baseConfig, {
     publicPath: `http://localhost:${port}/dist/`,
     filename: 'renderer.dev.js'
   },
-
   module: {
     rules: [
       {

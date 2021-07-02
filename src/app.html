@@ -21,20 +21,18 @@
   <body>
     <div id="root"></div>
     <script>
-      if (typeof process === 'object') {
-        const scripts = []
+      const scripts = []
 
-        if (process.env.START_HOT) {
-          // Dynamically insert the bundled src script in the renderer process
-          const port = process.env.PORT || 1212
-          scripts.push(`http://localhost:${port}/dist/renderer.dev.js`)
-        } else {
-          scripts.push('./dist/renderer.prod.js')
-        }
+      if (process.env.NODE_ENV === 'development') {
+        // Dynamically insert the bundled app script in the renderer process
+        const port = process.env.PORT || 1212
+        scripts.push(`http://localhost:${port}/dist/renderer.dev.js`)
+      } else {
+        scripts.push('./dist/renderer.prod.js')
+      }
 
-        if (scripts.length) {
-          document.write(scripts.map(script => `<script defer src="${script}"><\/script>`).join(''))
-        }
+      if (scripts.length) {
+        document.write(scripts.map(script => `<script defer src="${script}"><\/script>`).join(''))
       }
     </script>
   </body>

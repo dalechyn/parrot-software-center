@@ -351,7 +351,7 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror, readMirror }: MirrorPro
           ? { id: mirrorId, text: `${t('mirrorsConnectedTo')} ${mirrorId}`, detected: true }
           : { id: '', text: t('mirrorsCantBeDetected'), detected: false }
       )
-      if (readUrl?.startsWith('https://deb.parrotsec.org/'))
+      if (readUrl?.includes('https://deb.parrot.sh/'))
         setCurrentMirrorInfo({ id: '', text: t('mirrorsConnectedToCDN'), detected: true })
     } catch {
       setCurrentMirrorInfo({ id: '', text: t('mirrorsCantBeDetected'), detected: false })
@@ -400,7 +400,7 @@ const Mirrors = ({ darkTheme, resetMirror, changeMirror, readMirror }: MirrorPro
     return () => {
       active = false
     }
-  }, [refreshCurrentMirror, t])
+  }, [])
 
   return (
     <section className={classes.root}>

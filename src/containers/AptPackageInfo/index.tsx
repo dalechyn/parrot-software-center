@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Fragment } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { connect, ConnectedProps } from 'react-redux'
 import { goBack, push } from 'connected-react-router'
@@ -441,14 +441,22 @@ const PackageInfo = ({
                     const key = prop as keyof AptPackageOptionalFields
                     const additionalInfo = rest as AptPackageOptionalFields
                     return (
-                      <Fragment key={`${name}@${version}@${key}`}>
-                        <Typography style={{ width: 'min-content' }} variant="h6">
+                      <>
+                        <Typography
+                          style={{ width: 'min-content' }}
+                          key={`${name}@${version}@${key}-label`}
+                          variant="h6"
+                        >
                           {key.charAt(0).toUpperCase() + key.slice(1)}:
                         </Typography>
-                        <Paper variant="outlined" className={classes.contentColumn}>
+                        <Paper
+                          variant="outlined"
+                          key={`${name}@${version}@${key}-content`}
+                          className={classes.contentColumn}
+                        >
                           <Typography variant="body1">{additionalInfo[key]}</Typography>
                         </Paper>
-                      </Fragment>
+                      </>
                     )
                   })}
               </AccordionDetails>

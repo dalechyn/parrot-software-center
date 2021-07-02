@@ -19,6 +19,7 @@
     "keytar": "^7.4.0"
   },
   "devDependencies": {
-    "@types/geoip-lite": "^1.4.1"
+    "@types/geoip-lite": "^1.4.1",
+    "electron-rebuild": "^2.3.5"
   }
 }
