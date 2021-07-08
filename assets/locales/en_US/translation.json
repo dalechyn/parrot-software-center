@@ -25,6 +25,7 @@
   "settingSaved": "Setting saved!",
   "loadCVE": "Load CVE Data (disabling may speed up the search)",
   "darkTheme": "Use Dark Theme",
+  "snap": "Use snap packages (check if you have snap installed)",
   "save": "Save",
   "close": "Close",
   "reviewSent": "Your review is sent!",

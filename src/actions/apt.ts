@@ -163,7 +163,8 @@ const redhatCVEEndpoint: CVEEndpoint = {
 
 export const fetchAutocompletion = createAsyncThunk<string[], string, { state: RootState }>(
   '@apt/FETCH_AUTOCOMPLETION',
-  async (packageName, { dispatch }) => {
+  async (packageName, { dispatch, getState }) => {
+    const snapEnabled = getState().settings.snap
     try {
       const [{ stdout: aptStdout }, { stdout: snapStdOut }] = await Promise.all([
         prExec(`LANG=C apt-cache search --names-only ${packageName}`),
@@ -172,14 +173,17 @@ export const fetchAutocompletion = createAsyncThunk<string[], string, { state: R
         // I don't really want to use connections as I'd deal with streams and there is always risk to loose data
         // especially in such fast requests. However those critical parts should be rewritten in C/Python bindings in
         // future
-        prExec(
-          `curl -sS --unix-socket /run/snapd.socket http://localhost/v2/find?q=${packageName} -X GET`
-        )
+
+        snapEnabled
+          ? prExec(
+              `curl -sS --unix-socket /run/snapd.socket http://localhost/v2/find?q=${packageName} -X GET`
+            )
+          : Promise.resolve({ stdout: '{"result": [] }', stderr: '' })
       ])
       const aptNames = aptStdout.split('\n')
       // additional sorting is needed because search
       // doesn't guarantee that queried package will be first in the list
-      const snapResults = JSON.parse(snapStdOut)
+      const snapResults = snapEnabled ? JSON.parse(snapStdOut) : { result: [] }
       return [
         // to avoid duplicates among snap and apt
         ...new Set([
@@ -196,15 +200,15 @@ export const fetchAutocompletion = createAsyncThunk<string[], string, { state: R
 
 export const fetchPreviews = createAsyncThunk<
   number,
-  { name: string; chunk: number; filter: { apt: boolean; snap: boolean } },
+  { name: string; chunk: number },
   { state: RootState }
->('@apt/FETCH_PREVIEWS', async ({ name: packageName, chunk, filter }, { getState, dispatch }) => {
+>('@apt/FETCH_PREVIEWS', async ({ name: packageName, chunk }, { getState, dispatch }) => {
   const { queue, settings } = getState()
   dispatch(PreviewsActions.clear())
   try {
     const [{ stdout: aptResult }, { stdout: snapResult }] = await Promise.all([
-      filter.apt ? prExec(`LANG=C apt search ${packageName}`) : Promise.resolve({ stdout: '' }),
-      filter.snap
+      prExec(`LANG=C apt search ${packageName}`),
+      settings.snap
         ? prExec(
             `curl -sS --unix-socket /run/snapd.socket http://localhost/v2/find?q=${packageName} -X GET`
           )
@@ -224,32 +228,30 @@ export const fetchPreviews = createAsyncThunk<
     } & PackageSource
 
     const names = [
-      ...(filter.apt
-        ? aptResult
-            .split('\n')
-            .slice(2)
-            .join('\n')
-            // Removed redundant apt search message
-            .split('\n\n')
-            .reduce((result, str) => {
-              const match = /([a-z0-9.+-]+)\/((?:[a-z0-9.+-]+,?)+) (?:[0-9]:)?([a-zA-Z0-9-.~+-]+) ([a-z0-9-+]*)(?: ?\[.*\])?\n {2}(.*)/m.exec(
-                str
-              )
-              if (!match || !match[1] || !match[3] || !match[5])
-                console.error(`Unexpected error in apt preview parsing: ${str}`)
-              else
-                result.push({
-                  name: match[1],
-                  version: match[3],
-                  description: match[5],
-                  installed: /installed|upgradable/.test(str),
-                  upgradable: /upgradable/.test(str),
-                  packageSource: 'APT'
-                })
-              return result
-            }, Array<RawPreview>())
-        : []),
-      ...(filter.snap
+      ...aptResult
+        .split('\n')
+        .slice(2)
+        .join('\n')
+        // Removed redundant apt search message
+        .split('\n\n')
+        .reduce((result, str) => {
+          const match = /([a-z0-9.+-]+)\/((?:[a-z0-9.+-]+,?)+) (?:[0-9]:)?([a-zA-Z0-9-.~+-]+) ([a-z0-9-+]*)(?: ?\[.*\])?\n {2}(.*)/m.exec(
+            str
+          )
+          if (!match || !match[1] || !match[3] || !match[5])
+            console.error(`Unexpected error in apt preview parsing: ${str}`)
+          else
+            result.push({
+              name: match[1],
+              version: match[3],
+              description: match[5],
+              installed: /installed|upgradable/.test(str),
+              upgradable: /upgradable/.test(str),
+              packageSource: 'APT'
+            })
+          return result
+        }, Array<RawPreview>()),
+      ...(settings.snap
         ? JSON.parse(snapResult).result.map(
             ({
               name,

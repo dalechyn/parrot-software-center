@@ -68,6 +68,19 @@ const SettingsDialog = ({ onClose, save, settings }: SettingsDialogProps) => {
             color="primary"
             label={t('darkTheme')}
           />
+          <FormControlLabel
+            control={
+              <Controller
+                as={<Switch />}
+                control={control}
+                checked={settings.snap}
+                name="snap"
+                color="primary"
+              />
+            }
+            color="primary"
+            label={t('snap')}
+          />
           <LanguageSwitcher />
         </DialogContent>
         <DialogActions>
