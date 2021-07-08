@@ -42,7 +42,7 @@ export const reportReview = createAsyncThunk<
     const state = getState()
     const wrapped = await dispatch(
       fetchAuthorized({
-        input: `${state.settings.APIUrl}/delete`,
+        input: `${state.settings.APIUrl}/report`,
         payload: { reportedUser, commentary, packageName }
       })
     )
