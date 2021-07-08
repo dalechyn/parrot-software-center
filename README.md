@@ -6,18 +6,29 @@ Uses ReactJS with material-ui styling and Electron.
 
 1. Clone the repo:
 
-```git
-git clone https://nest.parrot.sh/packages/parrot/software-center-team/parrot-software-center.git
-```
+`git clone https://nest.parrot.sh/packages/parrot/software-center-team/parrot-software-center.git`
+
+`cd parrot-software-center`
+
+`git switch dev`
+
 
 2. Install dependencies:
 
-```console
-yarn install
-```
+`yarn install`
 
-3. Run in development mode:
+`cd src`
 
-```console
-yarn dev
-```
+`yarn install`
+
+
+3. Rebuild electron:
+
+`./node-modules/.bin/electron-rebuild`
+
+
+4. Run in development mode:
+
+`cd ..`
+
+`DEBUG_PROD=true;NODE_ENV=development yarn start`
