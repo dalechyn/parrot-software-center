@@ -14,7 +14,7 @@ try {
     loadCVEs: true,
     darkTheme: false,
     snap: false,
-    APIUrl: process.env.NODE_ENV === 'development' ? 'localhost' : 'https://confirm.parrotsec.org/'
+    APIUrl: process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : 'https://confirm.parrotsec.org/'
   }
 }
 

@@ -502,7 +502,7 @@ export const fetchAptPackage = createAsyncThunk<AptPackage, string, { state: Roo
     }
 
     try {
-      const { stdout: aptResult } = await prExec(`LANG=C apt-cache show ${packageName}`)
+      const { stdout: aptResult } = await prExec(`LANG=C apt show ${packageName}`)
 
       if (
         !Object.keys(aptPkgRegex.required).every(prop => {
