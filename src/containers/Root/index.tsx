@@ -11,19 +11,19 @@ import { SnackbarProvider } from 'notistack'
 import { connect, ConnectedProps } from 'react-redux'
 import { blue } from '@material-ui/core/colors'
 import { useTranslation } from 'react-i18next'
-import { AuthActions } from '../../actions'
+import { AuthActions, AptActions } from '../../actions'
 import { Header } from '../../components'
 import Routes from './Routes'
 
 const mapStateToProps = ({ settings: { darkTheme } }: RootState) => ({ darkTheme })
 
-const mapDispatchToProps = { getLocalUserInfo: AuthActions.getLocalUserInfo }
+const mapDispatchToProps = { getLocalUserInfo: AuthActions.getLocalUserInfo, getIsolated: AptActions.getIsolated }
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
 
 type RootProps = ConnectedProps<typeof connector>
 
-const Root = ({ darkTheme, getLocalUserInfo }: RootProps) => {
+const Root = ({ darkTheme, getLocalUserInfo, getIsolated }: RootProps) => {
   const theme = useMemo(
     () =>
       createMuiTheme({
@@ -43,7 +43,8 @@ const Root = ({ darkTheme, getLocalUserInfo }: RootProps) => {
 
   useEffect(() => {
     getLocalUserInfo()
-  }, [getLocalUserInfo])
+    getIsolated()
+  }, [getLocalUserInfo, getIsolated])
 
   const { ready } = useTranslation()
   return (

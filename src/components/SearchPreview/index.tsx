@@ -20,7 +20,8 @@ import {
   Typography
 } from '@material-ui/core'
 import { amber, blue, grey, orange, red } from '@material-ui/core/colors'
-import { Rating } from '@material-ui/lab'
+import { Rating, Alert, AlertTitle } from '@material-ui/lab'
+import { Check, Error } from '@material-ui/icons'
 import { useTranslation } from 'react-i18next'
 import { QueueActions } from '../../actions'
 import { PackagePreview } from '../../types/apt'
@@ -32,7 +33,8 @@ const useStyles = makeStyles(theme => ({
   },
   description: {
     whiteSpace: 'pre-wrap',
-    paddingTop: theme.spacing(2)
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2)
   },
   media: {
     height: 40,
@@ -91,7 +93,8 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const mapStateToProps = ({ queue: { packages, isBusy } }: RootState) => ({
+const mapStateToProps = ({ isolate: isolatedPackages , queue: { packages, isBusy } }: RootState) => ({
+  isolatedPackages,
   packages,
   isBusy
 })
@@ -125,13 +128,17 @@ const SearchPreview = ({
   icon,
   rating,
   isBusy,
-  upgradeQueued
+  upgradeQueued, 
+  isolatedPackages
 }: SearchPreviewProps) => {
   const classes = useStyles()
   const { enqueueSnackbar } = useSnackbar()
 
   const [installedOrQueried, setInstalled] = useState(installed)
   const [queuedUpgrade, setQueuedUpgrade] = useState(upgradeQueued)
+
+  const [isIsolated, setIsolated] = useState(isolatedPackages.some(
+    isolatedName => isolatedName === name))
 
   const { t } = useTranslation()
 
@@ -204,88 +211,95 @@ const SearchPreview = ({
             >
               {description}
             </Typography>
+            { isIsolated && 
+              <Alert icon={<Error fontSize="inherit" />} severity="error">
+                Error! Can't install 
+              </Alert>
+            }
           </CardContent>
         </CardActionArea>
-        <CardActions className={classes.buttonsHolder}>
-          {upgradable &&
-            (queuedUpgrade ? (
+        { !isIsolated && 
+          <CardActions className={classes.buttonsHolder}>
+            {upgradable &&
+              (queuedUpgrade ? (
+                <Button
+                  classes={{ outlined: classes.uninstall }}
+                  disabled={isBusy}
+                  onClick={() => {
+                    enqueueSnackbar(`${t('package')} ${name} ${t('dequeued')}`, {
+                      variant: 'error'
+                    })
+                    dontUpgrade({ name, version, source: packageSource })
+                    setQueuedUpgrade(false)
+                  }}
+                  variant="outlined"
+                  size="medium"
+                >
+                  ${t('cancelUpgrade')}
+                </Button>
+              ) : (
+                <Button
+                  classes={{ outlined: classes.upgrade }}
+                  disabled={isBusy}
+                  onClick={() => {
+                    enqueueSnackbar(`${t('package')} ${name} ${t('queuedUpgrade')}`, {
+                      variant: 'success'
+                    })
+                    upgrade({ name, version, source: packageSource })
+                    setQueuedUpgrade(true)
+                  }}
+                  variant="outlined"
+                  size="medium"
+                >
+                  {t('upgradePkg')}
+                </Button>
+              ))}
+
+            {installedOrQueried ? (
               <Button
                 classes={{ outlined: classes.uninstall }}
                 disabled={isBusy}
                 onClick={() => {
-                  enqueueSnackbar(`${t('package')} ${name} ${t('dequeued')}`, {
-                    variant: 'error'
-                  })
-                  dontUpgrade({ name, version, source: packageSource })
-                  setQueuedUpgrade(false)
+                  enqueueSnackbar(
+                    packages.find((el: QueueNode) => el.name === name)
+                      ? `${t('package')} ${name} ${t('dequeued')}`
+                      : `${t('package')} ${name} ${t('queuedDel')}`,
+                    {
+                      variant: 'error'
+                    }
+                  )
+                  uninstall({ name, version, source: packageSource })
+                  setInstalled(false)
                 }}
                 variant="outlined"
                 size="medium"
               >
-                ${t('cancelUpgrade')}
+                {t('uninstall')}
               </Button>
             ) : (
               <Button
-                classes={{ outlined: classes.upgrade }}
+                classes={{ outlined: classes.install }}
                 disabled={isBusy}
                 onClick={() => {
-                  enqueueSnackbar(`${t('package')} ${name} ${t('queuedUpgrade')}`, {
-                    variant: 'success'
-                  })
-                  upgrade({ name, version, source: packageSource })
-                  setQueuedUpgrade(true)
+                  enqueueSnackbar(
+                    packages.find((el: QueueNode) => el.name === name)
+                      ? `${t('package')} ${name} ${t('dequeued')}`
+                      : `${t('package')} ${name} ${t('queuedInst')}`,
+                    {
+                      variant: 'info'
+                    }
+                  )
+                  install({ name, version, source: packageSource })
+                  setInstalled(true)
                 }}
                 variant="outlined"
                 size="medium"
               >
-                {t('upgradePkg')}
+                {t('install')}
               </Button>
-            ))}
-
-          {installedOrQueried ? (
-            <Button
-              classes={{ outlined: classes.uninstall }}
-              disabled={isBusy}
-              onClick={() => {
-                enqueueSnackbar(
-                  packages.find((el: QueueNode) => el.name === name)
-                    ? `${t('package')} ${name} ${t('dequeued')}`
-                    : `${t('package')} ${name} ${t('queuedDel')}`,
-                  {
-                    variant: 'error'
-                  }
-                )
-                uninstall({ name, version, source: packageSource })
-                setInstalled(false)
-              }}
-              variant="outlined"
-              size="medium"
-            >
-              {t('uninstall')}
-            </Button>
-          ) : (
-            <Button
-              classes={{ outlined: classes.install }}
-              disabled={isBusy}
-              onClick={() => {
-                enqueueSnackbar(
-                  packages.find((el: QueueNode) => el.name === name)
-                    ? `${t('package')} ${name} ${t('dequeued')}`
-                    : `${t('package')} ${name} ${t('queuedInst')}`,
-                  {
-                    variant: 'info'
-                  }
-                )
-                install({ name, version, source: packageSource })
-                setInstalled(true)
-              }}
-              variant="outlined"
-              size="medium"
-            >
-              {t('install')}
-            </Button>
-          )}
-        </CardActions>
+            )}
+          </CardActions>
+        }
       </Card>
     </Grid>
   )
