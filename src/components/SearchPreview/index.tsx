@@ -20,8 +20,8 @@ import {
   Typography
 } from '@material-ui/core'
 import { amber, blue, grey, orange, red } from '@material-ui/core/colors'
-import { Rating, Alert, AlertTitle } from '@material-ui/lab'
-import { Check, Error } from '@material-ui/icons'
+import { Rating, Alert } from '@material-ui/lab'
+import { Error } from '@material-ui/icons'
 import { useTranslation } from 'react-i18next'
 import { QueueActions } from '../../actions'
 import { PackagePreview } from '../../types/apt'
@@ -93,7 +93,10 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const mapStateToProps = ({ isolate: isolatedPackages , queue: { packages, isBusy } }: RootState) => ({
+const mapStateToProps = ({
+  isolate: isolatedPackages,
+  queue: { packages, isBusy }
+}: RootState) => ({
   isolatedPackages,
   packages,
   isBusy
@@ -128,7 +131,7 @@ const SearchPreview = ({
   icon,
   rating,
   isBusy,
-  upgradeQueued, 
+  upgradeQueued,
   isolatedPackages
 }: SearchPreviewProps) => {
   const classes = useStyles()
@@ -137,8 +140,7 @@ const SearchPreview = ({
   const [installedOrQueried, setInstalled] = useState(installed)
   const [queuedUpgrade, setQueuedUpgrade] = useState(upgradeQueued)
 
-  const [isIsolated, setIsolated] = useState(isolatedPackages.some(
-    isolatedName => isolatedName === name))
+  const [isIsolated] = useState(isolatedPackages.some(isolatedName => isolatedName === name))
 
   const { t } = useTranslation()
 
@@ -211,14 +213,14 @@ const SearchPreview = ({
             >
               {description}
             </Typography>
-            { isIsolated && 
+            {isIsolated && (
               <Alert icon={<Error fontSize="inherit" />} severity="error">
-                Error! Can't install 
+                Error! Can`t install
               </Alert>
-            }
+            )}
           </CardContent>
         </CardActionArea>
-        { !isIsolated && 
+        {!isIsolated && (
           <CardActions className={classes.buttonsHolder}>
             {upgradable &&
               (queuedUpgrade ? (
@@ -299,7 +301,7 @@ const SearchPreview = ({
               </Button>
             )}
           </CardActions>
-        }
+        )}
       </Card>
     </Grid>
   )

@@ -1,9 +1,24 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Switch, Route } from 'react-router-dom'
-import { Home, AptPackageInfo, SearchResults, Queue, Mirrors, SnapPackageInfo } from '../index'
+import { ipcRenderer } from 'electron'
+import { push } from 'connected-react-router'
+import { connect, ConnectedProps } from 'react-redux'
 import Reports from '../Reports'
+import { Home, AptPackageInfo, SearchResults, Queue, Mirrors, SnapPackageInfo } from '../index'
 
-const Routes = () => {
+const mapDispatchToProps = {
+  push
+}
+
+const connector = connect(null, mapDispatchToProps)
+
+type RoutesProps = ConnectedProps<typeof connector>
+
+const Routes = ({ push }: RoutesProps) => {
+  useEffect(() => {
+    ipcRenderer.on('ROUTING', (_event, route) => push(route))
+  }, [push])
+
   return (
     <Switch>
       <Route exact path="/">
@@ -34,4 +49,4 @@ const Routes = () => {
   )
 }
 
-export default Routes
+export default connector(Routes)

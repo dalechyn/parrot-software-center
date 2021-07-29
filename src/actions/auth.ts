@@ -1,6 +1,7 @@
 import { createAction, createAsyncThunk } from '@reduxjs/toolkit'
 import keytar from 'keytar'
 import os from 'os'
+import { ipcRenderer } from 'electron'
 
 type AuthInfo = {
   login: string
@@ -33,6 +34,7 @@ export const login = createAsyncThunk<void, AuthInfo, { state: RootState }>(
     const userInfo = await res.json()
     dispatch(setUserInfo({ ...userInfo, login }))
     console.log('username', os.userInfo().username, userInfo.refreshToken)
+    ipcRenderer.send('AUTH', 'login')
     await keytar.setPassword(
       'parrot-software-center',
       os.userInfo().username,

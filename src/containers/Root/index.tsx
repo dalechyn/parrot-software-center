@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { hot } from 'react-hot-loader/root'
 import {
   CircularProgress,
@@ -11,13 +11,19 @@ import { SnackbarProvider } from 'notistack'
 import { connect, ConnectedProps } from 'react-redux'
 import { blue } from '@material-ui/core/colors'
 import { useTranslation } from 'react-i18next'
-import { AuthActions, AptActions } from '../../actions'
+import { ipcRenderer } from 'electron'
+import { AuthActions, UtilsActions } from '../../actions'
 import { Header } from '../../components'
 import Routes from './Routes'
+import AuthDialog from '../../components/AuthDialog'
+import SettingsDialog from '../../components/SettingsDialog'
 
 const mapStateToProps = ({ settings: { darkTheme } }: RootState) => ({ darkTheme })
 
-const mapDispatchToProps = { getLocalUserInfo: AuthActions.getLocalUserInfo, getIsolated: AptActions.getIsolated }
+const mapDispatchToProps = {
+  getLocalUserInfo: AuthActions.getLocalUserInfo,
+  getIsolated: UtilsActions.getIsolated
+}
 
 const connector = connect(mapStateToProps, mapDispatchToProps)
 
@@ -41,9 +47,15 @@ const Root = ({ darkTheme, getLocalUserInfo, getIsolated }: RootProps) => {
     [darkTheme]
   )
 
+  const [authOpened, setAuthOpened] = useState(false)
+  const [settingsOpened, setSettingsOpened] = useState(false)
+
   useEffect(() => {
     getLocalUserInfo()
     getIsolated()
+    ipcRenderer.on('POPUP', (_e, popupType) =>
+      popupType === 'auth' ? setAuthOpened(true) : setSettingsOpened(true)
+    )
   }, [getLocalUserInfo, getIsolated])
 
   const { ready } = useTranslation()
@@ -55,6 +67,8 @@ const Root = ({ darkTheme, getLocalUserInfo, getIsolated }: RootProps) => {
           <>
             <Header />
             <Routes />
+            {authOpened && <AuthDialog onClose={() => setAuthOpened(false)} />}
+            {settingsOpened && <SettingsDialog onClose={() => setSettingsOpened(false)} />}
           </>
         ) : (
           <section

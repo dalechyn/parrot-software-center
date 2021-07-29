@@ -1,13 +1,8 @@
 import { createReducer } from '@reduxjs/toolkit'
-import { getIsolated } from '../actions/apt'
+import { UtilsActions } from '../actions'
 
-const initialState = { 
-  packages: Array<string>()
-}
-
-export default createReducer(initialState, builder => 
-  builder
-  .addCase(getIsolated.fulfilled, (state, action) => {
-    state.packages = action.payload;
+export default createReducer<string[]>([], builder =>
+  builder.addCase(UtilsActions.getIsolated.fulfilled, (_state, { payload }) => {
+    return payload
   })
 )

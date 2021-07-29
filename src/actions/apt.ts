@@ -484,15 +484,6 @@ export const getRating = createAsyncThunk<number, string, { state: RootState }>(
   }
 )
 
-export const getIsolated = createAsyncThunk<string[], void, { state: RootState }>(
-  '@apt/GET_ISOLATED',
-  async (_, { getState }) => {
-    const state = getState()
-    const res = await fetch(`${state.settings.APIUrl}/isolated`)
-    return (await res.json()).packages as string[]
-  }
-)
-
 export const fetchAptPackage = createAsyncThunk<AptPackage, string, { state: RootState }>(
   '@apt/FETCH_APT_PACKAGE',
   async (packageName, { getState, dispatch }) => {
